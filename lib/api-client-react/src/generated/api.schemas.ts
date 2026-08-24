@@ -44,32 +44,6 @@ export interface Profile {
   status: ProfileStatus;
 }
 
-export type ProfileUpdatePrivacy = typeof ProfileUpdatePrivacy[keyof typeof ProfileUpdatePrivacy];
-
-
-export const ProfileUpdatePrivacy = {
-  community: 'community',
-  private: 'private',
-} as const;
-
-export interface ProfileUpdate {
-  /** @minLength 2 */
-  name?: string;
-  neighborhood?: string;
-  /** @nullable */
-  avatarUrl?: string | null;
-  /** @maxLength 500 */
-  bio?: string;
-  activities?: string[];
-  /** @nullable */
-  project?: string | null;
-  /** @nullable */
-  contact?: string | null;
-  /** @nullable */
-  instagram?: string | null;
-  privacy?: ProfileUpdatePrivacy;
-}
-
 export type MembersSummaryTopActivitiesItem = {
   label: string;
   count: number;
@@ -94,9 +68,76 @@ export interface MembershipRequest {
   id: string;
   name: string;
   email: string;
+  /** @nullable */
+  phone?: string | null;
   neighborhood: string;
+  profession: string;
+  bio: string;
+  /** @nullable */
+  project?: string | null;
   submittedAt: string;
   status: MembershipRequestStatus;
+}
+
+export interface MembershipRequestCreate {
+  /**
+     * @minLength 2
+     * @maxLength 120
+     */
+  name: string;
+  /** @maxLength 254 */
+  email: string;
+  /**
+     * @maxLength 40
+     * @nullable
+     */
+  phone?: string | null;
+  /**
+     * @minLength 2
+     * @maxLength 120
+     */
+  neighborhood: string;
+  /**
+     * @minLength 2
+     * @maxLength 80
+     */
+  profession: string;
+  /**
+     * @minLength 10
+     * @maxLength 500
+     */
+  bio: string;
+  /**
+     * @maxLength 500
+     * @nullable
+     */
+  project?: string | null;
+}
+
+export type MembershipRequestReceiptStatus = typeof MembershipRequestReceiptStatus[keyof typeof MembershipRequestReceiptStatus];
+
+
+export const MembershipRequestReceiptStatus = {
+  pending: 'pending',
+} as const;
+
+export interface MembershipRequestReceipt {
+  id: string;
+  submittedAt: string;
+  status: MembershipRequestReceiptStatus;
+}
+
+export interface AdminLogin {
+  /**
+     * @minLength 1
+     * @maxLength 200
+     */
+  password: string;
+}
+
+export interface AdminSession {
+  token: string;
+  expiresAt: string;
 }
 
 export type ModerationReviewStatus = typeof ModerationReviewStatus[keyof typeof ModerationReviewStatus];

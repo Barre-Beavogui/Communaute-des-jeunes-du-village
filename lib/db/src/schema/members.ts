@@ -24,12 +24,18 @@ export const membershipRequestsTable = pgTable("membership_requests", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
   email: text("email").notNull(),
+  phone: text("phone"),
   neighborhood: text("neighborhood").notNull(),
+  profession: text("profession").notNull().default("Autre"),
+  bio: text("bio").notNull().default(""),
+  project: text("project"),
   submittedAt: timestamp("submitted_at").notNull().defaultNow(),
   status: text("status").notNull().default("pending"),
 });
 
 export const insertProfileSchema = createInsertSchema(profilesTable);
-export const insertMembershipRequestSchema = createInsertSchema(membershipRequestsTable);
+export const insertMembershipRequestSchema = createInsertSchema(
+  membershipRequestsTable,
+);
 export type Profile = typeof profilesTable.$inferSelect;
 export type MembershipRequest = typeof membershipRequestsTable.$inferSelect;

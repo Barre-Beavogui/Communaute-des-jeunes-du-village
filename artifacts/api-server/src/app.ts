@@ -1,4 +1,4 @@
-import express, { type Express } from "express";
+import express, { type ErrorRequestHandler, type Express } from "express";
 import cors from "cors";
 import pinoHttp from "pino-http";
 import router from "./routes";
@@ -10,6 +10,8 @@ const allowedOrigins = (process.env["PUBLIC_WEB_ORIGINS"] ?? "")
   .map((origin) => origin.trim())
   .filter(Boolean);
 const publicReadOnly = process.env["PUBLIC_READ_ONLY"] === "true";
+
+app.set("trust proxy", 1);
 
 app.use(
   pinoHttp({
@@ -53,9 +55,12 @@ app.use(
   "/api",
   (req, res, next) => {
     const isReadRequest = ["GET", "HEAD", "OPTIONS"].includes(req.method);
-    const isPrivateModerationRoute = req.path.startsWith("/moderation");
+    const isAdminRequest = req.path.startsWith("/moderation");
+    const isPublicWrite =
+      req.method === "POST" &&
+      ["/admin/login", "/membership-requests"].includes(req.path);
 
-    if (publicReadOnly && (!isReadRequest || isPrivateModerationRoute)) {
+    if (publicReadOnly && !isReadRequest && !isAdminRequest && !isPublicWrite) {
       res
         .status(403)
         .json({ error: "Cette version publique est en lecture seule." });
@@ -66,5 +71,25 @@ app.use(
   },
   router,
 );
+
+const errorHandler: ErrorRequestHandler = (error, _req, res, _next) => {
+  if (
+    error instanceof SyntaxError ||
+    (typeof error === "object" &&
+      error !== null &&
+      "name" in error &&
+      error.name === "ZodError")
+  ) {
+    res
+      .status(400)
+      .json({ error: "Les informations envoyées sont invalides." });
+    return;
+  }
+
+  logger.error({ err: error }, "Unhandled API error");
+  res.status(500).json({ error: "Une erreur interne est survenue." });
+};
+
+app.use(errorHandler);
 
 export default app;

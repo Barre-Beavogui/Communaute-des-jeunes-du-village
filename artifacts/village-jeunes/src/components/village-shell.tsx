@@ -1,16 +1,13 @@
-import { Compass, ShieldCheck, Sparkles, UserRound } from "lucide-react";
+import { Compass, ShieldCheck, Sparkles, UserPlus } from "lucide-react";
 import type { ReactNode } from "react";
 import { Link, useLocation } from "wouter";
 import { useHealthCheck } from "@workspace/api-client-react";
 
 const navItems = [
-  { href: "/", label: "Le village", icon: Compass },
-  { href: "/profil", label: "Mon profil", icon: UserRound },
-  { href: "/admin", label: "Modération", icon: ShieldCheck },
+  { href: "/", label: "Accueil", icon: Compass },
+  { href: "/inscription", label: "Inscription", icon: UserPlus },
+  { href: "/admin", label: "Administration", icon: ShieldCheck },
 ];
-
-const isPublicDirectory = import.meta.env.VITE_PUBLIC_DIRECTORY === "true";
-const visibleNavItems = isPublicDirectory ? navItems.slice(0, 1) : navItems;
 
 export function VillageShell({ children }: { children: ReactNode }) {
   const [location] = useLocation();
@@ -37,24 +34,26 @@ export function VillageShell({ children }: { children: ReactNode }) {
             className="hidden items-center gap-1 md:flex"
             aria-label="Navigation principale"
           >
-            {visibleNavItems.map((item) => {
-              const Icon = item.icon;
-              const isActive =
-                item.href === "/"
-                  ? location === "/"
-                  : location.startsWith(item.href);
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  data-testid={`link-nav-${item.label.toLowerCase().replaceAll(" ", "-")}`}
-                  className={`flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold ${isActive ? "bg-card text-primary shadow-sm ring-1 ring-border" : "text-muted-foreground hover:bg-card/70 hover:text-foreground"}`}
-                >
-                  <Icon className="h-4 w-4" strokeWidth={2.2} />
-                  {item.label}
-                </Link>
-              );
-            })}
+            {navItems
+              .filter((item) => item.href !== "/inscription")
+              .map((item) => {
+                const Icon = item.icon;
+                const isActive =
+                  item.href === "/"
+                    ? location === "/"
+                    : location.startsWith(item.href);
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    data-testid={`link-nav-${item.label.toLowerCase().replaceAll(" ", "-")}`}
+                    className={`flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold ${isActive ? "bg-card text-primary shadow-sm ring-1 ring-border" : "text-muted-foreground hover:bg-card/70 hover:text-foreground"}`}
+                  >
+                    <Icon className="h-4 w-4" strokeWidth={2.2} />
+                    {item.label}
+                  </Link>
+                );
+              })}
           </nav>
 
           <div className="flex items-center gap-3">
@@ -67,16 +66,14 @@ export function VillageShell({ children }: { children: ReactNode }) {
               />
               {health.isError ? "Mode aperçu" : "Village en ligne"}
             </div>
-            {!isPublicDirectory && (
-              <Link
-                href="/inscription"
-                className="flex items-center gap-2 rounded-full bg-foreground px-4 py-2.5 text-xs font-bold text-background hover:-translate-y-0.5 hover:shadow-lg"
-                data-testid="link-join-header"
-              >
-                <Sparkles className="h-3.5 w-3.5" />
-                Rejoindre
-              </Link>
-            )}
+            <Link
+              href="/inscription"
+              className="flex items-center gap-2 rounded-full bg-foreground px-4 py-2.5 text-xs font-bold text-background hover:-translate-y-0.5 hover:shadow-lg"
+              data-testid="link-join-header"
+            >
+              <Sparkles className="h-3.5 w-3.5" />
+              Rejoindre
+            </Link>
           </div>
         </div>
       </header>
@@ -85,31 +82,29 @@ export function VillageShell({ children }: { children: ReactNode }) {
         {children}
       </main>
 
-      {!isPublicDirectory && (
-        <nav
-          className="fixed bottom-0 left-0 right-0 z-40 grid grid-cols-3 border-t border-border/80 bg-background/95 px-3 py-2 backdrop-blur-xl md:hidden"
-          aria-label="Navigation mobile"
-        >
-          {visibleNavItems.map((item) => {
-            const Icon = item.icon;
-            const isActive =
-              item.href === "/"
-                ? location === "/"
-                : location.startsWith(item.href);
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`flex flex-col items-center gap-1 py-1.5 text-[10px] font-bold ${isActive ? "text-primary" : "text-muted-foreground"}`}
-                data-testid={`link-mobile-${item.label.toLowerCase().replaceAll(" ", "-")}`}
-              >
-                <Icon className="h-5 w-5" />
-                {item.label}
-              </Link>
-            );
-          })}
-        </nav>
-      )}
+      <nav
+        className="fixed bottom-0 left-0 right-0 z-40 grid grid-cols-3 border-t border-border/80 bg-background/95 px-3 py-2 backdrop-blur-xl md:hidden"
+        aria-label="Navigation mobile"
+      >
+        {navItems.map((item) => {
+          const Icon = item.icon;
+          const isActive =
+            item.href === "/"
+              ? location === "/"
+              : location.startsWith(item.href);
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`flex flex-col items-center gap-1 py-1.5 text-[10px] font-bold ${isActive ? "text-primary" : "text-muted-foreground"}`}
+              data-testid={`link-mobile-${item.label.toLowerCase().replaceAll(" ", "-")}`}
+            >
+              <Icon className="h-5 w-5" />
+              {item.label}
+            </Link>
+          );
+        })}
+      </nav>
     </div>
   );
 }

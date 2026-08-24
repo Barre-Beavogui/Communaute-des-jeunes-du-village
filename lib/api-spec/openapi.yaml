@@ -14,6 +14,10 @@ tags:
     description: Community member profiles
   - name: moderation
     description: Admin moderation operations
+  - name: membership
+    description: Public membership requests
+  - name: admin
+    description: Administrator authentication
 paths:
   /healthz:
     get:
@@ -62,24 +66,6 @@ paths:
                 $ref: "#/components/schemas/Profile"
         "404":
           description: Profile not found
-  /profiles/me:
-    patch:
-      operationId: updateMyProfile
-      tags: [profiles]
-      summary: Update the signed-in member profile
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ProfileUpdate"
-      responses:
-        "200":
-          description: Updated profile
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Profile"
   /members/summary:
     get:
       operationId: getMembersSummary
@@ -92,6 +78,44 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/MembersSummary"
+  /membership-requests:
+    post:
+      operationId: createMembershipRequest
+      tags: [membership]
+      summary: Submit a membership request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MembershipRequestCreate"
+      responses:
+        "201":
+          description: Membership request submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MembershipRequestReceipt"
+  /admin/login:
+    post:
+      operationId: adminLogin
+      tags: [admin]
+      summary: Open an administrator session
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminLogin"
+      responses:
+        "200":
+          description: Administrator session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminSession"
+        "401":
+          description: Invalid password
   /moderation/requests:
     get:
       operationId: listModerationRequests
@@ -141,7 +165,8 @@ components:
         - status
     Profile:
       type: object
-      required: [id, name, initials, neighborhood, bio, activities, privacy, status]
+      required:
+        [id, name, initials, neighborhood, bio, activities, privacy, status]
       properties:
         id: { type: string }
         name: { type: string }
@@ -161,22 +186,6 @@ components:
         status:
           type: string
           enum: [approved, pending]
-    ProfileUpdate:
-      type: object
-      properties:
-        name: { type: string, minLength: 2 }
-        neighborhood: { type: string }
-        avatarUrl: { type: ["string", "null"] }
-        bio: { type: string, maxLength: 500 }
-        activities:
-          type: array
-          items: { type: string }
-        project: { type: ["string", "null"] }
-        contact: { type: ["string", "null"] }
-        instagram: { type: ["string", "null"] }
-        privacy:
-          type: string
-          enum: [community, private]
     MembersSummary:
       type: object
       required: [totalMembers, activeProjects, topActivities]
@@ -193,16 +202,52 @@ components:
               count: { type: number }
     MembershipRequest:
       type: object
-      required: [id, name, email, neighborhood, submittedAt, status]
+      required:
+        [id, name, email, neighborhood, profession, bio, submittedAt, status]
       properties:
         id: { type: string }
         name: { type: string }
         email: { type: string }
+        phone: { type: ["string", "null"] }
         neighborhood: { type: string }
+        profession: { type: string }
+        bio: { type: string }
+        project: { type: ["string", "null"] }
         submittedAt: { type: string }
         status:
           type: string
           enum: [pending, approved, rejected]
+    MembershipRequestCreate:
+      type: object
+      required: [name, email, neighborhood, profession, bio]
+      properties:
+        name: { type: string, minLength: 2, maxLength: 120 }
+        email: { type: string, maxLength: 254 }
+        phone: { type: ["string", "null"], maxLength: 40 }
+        neighborhood: { type: string, minLength: 2, maxLength: 120 }
+        profession: { type: string, minLength: 2, maxLength: 80 }
+        bio: { type: string, minLength: 10, maxLength: 500 }
+        project: { type: ["string", "null"], maxLength: 500 }
+    MembershipRequestReceipt:
+      type: object
+      required: [id, submittedAt, status]
+      properties:
+        id: { type: string }
+        submittedAt: { type: string }
+        status:
+          type: string
+          enum: [pending]
+    AdminLogin:
+      type: object
+      required: [password]
+      properties:
+        password: { type: string, minLength: 1, maxLength: 200 }
+    AdminSession:
+      type: object
+      required: [token, expiresAt]
+      properties:
+        token: { type: string }
+        expiresAt: { type: string }
     ModerationReview:
       type: object
       required: [status]

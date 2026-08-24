@@ -1,5 +1,5 @@
 import { createRoot } from "react-dom/client";
-import { setBaseUrl } from "@workspace/api-client-react";
+import { setAuthTokenGetter, setBaseUrl } from "@workspace/api-client-react";
 
 import App from "./App";
 import { ErrorBoundary } from "@/components/error-boundary";
@@ -8,6 +8,7 @@ import "./index.css";
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL?.trim();
 setBaseUrl(apiBaseUrl || null);
+setAuthTokenGetter(() => sessionStorage.getItem("zoboroma_admin_token"));
 
 createRoot(document.getElementById("root")!, {
   // Keeps caught errors off reportError(), which would raise the dev overlay.

@@ -1,51 +1,139 @@
-import { ArrowLeft, Instagram, MapPin, MessageCircle, Phone, ShieldCheck } from 'lucide-react';
-import { useMemo } from 'react';
-import { Link, useParams } from 'wouter';
-import { getGetProfileQueryKey, useGetProfile } from '@workspace/api-client-react';
-import { Avatar } from '@/components/village-shell';
-import { demoProfiles } from '@/lib/demo-data';
+import { ArrowLeft, LockKeyhole, MapPin, ShieldCheck } from "lucide-react";
+import { useMemo } from "react";
+import { Link, useParams } from "wouter";
+import {
+  getGetProfileQueryKey,
+  useGetProfile,
+} from "@workspace/api-client-react";
+import { Avatar } from "@/components/village-shell";
+import { demoProfiles } from "@/lib/demo-data";
 
 export default function MemberPage() {
   const params = useParams<{ id: string }>();
-  const id = params.id ?? '';
-  const profileQuery = useGetProfile(id, { query: { enabled: Boolean(id), queryKey: getGetProfileQueryKey(id) } });
-  const fallback = useMemo(() => demoProfiles.find((profile) => profile.id === id) ?? demoProfiles[0], [id]);
-  const profile = profileQuery.data && typeof profileQuery.data.name === 'string' ? profileQuery.data : fallback;
-  const canContact = profile.privacy === 'community';
+  const id = params.id ?? "";
+  const profileQuery = useGetProfile(id, {
+    query: { enabled: Boolean(id), queryKey: getGetProfileQueryKey(id) },
+  });
+  const fallback = useMemo(
+    () => demoProfiles.find((profile) => profile.id === id) ?? demoProfiles[0],
+    [id],
+  );
+  const profile =
+    profileQuery.data && typeof profileQuery.data.name === "string"
+      ? profileQuery.data
+      : fallback;
 
   return (
     <div className="mx-auto max-w-4xl">
-      <Link href="/" className="vj-enter inline-flex items-center gap-2 text-xs font-bold text-muted-foreground hover:text-primary" data-testid="link-back-directory"><ArrowLeft className="h-4 w-4" /> Retour au trombinoscope</Link>
+      <Link
+        href="/"
+        className="vj-enter inline-flex items-center gap-2 text-xs font-bold text-muted-foreground hover:text-primary"
+        data-testid="link-back-directory"
+      >
+        <ArrowLeft className="h-4 w-4" /> Retour au trombinoscope
+      </Link>
       {profileQuery.isLoading ? (
-        <div className="mt-8 h-[500px] animate-pulse rounded-[28px] bg-muted" data-testid="skeleton-member-detail" />
+        <div
+          className="mt-8 h-[500px] animate-pulse rounded-[28px] bg-muted"
+          data-testid="skeleton-member-detail"
+        />
       ) : (
         <article className="vj-enter mt-6 overflow-hidden rounded-[28px] border border-border bg-card shadow-md">
           <div className="relative h-36 bg-foreground sm:h-48">
-            <div className="absolute -bottom-16 left-6 sm:left-10"><Avatar profile={profile} size="xl" /></div>
-            <span className="absolute right-6 top-6 flex items-center gap-1.5 rounded-full bg-background/10 px-3 py-2 text-[10px] font-bold text-background backdrop-blur-sm"><ShieldCheck className="h-3.5 w-3.5 text-accent" /> Membre approuvé</span>
+            <div className="absolute -bottom-16 left-6 sm:left-10">
+              <Avatar profile={profile} size="xl" />
+            </div>
+            <span className="absolute right-6 top-6 flex items-center gap-1.5 rounded-full bg-background/10 px-3 py-2 text-[10px] font-bold text-background backdrop-blur-sm">
+              <ShieldCheck className="h-3.5 w-3.5 text-accent" /> Membre
+              approuvé
+            </span>
           </div>
           <div className="px-6 pb-8 pt-20 sm:px-10 sm:pb-12">
             <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
-              <div><h1 className="vj-display text-5xl leading-none sm:text-6xl" data-testid="text-member-detail-name">{profile.name}</h1><p className="mt-3 flex items-center gap-1.5 text-sm font-semibold text-muted-foreground" data-testid="text-member-detail-location"><MapPin className="h-4 w-4 text-primary" />{profile.neighborhood}</p></div>
-              {canContact && <a href={profile.contact ? `tel:${profile.contact}` : '#contact'} className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-5 py-3 text-xs font-extrabold text-primary-foreground hover:-translate-y-0.5 hover:shadow-lg" data-testid="link-contact-member"><MessageCircle className="h-4 w-4" /> Dire bonjour</a>}
+              <div>
+                <h1
+                  className="vj-display text-5xl leading-none sm:text-6xl"
+                  data-testid="text-member-detail-name"
+                >
+                  {profile.name}
+                </h1>
+                <p
+                  className="mt-3 flex items-center gap-1.5 text-sm font-semibold text-muted-foreground"
+                  data-testid="text-member-detail-location"
+                >
+                  <MapPin className="h-4 w-4 text-primary" />
+                  {profile.neighborhood}
+                </p>
+              </div>
             </div>
             <div className="mt-10 grid gap-10 md:grid-cols-[1fr_250px]">
               <div className="space-y-9">
-                <div><p className="font-mono text-[10px] font-bold uppercase tracking-[.17em] text-primary">En quelques mots</p><p className="mt-3 text-lg leading-8 text-foreground/85" data-testid="text-member-bio">{profile.bio}</p></div>
-                <div><p className="font-mono text-[10px] font-bold uppercase tracking-[.17em] text-primary">Ses terrains de jeu</p><div className="mt-4 flex flex-wrap gap-2">{profile.activities.map((tag) => <span key={tag} className="rounded-full bg-accent/40 px-3.5 py-2 text-xs font-bold text-accent-foreground" data-testid={`tag-member-activity-${tag}`}>{tag}</span>)}</div></div>
-                {profile.project && <div className="rounded-2xl bg-secondary px-5 py-5 text-secondary-foreground"><p className="font-mono text-[10px] font-bold uppercase tracking-[.17em] text-secondary-foreground/70">Son projet en ce moment</p><p className="mt-3 text-base font-bold leading-7" data-testid="text-member-project">{profile.project}</p></div>}
+                <div>
+                  <p className="font-mono text-[10px] font-bold uppercase tracking-[.17em] text-primary">
+                    En quelques mots
+                  </p>
+                  <p
+                    className="mt-3 text-lg leading-8 text-foreground/85"
+                    data-testid="text-member-bio"
+                  >
+                    {profile.bio}
+                  </p>
+                </div>
+                <div>
+                  <p className="font-mono text-[10px] font-bold uppercase tracking-[.17em] text-primary">
+                    Ses terrains de jeu
+                  </p>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {profile.activities.map((tag) => (
+                      <span
+                        key={tag}
+                        className="rounded-full bg-accent/40 px-3.5 py-2 text-xs font-bold text-accent-foreground"
+                        data-testid={`tag-member-activity-${tag}`}
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                {profile.project && (
+                  <div className="rounded-2xl bg-secondary px-5 py-5 text-secondary-foreground">
+                    <p className="font-mono text-[10px] font-bold uppercase tracking-[.17em] text-secondary-foreground/70">
+                      Son projet en ce moment
+                    </p>
+                    <p
+                      className="mt-3 text-base font-bold leading-7"
+                      data-testid="text-member-project"
+                    >
+                      {profile.project}
+                    </p>
+                  </div>
+                )}
               </div>
-              <aside id="contact" className="h-fit rounded-2xl border border-border bg-background p-5">
-                <p className="text-xs font-extrabold">On se retrouve ?</p>
-                <p className="mt-2 text-xs leading-5 text-muted-foreground">Les coordonnées sont partagées avec les membres approuvés de Zoboroma, avec accord.</p>
-                {canContact && <div className="mt-5 space-y-3 text-xs font-semibold">{profile.contact && <a href={`tel:${profile.contact}`} className="flex items-center gap-2 text-muted-foreground hover:text-primary" data-testid="link-member-phone"><Phone className="h-4 w-4 text-primary" />{profile.contact}</a>}{profile.instagram && <a href={`https://instagram.com/${profile.instagram.replace('@', '')}`} className="flex items-center gap-2 text-muted-foreground hover:text-primary" data-testid="link-member-instagram"><Instagram className="h-4 w-4 text-primary" />{profile.instagram}</a>}{!profile.contact && !profile.instagram && <span className="text-muted-foreground">Pas de contact public pour le moment.</span>}</div>}
-                {!canContact && <div className="mt-5 flex items-start gap-2 rounded-xl bg-muted p-3 text-[11px] leading-4 text-muted-foreground"><ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-secondary" />Ce membre préfère garder ses coordonnées privées.</div>}
+              <aside className="h-fit rounded-2xl border border-border bg-background p-5">
+                <div className="grid h-9 w-9 place-items-center rounded-xl bg-secondary/15 text-secondary">
+                  <LockKeyhole className="h-4 w-4" />
+                </div>
+                <p className="mt-4 text-xs font-extrabold">
+                  Coordonnées protégées
+                </p>
+                <p className="mt-2 text-xs leading-5 text-muted-foreground">
+                  Le téléphone et l’email ne sont jamais affichés dans cet
+                  annuaire public. L’équipe de Zoboroma conserve ces
+                  informations uniquement pour la gestion du recensement.
+                </p>
               </aside>
             </div>
           </div>
         </article>
       )}
-      {profileQuery.isError && <p className="mt-4 text-xs font-semibold text-muted-foreground" data-testid="status-member-fallback">Profil de démonstration affiché pendant le réveil du serveur.</p>}
+      {profileQuery.isError && (
+        <p
+          className="mt-4 text-xs font-semibold text-muted-foreground"
+          data-testid="status-member-fallback"
+        >
+          Profil de démonstration affiché pendant le réveil du serveur.
+        </p>
+      )}
     </div>
   );
 }

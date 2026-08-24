@@ -1,21 +1,15 @@
-import { type ReactNode } from 'react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ErrorBoundary } from '@/components/error-boundary';
-import { Toaster } from '@/components/ui/toaster';
-import { TooltipProvider } from '@/components/ui/tooltip';
-import { VillageShell } from '@/components/village-shell';
-import AdminPage from '@/pages/admin';
-import HomePage from '@/pages/home';
-import JoinPage from '@/pages/join';
-import MemberPage from '@/pages/member';
-import NotFound from '@/pages/not-found';
-import ProfilePage from '@/pages/profile';
-import {
-  Route,
-  Switch,
-  useLocation,
-  Router as WouterRouter,
-} from 'wouter';
+import { type ReactNode } from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ErrorBoundary } from "@/components/error-boundary";
+import { Toaster } from "@/components/ui/toaster";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { VillageShell } from "@/components/village-shell";
+import AdminPage from "@/pages/admin";
+import HomePage from "@/pages/home";
+import JoinPage from "@/pages/join";
+import MemberPage from "@/pages/member";
+import NotFound from "@/pages/not-found";
+import { Route, Switch, useLocation, Router as WouterRouter } from "wouter";
 
 const queryClient = new QueryClient();
 
@@ -26,7 +20,6 @@ function Router() {
     <RoutedErrorBoundary>
       <Switch>
         <Route path="/" component={HomePage} />
-        <Route path="/profil" component={ProfilePage} />
         <Route path="/membre/:id" component={MemberPage} />
         <Route path="/inscription" component={JoinPage} />
         <Route path="/admin" component={AdminPage} />
@@ -45,11 +38,11 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-         <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}>
-           <VillageShell>
-             <Router />
-           </VillageShell>
-         </WouterRouter>
+        <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+          <VillageShell>
+            <Router />
+          </VillageShell>
+        </WouterRouter>
         <Toaster />
       </TooltipProvider>
     </QueryClientProvider>

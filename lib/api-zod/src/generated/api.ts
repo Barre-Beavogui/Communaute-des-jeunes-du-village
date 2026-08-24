@@ -61,43 +61,6 @@ export const GetProfileResponse = zod.object({
 
 
 /**
- * @summary Update the signed-in member profile
- */
-export const updateMyProfileBodyNameMin = 2;
-
-export const updateMyProfileBodyBioMax = 500;
-
-
-
-export const UpdateMyProfileBody = zod.object({
-  "name": zod.string().min(updateMyProfileBodyNameMin).optional(),
-  "neighborhood": zod.string().optional(),
-  "avatarUrl": zod.string().nullish(),
-  "bio": zod.string().max(updateMyProfileBodyBioMax).optional(),
-  "activities": zod.array(zod.string()).optional(),
-  "project": zod.string().nullish(),
-  "contact": zod.string().nullish(),
-  "instagram": zod.string().nullish(),
-  "privacy": zod.enum(['community', 'private']).optional()
-})
-
-export const UpdateMyProfileResponse = zod.object({
-  "id": zod.string(),
-  "name": zod.string(),
-  "initials": zod.string(),
-  "neighborhood": zod.string(),
-  "avatarUrl": zod.string().nullish(),
-  "bio": zod.string(),
-  "activities": zod.array(zod.string()),
-  "project": zod.string().nullish(),
-  "contact": zod.string().nullish(),
-  "instagram": zod.string().nullish(),
-  "privacy": zod.enum(['community', 'private']),
-  "status": zod.enum(['approved', 'pending'])
-})
-
-
-/**
  * @summary Get lightweight community summary
  */
 export const GetMembersSummaryResponse = zod.object({
@@ -111,13 +74,74 @@ export const GetMembersSummaryResponse = zod.object({
 
 
 /**
+ * @summary Submit a membership request
+ */
+export const createMembershipRequestBodyNameMin = 2;
+export const createMembershipRequestBodyNameMax = 120;
+
+export const createMembershipRequestBodyEmailMax = 254;
+
+export const createMembershipRequestBodyPhoneMax = 40;
+
+export const createMembershipRequestBodyNeighborhoodMin = 2;
+export const createMembershipRequestBodyNeighborhoodMax = 120;
+
+export const createMembershipRequestBodyProfessionMin = 2;
+export const createMembershipRequestBodyProfessionMax = 80;
+
+export const createMembershipRequestBodyBioMin = 10;
+export const createMembershipRequestBodyBioMax = 500;
+
+export const createMembershipRequestBodyProjectMax = 500;
+
+
+
+export const CreateMembershipRequestBody = zod.object({
+  "name": zod.string().min(createMembershipRequestBodyNameMin).max(createMembershipRequestBodyNameMax),
+  "email": zod.string().max(createMembershipRequestBodyEmailMax),
+  "phone": zod.string().max(createMembershipRequestBodyPhoneMax).nullish(),
+  "neighborhood": zod.string().min(createMembershipRequestBodyNeighborhoodMin).max(createMembershipRequestBodyNeighborhoodMax),
+  "profession": zod.string().min(createMembershipRequestBodyProfessionMin).max(createMembershipRequestBodyProfessionMax),
+  "bio": zod.string().min(createMembershipRequestBodyBioMin).max(createMembershipRequestBodyBioMax),
+  "project": zod.string().max(createMembershipRequestBodyProjectMax).nullish()
+})
+
+export const CreateMembershipRequestResponse = zod.object({
+  "id": zod.string(),
+  "submittedAt": zod.string(),
+  "status": zod.enum(['pending'])
+})
+
+
+/**
+ * @summary Open an administrator session
+ */
+export const adminLoginBodyPasswordMax = 200;
+
+
+
+export const AdminLoginBody = zod.object({
+  "password": zod.string().min(1).max(adminLoginBodyPasswordMax)
+})
+
+export const AdminLoginResponse = zod.object({
+  "token": zod.string(),
+  "expiresAt": zod.string()
+})
+
+
+/**
  * @summary List pending membership requests
  */
 export const ListModerationRequestsResponseItem = zod.object({
   "id": zod.string(),
   "name": zod.string(),
   "email": zod.string(),
+  "phone": zod.string().nullish(),
   "neighborhood": zod.string(),
+  "profession": zod.string(),
+  "bio": zod.string(),
+  "project": zod.string().nullish(),
   "submittedAt": zod.string(),
   "status": zod.enum(['pending', 'approved', 'rejected'])
 })
@@ -139,7 +163,11 @@ export const ReviewModerationRequestResponse = zod.object({
   "id": zod.string(),
   "name": zod.string(),
   "email": zod.string(),
+  "phone": zod.string().nullish(),
   "neighborhood": zod.string(),
+  "profession": zod.string(),
+  "bio": zod.string(),
+  "project": zod.string().nullish(),
   "submittedAt": zod.string(),
   "status": zod.enum(['pending', 'approved', 'rejected'])
 })

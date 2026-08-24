@@ -27,11 +27,28 @@ export async function syncZoboromaMembers() {
       id text PRIMARY KEY,
       name text NOT NULL,
       email text NOT NULL,
+      phone text,
       neighborhood text NOT NULL,
+      profession text NOT NULL DEFAULT 'Autre',
+      bio text NOT NULL DEFAULT '',
+      project text,
       submitted_at timestamp NOT NULL DEFAULT now(),
       status text NOT NULL DEFAULT 'pending'
     )
   `);
+
+  await db.execute(
+    sql`ALTER TABLE membership_requests ADD COLUMN IF NOT EXISTS phone text`,
+  );
+  await db.execute(
+    sql`ALTER TABLE membership_requests ADD COLUMN IF NOT EXISTS profession text NOT NULL DEFAULT 'Autre'`,
+  );
+  await db.execute(
+    sql`ALTER TABLE membership_requests ADD COLUMN IF NOT EXISTS bio text NOT NULL DEFAULT ''`,
+  );
+  await db.execute(
+    sql`ALTER TABLE membership_requests ADD COLUMN IF NOT EXISTS project text`,
+  );
 
   await db.transaction(async (tx) => {
     // Existing deployments created this legacy field as NOT NULL.

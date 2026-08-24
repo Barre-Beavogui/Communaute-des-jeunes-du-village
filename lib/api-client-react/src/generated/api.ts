@@ -20,12 +20,15 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
+  AdminLogin,
+  AdminSession,
   HealthStatus,
   MembersSummary,
   MembershipRequest,
+  MembershipRequestCreate,
+  MembershipRequestReceipt,
   ModerationReview,
-  Profile,
-  ProfileUpdate
+  Profile
 } from './api.schemas';
 
 import { customFetch } from '../custom-fetch';
@@ -287,77 +290,6 @@ export function useGetProfile<TData = Awaited<ReturnType<typeof getProfile>>, TE
 
 
 
-export const getUpdateMyProfileUrl = () => {
-
-
-
-
-  return `/api/profiles/me`
-}
-
-/**
- * @summary Update the signed-in member profile
- */
-export const updateMyProfile = async (profileUpdate: ProfileUpdate, options?: Parameters<typeof customFetch>[1]): Promise<Profile> => {
-
-  return customFetch<Profile>(getUpdateMyProfileUrl(),
-  {
-    ...options,
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(profileUpdate)
-  }
-);}
-
-
-
-
-
-export const getUpdateMyProfileMutationOptions = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateMyProfile>>, TError,{data: BodyType<ProfileUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof updateMyProfile>>, TError,{data: BodyType<ProfileUpdate>}, TContext> => {
-
-const mutationKey = ['updateMyProfile'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateMyProfile>>, {data: BodyType<ProfileUpdate>}> = (props) => {
-          const {data} = props ?? {};
-
-          return  updateMyProfile(data,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type UpdateMyProfileMutationResult = NonNullable<Awaited<ReturnType<typeof updateMyProfile>>>
-    export type UpdateMyProfileMutationBody = BodyType<ProfileUpdate>
-    export type UpdateMyProfileMutationError = ErrorType<unknown>
-
-    /**
- * @summary Update the signed-in member profile
- */
-export const useUpdateMyProfile = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateMyProfile>>, TError,{data: BodyType<ProfileUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
- ): UseMutationResult<
-        Awaited<ReturnType<typeof updateMyProfile>>,
-        TError,
-        {data: BodyType<ProfileUpdate>},
-        TContext
-      > => {
-      return useMutation(getUpdateMyProfileMutationOptions(options));
-    }
-
 export const getGetMembersSummaryUrl = () => {
 
 
@@ -434,6 +366,148 @@ export function useGetMembersSummary<TData = Awaited<ReturnType<typeof getMember
 
 
 
+
+export const getCreateMembershipRequestUrl = () => {
+
+
+
+
+  return `/api/membership-requests`
+}
+
+/**
+ * @summary Submit a membership request
+ */
+export const createMembershipRequest = async (membershipRequestCreate: MembershipRequestCreate, options?: Parameters<typeof customFetch>[1]): Promise<MembershipRequestReceipt> => {
+
+  return customFetch<MembershipRequestReceipt>(getCreateMembershipRequestUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(membershipRequestCreate)
+  }
+);}
+
+
+
+
+
+export const getCreateMembershipRequestMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createMembershipRequest>>, TError,{data: BodyType<MembershipRequestCreate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createMembershipRequest>>, TError,{data: BodyType<MembershipRequestCreate>}, TContext> => {
+
+const mutationKey = ['createMembershipRequest'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createMembershipRequest>>, {data: BodyType<MembershipRequestCreate>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createMembershipRequest(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateMembershipRequestMutationResult = NonNullable<Awaited<ReturnType<typeof createMembershipRequest>>>
+    export type CreateMembershipRequestMutationBody = BodyType<MembershipRequestCreate>
+    export type CreateMembershipRequestMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Submit a membership request
+ */
+export const useCreateMembershipRequest = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createMembershipRequest>>, TError,{data: BodyType<MembershipRequestCreate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createMembershipRequest>>,
+        TError,
+        {data: BodyType<MembershipRequestCreate>},
+        TContext
+      > => {
+      return useMutation(getCreateMembershipRequestMutationOptions(options));
+    }
+
+export const getAdminLoginUrl = () => {
+
+
+
+
+  return `/api/admin/login`
+}
+
+/**
+ * @summary Open an administrator session
+ */
+export const adminLogin = async (adminLogin: AdminLogin, options?: Parameters<typeof customFetch>[1]): Promise<AdminSession> => {
+
+  return customFetch<AdminSession>(getAdminLoginUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(adminLogin)
+  }
+);}
+
+
+
+
+
+export const getAdminLoginMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof adminLogin>>, TError,{data: BodyType<AdminLogin>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof adminLogin>>, TError,{data: BodyType<AdminLogin>}, TContext> => {
+
+const mutationKey = ['adminLogin'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof adminLogin>>, {data: BodyType<AdminLogin>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  adminLogin(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AdminLoginMutationResult = NonNullable<Awaited<ReturnType<typeof adminLogin>>>
+    export type AdminLoginMutationBody = BodyType<AdminLogin>
+    export type AdminLoginMutationError = ErrorType<void>
+
+    /**
+ * @summary Open an administrator session
+ */
+export const useAdminLogin = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof adminLogin>>, TError,{data: BodyType<AdminLogin>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof adminLogin>>,
+        TError,
+        {data: BodyType<AdminLogin>},
+        TContext
+      > => {
+      return useMutation(getAdminLoginMutationOptions(options));
+    }
 
 export const getListModerationRequestsUrl = () => {
 

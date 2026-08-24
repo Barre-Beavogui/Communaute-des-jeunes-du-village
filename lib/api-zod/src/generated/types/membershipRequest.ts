@@ -11,7 +11,13 @@ export interface MembershipRequest {
   id: string;
   name: string;
   email: string;
+  /** @nullable */
+  phone?: string | null;
   neighborhood: string;
+  profession: string;
+  bio: string;
+  /** @nullable */
+  project?: string | null;
   submittedAt: string;
   status: MembershipRequestStatus;
 }
