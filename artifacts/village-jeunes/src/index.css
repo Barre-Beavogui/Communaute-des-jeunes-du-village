@@ -1,6 +1,6 @@
-@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap');
-@import 'tailwindcss';
-@import 'tw-animate-css';
+@import url("https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap");
+@import "tailwindcss";
+@import "tw-animate-css";
 @plugin "@tailwindcss/typography";
 
 @custom-variant dark (&:is(.dark *));
@@ -141,7 +141,7 @@
   --chart-4: 300 22% 20%;
   --chart-5: 24 68% 70%;
 
-  --app-font-sans: 'Inter', sans-serif;
+  --app-font-sans: "Inter", sans-serif;
   --app-font-serif: Georgia, serif;
   --app-font-mono: Menlo, monospace;
   --radius: 0.5rem; /* 8px */
@@ -343,7 +343,7 @@
  */
 @layer utilities {
   /* Hide ugly search cancel button in Chrome until we can style it properly */
-  input[type='search']::-webkit-search-cancel-button {
+  input[type="search"]::-webkit-search-cancel-button {
     @apply hidden;
   }
 
@@ -371,7 +371,7 @@
    */
   .toggle-elevate::before,
   .toggle-elevate-2::before {
-    content: '';
+    content: "";
     pointer-events: none;
     position: absolute;
     inset: 0px;
@@ -403,7 +403,7 @@
   .active-elevate:not(.no-default-active-elevate)::after,
   .hover-elevate-2:not(.no-default-hover-elevate)::after,
   .active-elevate-2:not(.no-default-active-elevate)::after {
-    content: '';
+    content: "";
     pointer-events: none;
     position: absolute;
     inset: 0px;
@@ -469,9 +469,9 @@
   --chart-3: 43 82% 66%;
   --chart-4: 300 22% 20%;
   --chart-5: 24 68% 70%;
-  --app-font-sans: 'Plus Jakarta Sans', sans-serif;
-  --app-font-serif: 'Instrument Serif', Georgia, serif;
-  --app-font-mono: 'Space Mono', monospace;
+  --app-font-sans: "Plus Jakarta Sans", sans-serif;
+  --app-font-serif: "Instrument Serif", Georgia, serif;
+  --app-font-mono: "Space Mono", monospace;
   --radius: 1rem;
   --shadow-sm: 0 3px 12px hsl(300 18% 18% / 0.06);
   --shadow-md: 0 12px 28px hsl(300 18% 18% / 0.09);
@@ -526,20 +526,31 @@ body {
     hsl(var(--background));
 }
 
-button, a, input, textarea, select {
-  transition: transform 180ms ease, background-color 180ms ease, border-color 180ms ease, color 180ms ease, box-shadow 180ms ease, opacity 180ms ease;
+button,
+a,
+input,
+textarea,
+select {
+  transition:
+    transform 180ms ease,
+    background-color 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease,
+    box-shadow 180ms ease,
+    opacity 180ms ease;
 }
 
-button:active, a:active {
+button:active,
+a:active {
   transform: translateY(1px);
 }
 
 .vj-noise::after {
-  content: '';
+  content: "";
   position: fixed;
   inset: 0;
   pointer-events: none;
-  opacity: .035;
+  opacity: 0.035;
   z-index: 50;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.7'/%3E%3C/svg%3E");
 }
@@ -565,31 +576,124 @@ button:active, a:active {
 
 .field::placeholder {
   color: hsl(var(--muted-foreground));
-  opacity: .72;
+  opacity: 0.72;
 }
 
 .field:focus {
   border-color: hsl(var(--primary));
-  box-shadow: 0 0 0 4px hsl(var(--primary) / .1);
+  box-shadow: 0 0 0 4px hsl(var(--primary) / 0.1);
 }
 
 .vj-enter {
-  animation: vj-enter 520ms cubic-bezier(.2,.8,.2,1) both;
+  animation: vj-enter 520ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
-.vj-enter-delay-1 { animation-delay: 80ms; }
-.vj-enter-delay-2 { animation-delay: 150ms; }
-.vj-enter-delay-3 { animation-delay: 220ms; }
+.vj-enter-delay-1 {
+  animation-delay: 80ms;
+}
+.vj-enter-delay-2 {
+  animation-delay: 150ms;
+}
+.vj-enter-delay-3 {
+  animation-delay: 220ms;
+}
 
 @keyframes vj-enter {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.vj-rotating-word {
+  display: inline-grid;
+  min-width: var(--vj-word-width, auto);
+  vertical-align: baseline;
+}
+
+.vj-rotating-word > span {
+  grid-area: 1 / 1;
+}
+
+.vj-word-swap {
+  display: inline-block;
+  transform-origin: left bottom;
+  animation: vj-word-swap 620ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.vj-orbit-slow {
+  animation: vj-orbit-slow 10s ease-in-out infinite alternate;
+}
+
+.vj-drift {
+  animation: vj-drift 8s ease-in-out infinite alternate;
+}
+
+.vj-footer-ticker {
+  overflow: hidden;
+}
+
+.vj-footer-ticker-track {
+  display: flex;
+  width: max-content;
+  animation: vj-marquee 24s linear infinite;
+}
+
+@keyframes vj-word-swap {
+  from {
+    opacity: 0;
+    transform: translateY(0.38em) rotate(1.5deg);
+    filter: blur(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) rotate(0);
+    filter: blur(0);
+  }
+}
+
+@keyframes vj-orbit-slow {
+  from {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  to {
+    transform: translate3d(-18px, 14px, 0) rotate(7deg);
+  }
+}
+
+@keyframes vj-drift {
+  from {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  to {
+    transform: translate3d(22px, -12px, 0) scale(1.08);
+  }
+}
+
+@keyframes vj-marquee {
+  to {
+    transform: translateX(-50%);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  *,
+  *::before,
+  *::after {
     animation-duration: 1ms !important;
     transition-duration: 1ms !important;
     scroll-behavior: auto !important;
+  }
+
+  .vj-word-swap,
+  .vj-orbit-slow,
+  .vj-drift,
+  .vj-footer-ticker-track {
+    animation: none !important;
+    transform: none !important;
   }
 }

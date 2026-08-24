@@ -95,6 +95,32 @@ export function VillageShell({ children }: { children: ReactNode }) {
       </main>
 
       <footer className="border-t border-border bg-foreground text-background">
+        <p className="sr-only">
+          Parcours, mémoire, projets, solidarité, Zoboroma.
+        </p>
+        <div className="vj-footer-ticker border-b border-background/15 bg-primary py-3 text-primary-foreground">
+          <div className="vj-footer-ticker-track" aria-hidden="true">
+            {[0, 1].map((copy) => (
+              <div key={copy} className="flex shrink-0 items-center">
+                {[
+                  "Parcours",
+                  "Mémoire",
+                  "Projets",
+                  "Solidarité",
+                  "Zoboroma",
+                ].map((word) => (
+                  <span
+                    key={`${copy}-${word}`}
+                    className="flex items-center font-mono text-[10px] font-bold uppercase tracking-[.22em]"
+                  >
+                    {word}
+                    <span className="mx-5 h-1.5 w-1.5 rounded-full bg-accent" />
+                  </span>
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
         <div className="mx-auto max-w-[1240px] px-5 pb-28 pt-10 sm:px-8 sm:pt-12 md:pb-10">
           <div className="grid gap-9 border-b border-background/15 pb-10 lg:grid-cols-[1.25fr_.75fr_.9fr]">
             <div>

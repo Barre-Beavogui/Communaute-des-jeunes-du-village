@@ -17,6 +17,7 @@ import {
   useListProfiles,
 } from "@workspace/api-client-react";
 import { Avatar } from "@/components/village-shell";
+import { RotatingWords } from "@/components/rotating-words";
 import { demoProfiles } from "@/lib/demo-data";
 
 const fallbackSummary = {
@@ -67,17 +68,26 @@ export default function HomePage() {
   return (
     <div className="space-y-9">
       <section className="vj-enter relative overflow-hidden rounded-[28px] bg-foreground px-6 py-9 text-background shadow-[0_20px_45px_hsl(300_18%_18%/.14)] sm:px-10 sm:py-12 lg:px-14 lg:py-14">
-        <div className="absolute -right-16 -top-24 h-64 w-64 rounded-full border-[30px] border-accent/80 opacity-90" />
-        <div className="absolute bottom-[-5rem] right-24 h-48 w-48 rounded-full bg-secondary/80 blur-2xl" />
+        <div className="vj-orbit-slow absolute -right-16 -top-24 h-64 w-64 rounded-full border-[30px] border-accent/80 opacity-90" />
+        <div className="vj-drift absolute bottom-[-5rem] right-24 h-48 w-48 rounded-full bg-secondary/80 blur-2xl" />
         <div className="relative max-w-2xl">
           <div className="mb-5 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-accent">
             <span className="h-2 w-2 rounded-full bg-accent" />
             Recensement des jeunes de Zoboroma
           </div>
           <h1 className="vj-display max-w-3xl text-[clamp(3rem,8vw,6.5rem)] leading-[.88] tracking-[-.06em]">
-            Les talents de
-            <br />
-            <em className="text-primary">Zoboroma.</em>
+            <span className="sr-only">Les talents de Zoboroma.</span>
+            <span aria-hidden="true">
+              Les{" "}
+              <RotatingWords
+                words={["talents", "parcours", "idées", "projets"]}
+                minWidth="7.7ch"
+                className="text-accent"
+              />{" "}
+              de
+              <br />
+              <em className="text-primary">Zoboroma.</em>
+            </span>
           </h1>
           <p className="mt-7 max-w-lg text-sm leading-7 text-background/72 sm:text-base">
             Un annuaire vivant pour mieux connaître les parcours, les métiers et
@@ -105,7 +115,16 @@ export default function HomePage() {
           <p className="font-mono text-[10px] uppercase tracking-widest text-background/60">
             Ici, on partage
           </p>
-          <p className="mt-1 text-sm font-bold">des idées, pas des likes.</p>
+          <p className="sr-only">des idées, pas des likes.</p>
+          <p aria-hidden="true" className="mt-1 text-sm font-bold">
+            <RotatingWords
+              words={["des idées", "des projets", "des talents"]}
+              interval={2800}
+              minWidth="7.8ch"
+              className="text-accent"
+            />
+            , pas des likes.
+          </p>
         </div>
       </section>
 

@@ -13,6 +13,7 @@ import {
   getGetMembersSummaryQueryKey,
   useGetMembersSummary,
 } from "@workspace/api-client-react";
+import { RotatingWords } from "@/components/rotating-words";
 
 const stories = [
   {
@@ -50,16 +51,27 @@ export default function ZoboromaPage() {
   return (
     <div className="space-y-9">
       <section className="vj-enter relative overflow-hidden rounded-[30px] bg-secondary px-6 py-10 text-secondary-foreground sm:px-10 sm:py-14 lg:px-14 lg:py-16">
-        <div className="absolute -right-20 -top-20 h-72 w-72 rounded-full border-[38px] border-accent/35" />
-        <div className="absolute bottom-[-6rem] left-1/2 h-52 w-52 rounded-full bg-foreground/20 blur-3xl" />
+        <div className="vj-orbit-slow absolute -right-20 -top-20 h-72 w-72 rounded-full border-[38px] border-accent/35" />
+        <div className="vj-drift absolute bottom-[-6rem] left-1/2 h-52 w-52 rounded-full bg-foreground/20 blur-3xl" />
         <div className="relative max-w-3xl">
           <p className="font-mono text-[10px] font-bold uppercase tracking-[.2em] text-accent">
             Guinée forestière · Préfecture de Macenta
           </p>
           <h1 className="vj-display mt-4 text-[clamp(3.8rem,9vw,7.5rem)] leading-[.84] tracking-[-.06em]">
-            Zoboroma,
-            <br />
-            <em className="text-accent">notre lien.</em>
+            <span className="sr-only">Zoboroma, notre lien.</span>
+            <span aria-hidden="true">
+              Zoboroma,
+              <br />
+              <em className="text-accent">
+                notre{" "}
+                <RotatingWords
+                  words={["lien", "mémoire", "avenir"]}
+                  interval={2800}
+                  minWidth="6.4ch"
+                />
+                .
+              </em>
+            </span>
           </h1>
           <p className="mt-7 max-w-xl text-sm leading-7 text-secondary-foreground/78 sm:text-base">
             Une page pour raconter le village, préserver sa mémoire et mettre en
