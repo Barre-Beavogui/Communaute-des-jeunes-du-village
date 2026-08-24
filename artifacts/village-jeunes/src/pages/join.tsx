@@ -25,8 +25,8 @@ export default function JoinPage() {
         <div className="grid h-12 w-12 place-items-center rounded-2xl bg-primary text-primary-foreground"><HeartHandshake className="h-6 w-6" /></div>
         <p className="mt-8 font-mono text-[10px] font-bold uppercase tracking-[.18em] text-primary">La porte est ouverte</p>
         <h1 className="vj-display mt-3 text-6xl leading-[.86] sm:text-7xl">Venez<br /><em className="text-primary">comme vous êtes.</em></h1>
-        <p className="mt-6 max-w-sm text-sm leading-7 text-muted-foreground">Village Jeunes est un petit espace de confiance. Une vraie communauté, pas une course aux abonnés.</p>
-        <div className="mt-8 border-l-2 border-accent pl-4 text-xs font-semibold leading-5 text-foreground/70">Les demandes sont relues par des membres du village avant chaque invitation.</div>
+        <p className="mt-6 max-w-sm text-sm leading-7 text-muted-foreground">Le Recensement des Jeunes de Zoboroma est un espace de confiance pour mieux se connaître et valoriser les talents locaux.</p>
+        <div className="mt-8 border-l-2 border-accent pl-4 text-xs font-semibold leading-5 text-foreground/70">Les demandes sont relues par l’équipe de Zoboroma avant chaque validation.</div>
       </div>
       <form onSubmit={(event) => { event.preventDefault(); setSubmitted(true); }} className="vj-enter vj-enter-delay-1 rounded-[28px] border border-border bg-card p-6 shadow-md sm:p-9">
         <div className="mb-8"><h2 className="text-xl font-extrabold tracking-[-.04em]">Faire sa demande</h2><p className="mt-1 text-xs text-muted-foreground">Cela prend environ deux minutes.</p></div>
@@ -37,7 +37,7 @@ export default function JoinPage() {
           <label className="block space-y-2 text-xs font-bold">Qu’est-ce qui vous amène ?<textarea required minLength={10} rows={4} value={form.reason} onChange={(event) => setField('reason', event.target.value)} className="field resize-none" placeholder="Une passion, une idée, une envie de rencontrer…" data-testid="input-join-reason" /></label>
         </div>
         <button type="submit" className="mt-7 flex w-full items-center justify-center gap-2 rounded-full bg-primary px-5 py-3.5 text-xs font-extrabold text-primary-foreground hover:-translate-y-0.5 hover:shadow-lg" data-testid="button-submit-join"><Send className="h-4 w-4" /> Envoyer ma demande</button>
-        <p className="mt-4 flex items-center justify-center gap-1.5 text-center text-[10px] font-semibold text-muted-foreground"><MapPin className="h-3 w-3" /> Uniquement pour les jeunes du village et des alentours.</p>
+        <p className="mt-4 flex items-center justify-center gap-1.5 text-center text-[10px] font-semibold text-muted-foreground"><MapPin className="h-3 w-3" /> Pour les jeunes de Zoboroma et des alentours.</p>
       </form>
     </div>
   );

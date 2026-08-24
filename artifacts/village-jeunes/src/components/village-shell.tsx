@@ -19,10 +19,10 @@ export function VillageShell({ children }: { children: ReactNode }) {
         <div className="mx-auto flex h-[74px] max-w-[1240px] items-center justify-between px-5 sm:px-8">
           <Link href="/" className="group flex items-center gap-3" data-testid="link-home-logo">
             <span className="grid h-11 w-11 rotate-[-5deg] place-items-center rounded-[13px] bg-primary text-sm font-extrabold tracking-[-0.08em] text-primary-foreground shadow-[4px_4px_0_hsl(var(--accent))] transition-transform group-hover:rotate-0">
-              VJ
+              ZJ
             </span>
             <span className="hidden text-[15px] font-extrabold tracking-[-0.04em] sm:block">
-              Village <span className="text-primary">Jeunes</span>
+              Zoboroma <span className="text-primary">Jeunes</span>
             </span>
           </Link>
 

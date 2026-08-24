@@ -24,7 +24,7 @@ export default function AdminPage() {
         <div><p className="font-mono text-[10px] font-bold uppercase tracking-[.18em] text-primary">Le petit portail</p><h1 className="vj-display mt-2 text-6xl leading-[.88]">Ouvrir la porte.</h1><p className="mt-4 max-w-lg text-sm leading-6 text-muted-foreground">Chaque demande mérite un vrai regard. Ici, on accueille les nouveaux voisins avec attention.</p></div>
         <div className="flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2.5 text-xs font-bold shadow-sm"><span className="grid h-6 w-6 place-items-center rounded-full bg-accent/60 text-primary">{requests.length}</span> demande{requests.length > 1 ? 's' : ''} à regarder</div>
       </div>
-      <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4 text-xs leading-5 text-muted-foreground"><ShieldCheck className="mr-2 inline h-4 w-4 text-primary" />Les demandes restent privées. Une fois validé, le membre pourra compléter son portrait dans le trombinoscope.</div>
+        <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4 text-xs leading-5 text-muted-foreground"><ShieldCheck className="mr-2 inline h-4 w-4 text-primary" />Les demandes restent privées. Une fois validé, le jeune pourra compléter son portrait dans le recensement de Zoboroma.</div>
       {requestsQuery.isLoading ? <div className="space-y-3">{[1, 2, 3].map((item) => <div className="h-28 animate-pulse rounded-2xl bg-muted" key={item} data-testid={`skeleton-request-${item}`} />)}</div> : requests.length ? (
         <div className="space-y-3">
           {requests.map((request) => (

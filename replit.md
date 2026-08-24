@@ -1,6 +1,6 @@
-# Village Jeunes
+# Recensement des Jeunes de Zoboroma
 
-Une communauté privée où les jeunes du village peuvent se présenter, découvrir les autres membres et partager leurs projets.
+Une communauté privée où les jeunes de Zoboroma peuvent se présenter, découvrir les autres membres et partager leurs projets.
 
 ## Run & Operate
 

@@ -37,7 +37,7 @@ export default function MemberPage() {
               </div>
               <aside id="contact" className="h-fit rounded-2xl border border-border bg-background p-5">
                 <p className="text-xs font-extrabold">On se retrouve ?</p>
-                <p className="mt-2 text-xs leading-5 text-muted-foreground">Les coordonnées sont partagées avec les membres du village, avec accord.</p>
+                <p className="mt-2 text-xs leading-5 text-muted-foreground">Les coordonnées sont partagées avec les membres approuvés de Zoboroma, avec accord.</p>
                 {canContact && <div className="mt-5 space-y-3 text-xs font-semibold">{profile.contact && <a href={`mailto:${profile.contact}`} className="flex items-center gap-2 text-muted-foreground hover:text-primary" data-testid="link-member-email"><Mail className="h-4 w-4 text-primary" />{profile.contact}</a>}{profile.instagram && <a href={`https://instagram.com/${profile.instagram.replace('@', '')}`} className="flex items-center gap-2 text-muted-foreground hover:text-primary" data-testid="link-member-instagram"><Instagram className="h-4 w-4 text-primary" />{profile.instagram}</a>}{!profile.contact && !profile.instagram && <span className="text-muted-foreground">Pas de contact public pour le moment.</span>}</div>}
                 {!canContact && <div className="mt-5 flex items-start gap-2 rounded-xl bg-muted p-3 text-[11px] leading-4 text-muted-foreground"><ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-secondary" />Ce membre préfère garder ses coordonnées privées.</div>}
               </aside>

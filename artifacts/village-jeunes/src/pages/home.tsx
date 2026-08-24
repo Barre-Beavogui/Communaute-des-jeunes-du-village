@@ -38,13 +38,13 @@ export default function HomePage() {
         <div className="relative max-w-2xl">
           <div className="mb-5 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-accent">
             <span className="h-2 w-2 rounded-full bg-accent" />
-            Le trombinoscope du village
+            Recensement des jeunes de Zoboroma
           </div>
           <h1 className="vj-display max-w-3xl text-[clamp(3rem,8vw,6.5rem)] leading-[.88] tracking-[-.06em]">
             On se connaît<br /><em className="text-primary">un peu mieux.</em>
           </h1>
           <p className="mt-7 max-w-lg text-sm leading-7 text-background/72 sm:text-base">
-            Les visages, les passions et les projets des jeunes d’ici. Faites un tour sur la place, quelqu’un vous attend peut-être.
+            Les visages, les parcours et les projets des jeunes de Zoboroma. Découvrez la communauté et faites-vous connaître.
           </p>
           <a href="#visages" className="mt-8 inline-flex items-center gap-2 rounded-full bg-accent px-5 py-3 text-sm font-extrabold text-accent-foreground hover:-translate-y-1 hover:shadow-[0_9px_0_hsl(var(--primary))]" data-testid="link-discover-members">
             Découvrir les visages
