@@ -1,5 +1,7 @@
 import {
+  ArrowUpRight,
   Compass,
+  LockKeyhole,
   MapPinned,
   ShieldCheck,
   Sparkles,
@@ -21,6 +23,7 @@ const navItems = [
 export function VillageShell({ children }: { children: ReactNode }) {
   const [location] = useLocation();
   const health = useHealthCheck();
+  const currentYear = new Date().getFullYear();
 
   return (
     <div className="vj-noise min-h-[100dvh] bg-background text-foreground">
@@ -90,6 +93,74 @@ export function VillageShell({ children }: { children: ReactNode }) {
       <main className="mx-auto max-w-[1240px] px-5 pb-28 pt-8 sm:px-8 md:pb-12">
         {children}
       </main>
+
+      <footer className="border-t border-border bg-foreground text-background">
+        <div className="mx-auto max-w-[1240px] px-5 pb-28 pt-10 sm:px-8 sm:pt-12 md:pb-10">
+          <div className="grid gap-9 border-b border-background/15 pb-10 lg:grid-cols-[1.25fr_.75fr_.9fr]">
+            <div>
+              <Link
+                href="/"
+                className="inline-flex items-center gap-3"
+                data-testid="link-footer-home"
+              >
+                <span className="grid h-11 w-11 rotate-[-5deg] place-items-center rounded-[13px] bg-primary text-sm font-extrabold tracking-[-0.08em] text-primary-foreground shadow-[4px_4px_0_hsl(var(--accent))]">
+                  ZJ
+                </span>
+                <span className="text-base font-extrabold tracking-[-.04em]">
+                  Zoboroma <span className="text-primary">Jeunes</span>
+                </span>
+              </Link>
+              <p className="mt-5 max-w-md text-sm leading-7 text-background/62">
+                Un espace communautaire pour connaître les parcours, préserver
+                la mémoire du village et faire grandir les idées de la jeunesse
+                de Zoboroma.
+              </p>
+            </div>
+
+            <nav aria-label="Navigation du pied de page">
+              <p className="font-mono text-[10px] font-bold uppercase tracking-[.18em] text-accent">
+                Découvrir
+              </p>
+              <div className="mt-4 grid gap-3 text-sm font-bold">
+                {[
+                  ["/membres", "Les membres"],
+                  ["/zoboroma", "Le village"],
+                  ["/inscription", "Rejoindre l’annuaire"],
+                  ["/admin", "Administration"],
+                ].map(([href, label]) => (
+                  <Link
+                    key={href}
+                    href={href}
+                    className="group flex w-fit items-center gap-2 text-background/68 hover:text-background"
+                  >
+                    {label}
+                    <ArrowUpRight className="h-3.5 w-3.5 opacity-0 transition-opacity group-hover:opacity-100" />
+                  </Link>
+                ))}
+              </div>
+            </nav>
+
+            <div className="rounded-2xl border border-background/15 bg-background/5 p-5">
+              <span className="grid h-10 w-10 place-items-center rounded-xl bg-accent text-accent-foreground">
+                <LockKeyhole className="h-4 w-4" />
+              </span>
+              <p className="mt-4 text-sm font-extrabold">
+                La confiance avant tout.
+              </p>
+              <p className="mt-2 text-xs leading-6 text-background/62">
+                Aucun âge n’est collecté. Les coordonnées personnelles des
+                membres restent privées et chaque profil est vérifié avant sa
+                publication.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-col justify-between gap-3 pt-6 text-[10px] font-semibold text-background/48 sm:flex-row sm:items-center">
+            <p>© {currentYear} Zoboroma Jeunes · Projet communautaire.</p>
+            <p>Guinée forestière · Préfecture de Macenta</p>
+          </div>
+        </div>
+      </footer>
 
       <nav
         className="fixed bottom-0 left-0 right-0 z-40 grid grid-cols-5 border-t border-border/80 bg-background/95 px-2 py-2 backdrop-blur-xl md:hidden"
