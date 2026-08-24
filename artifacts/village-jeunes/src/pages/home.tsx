@@ -84,14 +84,14 @@ export default function HomePage() {
             les projets des jeunes de notre communauté, où qu’ils résident.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
-            <a
-              href="#visages"
+            <Link
+              href="/membres"
               className="inline-flex items-center gap-2 rounded-full bg-accent px-5 py-3 text-sm font-extrabold text-accent-foreground hover:-translate-y-1 hover:shadow-[0_9px_0_hsl(var(--primary))]"
               data-testid="link-discover-members"
             >
               Découvrir les membres
               <ArrowUpRight className="h-4 w-4" />
-            </a>
+            </Link>
             <Link
               href="/inscription"
               className="inline-flex items-center gap-2 rounded-full border border-background/25 bg-background/10 px-5 py-3 text-sm font-extrabold text-background backdrop-blur-sm hover:bg-background/20"
@@ -226,15 +226,24 @@ export default function HomePage() {
               Qui est dans le coin ?
             </h2>
           </div>
-          <div className="relative w-full md:w-72">
-            <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <input
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              placeholder="Chercher un prénom, une ville, un métier…"
-              className="h-11 w-full rounded-xl border border-border bg-card pl-10 pr-4 text-xs outline-none placeholder:text-muted-foreground focus:border-primary focus:ring-4 focus:ring-primary/10"
-              data-testid="input-search-members"
-            />
+          <div className="flex w-full flex-col gap-3 md:w-auto md:items-end">
+            <div className="relative w-full md:w-72">
+              <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <input
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+                placeholder="Chercher un prénom, une ville, un métier…"
+                className="h-11 w-full rounded-xl border border-border bg-card pl-10 pr-4 text-xs outline-none placeholder:text-muted-foreground focus:border-primary focus:ring-4 focus:ring-primary/10"
+                data-testid="input-search-members"
+              />
+            </div>
+            <Link
+              href="/membres"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-primary hover:underline"
+            >
+              Ouvrir la recherche avancée{" "}
+              <ArrowUpRight className="h-3.5 w-3.5" />
+            </Link>
           </div>
         </div>
         <div className="flex gap-2 overflow-x-auto pb-1">

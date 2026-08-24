@@ -9,7 +9,7 @@ services:
       - key: DATABASE_URL
         sync: false
       - key: PUBLIC_WEB_ORIGINS
-        value: https://barre-beavogui.github.io
+        value: https://barre-beavogui.github.io,https://zoboroma.online,https://www.zoboroma.online
       - key: PUBLIC_READ_ONLY
         value: "true"
       - key: ADMIN_PASSWORD

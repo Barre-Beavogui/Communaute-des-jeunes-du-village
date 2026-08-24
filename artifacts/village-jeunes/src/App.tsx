@@ -8,7 +8,9 @@ import AdminPage from "@/pages/admin";
 import HomePage from "@/pages/home";
 import JoinPage from "@/pages/join";
 import MemberPage from "@/pages/member";
+import MembersPage from "@/pages/members";
 import NotFound from "@/pages/not-found";
+import ZoboromaPage from "@/pages/zoboroma";
 import { Route, Switch, useLocation, Router as WouterRouter } from "wouter";
 
 const queryClient = new QueryClient();
@@ -20,7 +22,9 @@ function Router() {
     <RoutedErrorBoundary>
       <Switch>
         <Route path="/" component={HomePage} />
+        <Route path="/membres" component={MembersPage} />
         <Route path="/membre/:id" component={MemberPage} />
+        <Route path="/zoboroma" component={ZoboromaPage} />
         <Route path="/inscription" component={JoinPage} />
         <Route path="/admin" component={AdminPage} />
         <Route component={NotFound} />

@@ -3,8 +3,11 @@ import { useMemo } from "react";
 import { Link, useParams } from "wouter";
 import {
   getGetProfileQueryKey,
+  getListProfilesQueryKey,
   useGetProfile,
+  useListProfiles,
 } from "@workspace/api-client-react";
+import { MemberCard } from "@/components/member-card";
 import { Avatar } from "@/components/village-shell";
 import { demoProfiles } from "@/lib/demo-data";
 
@@ -14,6 +17,9 @@ export default function MemberPage() {
   const profileQuery = useGetProfile(id, {
     query: { enabled: Boolean(id), queryKey: getGetProfileQueryKey(id) },
   });
+  const profilesQuery = useListProfiles({
+    query: { queryKey: getListProfilesQueryKey() },
+  });
   const fallback = useMemo(
     () => demoProfiles.find((profile) => profile.id === id) ?? demoProfiles[0],
     [id],
@@ -22,15 +28,38 @@ export default function MemberPage() {
     profileQuery.data && typeof profileQuery.data.name === "string"
       ? profileQuery.data
       : fallback;
+  const profiles = Array.isArray(profilesQuery.data)
+    ? profilesQuery.data
+    : demoProfiles;
+  const relatedProfiles = useMemo(
+    () =>
+      profiles
+        .filter((item) => item.id !== profile.id)
+        .map((item) => ({
+          item,
+          score:
+            (item.neighborhood === profile.neighborhood ? 2 : 0) +
+            item.activities.filter((activity) =>
+              profile.activities.includes(activity),
+            ).length,
+        }))
+        .sort(
+          (a, b) =>
+            b.score - a.score || a.item.name.localeCompare(b.item.name, "fr"),
+        )
+        .slice(0, 3)
+        .map(({ item }) => item),
+    [profile, profiles],
+  );
 
   return (
     <div className="mx-auto max-w-4xl">
       <Link
-        href="/"
+        href="/membres"
         className="vj-enter inline-flex items-center gap-2 text-xs font-bold text-muted-foreground hover:text-primary"
         data-testid="link-back-directory"
       >
-        <ArrowLeft className="h-4 w-4" /> Retour au trombinoscope
+        <ArrowLeft className="h-4 w-4" /> Retour à l’annuaire
       </Link>
       {profileQuery.isLoading ? (
         <div
@@ -133,6 +162,31 @@ export default function MemberPage() {
         >
           Profil de démonstration affiché pendant le réveil du serveur.
         </p>
+      )}
+      {relatedProfiles.length > 0 && (
+        <section className="mt-10 space-y-5">
+          <div className="flex items-end justify-between gap-4">
+            <div>
+              <p className="font-mono text-[10px] font-bold uppercase tracking-[.17em] text-primary">
+                Continuer la rencontre
+              </p>
+              <h2 className="vj-display mt-2 text-4xl leading-none">
+                D’autres parcours à découvrir.
+              </h2>
+            </div>
+            <Link
+              href="/membres"
+              className="hidden text-xs font-bold text-primary hover:underline sm:block"
+            >
+              Tout l’annuaire
+            </Link>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {relatedProfiles.map((item) => (
+              <MemberCard key={item.id} profile={item} />
+            ))}
+          </div>
+        </section>
       )}
     </div>
   );

@@ -1,10 +1,19 @@
-import { Compass, ShieldCheck, Sparkles, UserPlus } from "lucide-react";
+import {
+  Compass,
+  MapPinned,
+  ShieldCheck,
+  Sparkles,
+  UserPlus,
+  UsersRound,
+} from "lucide-react";
 import type { ReactNode } from "react";
 import { Link, useLocation } from "wouter";
 import { useHealthCheck } from "@workspace/api-client-react";
 
 const navItems = [
   { href: "/", label: "Accueil", icon: Compass },
+  { href: "/membres", label: "Membres", icon: UsersRound },
+  { href: "/zoboroma", label: "Zoboroma", icon: MapPinned },
   { href: "/inscription", label: "Inscription", icon: UserPlus },
   { href: "/admin", label: "Administration", icon: ShieldCheck },
 ];
@@ -83,7 +92,7 @@ export function VillageShell({ children }: { children: ReactNode }) {
       </main>
 
       <nav
-        className="fixed bottom-0 left-0 right-0 z-40 grid grid-cols-3 border-t border-border/80 bg-background/95 px-3 py-2 backdrop-blur-xl md:hidden"
+        className="fixed bottom-0 left-0 right-0 z-40 grid grid-cols-5 border-t border-border/80 bg-background/95 px-2 py-2 backdrop-blur-xl md:hidden"
         aria-label="Navigation mobile"
       >
         {navItems.map((item) => {
