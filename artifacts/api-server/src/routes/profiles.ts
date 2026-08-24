@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { and, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { db } from "@workspace/db";
 import { profilesTable } from "@workspace/db/schema";
 import {
@@ -12,21 +12,20 @@ import {
 } from "@workspace/api-zod";
 
 const router: IRouter = Router();
-const currentMemberId = "mina";
+const currentMemberId = "beavogui-barre-france";
 
 function toProfile(row: typeof profilesTable.$inferSelect) {
   return {
     id: row.id,
     name: row.name,
     initials: row.initials,
-    age: row.age,
     neighborhood: row.neighborhood,
     avatarUrl: row.avatarUrl,
     bio: row.bio,
     activities: row.activities ?? [],
     project: row.project,
-    contact: row.contact,
-    instagram: row.instagram,
+    contact: row.privacy === "private" ? null : row.contact,
+    instagram: row.privacy === "private" ? null : row.instagram,
     privacy: row.privacy as "community" | "private",
     status: row.status as "approved" | "pending",
   };

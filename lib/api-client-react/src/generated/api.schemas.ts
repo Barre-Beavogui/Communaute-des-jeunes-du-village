@@ -29,7 +29,6 @@ export interface Profile {
   id: string;
   name: string;
   initials: string;
-  age: number;
   neighborhood: string;
   /** @nullable */
   avatarUrl?: string | null;
@@ -56,11 +55,6 @@ export const ProfileUpdatePrivacy = {
 export interface ProfileUpdate {
   /** @minLength 2 */
   name?: string;
-  /**
-     * @minimum 13
-     * @maximum 30
-     */
-  age?: number;
   neighborhood?: string;
   /** @nullable */
   avatarUrl?: string | null;

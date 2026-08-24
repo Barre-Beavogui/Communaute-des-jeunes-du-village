@@ -141,12 +141,11 @@ components:
         - status
     Profile:
       type: object
-      required: [id, name, initials, age, neighborhood, bio, activities, privacy, status]
+      required: [id, name, initials, neighborhood, bio, activities, privacy, status]
       properties:
         id: { type: string }
         name: { type: string }
         initials: { type: string }
-        age: { type: number }
         neighborhood: { type: string }
         avatarUrl: { type: ["string", "null"] }
         bio: { type: string }
@@ -166,7 +165,6 @@ components:
       type: object
       properties:
         name: { type: string, minLength: 2 }
-        age: { type: number, minimum: 13, maximum: 30 }
         neighborhood: { type: string }
         avatarUrl: { type: ["string", "null"] }
         bio: { type: string, maxLength: 500 }
@@ -212,4 +210,3 @@ components:
         status:
           type: string
           enum: [approved, rejected]
-

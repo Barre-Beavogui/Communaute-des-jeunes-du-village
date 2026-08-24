@@ -1,4 +1,4 @@
-import { ArrowLeft, Instagram, Mail, MapPin, MessageCircle, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, Instagram, MapPin, MessageCircle, Phone, ShieldCheck } from 'lucide-react';
 import { useMemo } from 'react';
 import { Link, useParams } from 'wouter';
 import { getGetProfileQueryKey, useGetProfile } from '@workspace/api-client-react';
@@ -10,7 +10,7 @@ export default function MemberPage() {
   const id = params.id ?? '';
   const profileQuery = useGetProfile(id, { query: { enabled: Boolean(id), queryKey: getGetProfileQueryKey(id) } });
   const fallback = useMemo(() => demoProfiles.find((profile) => profile.id === id) ?? demoProfiles[0], [id]);
-  const profile = profileQuery.data ?? fallback;
+  const profile = profileQuery.data && typeof profileQuery.data.name === 'string' ? profileQuery.data : fallback;
   const canContact = profile.privacy === 'community';
 
   return (
@@ -26,8 +26,8 @@ export default function MemberPage() {
           </div>
           <div className="px-6 pb-8 pt-20 sm:px-10 sm:pb-12">
             <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
-              <div><h1 className="vj-display text-5xl leading-none sm:text-6xl" data-testid="text-member-detail-name">{profile.name}</h1><p className="mt-3 flex items-center gap-1.5 text-sm font-semibold text-muted-foreground" data-testid="text-member-detail-location"><MapPin className="h-4 w-4 text-primary" />{profile.neighborhood} · {profile.age} ans</p></div>
-              {canContact && <a href={profile.contact ? `mailto:${profile.contact}` : '#contact'} className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-5 py-3 text-xs font-extrabold text-primary-foreground hover:-translate-y-0.5 hover:shadow-lg" data-testid="link-contact-member"><MessageCircle className="h-4 w-4" /> Dire bonjour</a>}
+              <div><h1 className="vj-display text-5xl leading-none sm:text-6xl" data-testid="text-member-detail-name">{profile.name}</h1><p className="mt-3 flex items-center gap-1.5 text-sm font-semibold text-muted-foreground" data-testid="text-member-detail-location"><MapPin className="h-4 w-4 text-primary" />{profile.neighborhood}</p></div>
+              {canContact && <a href={profile.contact ? `tel:${profile.contact}` : '#contact'} className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-5 py-3 text-xs font-extrabold text-primary-foreground hover:-translate-y-0.5 hover:shadow-lg" data-testid="link-contact-member"><MessageCircle className="h-4 w-4" /> Dire bonjour</a>}
             </div>
             <div className="mt-10 grid gap-10 md:grid-cols-[1fr_250px]">
               <div className="space-y-9">
@@ -38,7 +38,7 @@ export default function MemberPage() {
               <aside id="contact" className="h-fit rounded-2xl border border-border bg-background p-5">
                 <p className="text-xs font-extrabold">On se retrouve ?</p>
                 <p className="mt-2 text-xs leading-5 text-muted-foreground">Les coordonnées sont partagées avec les membres approuvés de Zoboroma, avec accord.</p>
-                {canContact && <div className="mt-5 space-y-3 text-xs font-semibold">{profile.contact && <a href={`mailto:${profile.contact}`} className="flex items-center gap-2 text-muted-foreground hover:text-primary" data-testid="link-member-email"><Mail className="h-4 w-4 text-primary" />{profile.contact}</a>}{profile.instagram && <a href={`https://instagram.com/${profile.instagram.replace('@', '')}`} className="flex items-center gap-2 text-muted-foreground hover:text-primary" data-testid="link-member-instagram"><Instagram className="h-4 w-4 text-primary" />{profile.instagram}</a>}{!profile.contact && !profile.instagram && <span className="text-muted-foreground">Pas de contact public pour le moment.</span>}</div>}
+                {canContact && <div className="mt-5 space-y-3 text-xs font-semibold">{profile.contact && <a href={`tel:${profile.contact}`} className="flex items-center gap-2 text-muted-foreground hover:text-primary" data-testid="link-member-phone"><Phone className="h-4 w-4 text-primary" />{profile.contact}</a>}{profile.instagram && <a href={`https://instagram.com/${profile.instagram.replace('@', '')}`} className="flex items-center gap-2 text-muted-foreground hover:text-primary" data-testid="link-member-instagram"><Instagram className="h-4 w-4 text-primary" />{profile.instagram}</a>}{!profile.contact && !profile.instagram && <span className="text-muted-foreground">Pas de contact public pour le moment.</span>}</div>}
                 {!canContact && <div className="mt-5 flex items-start gap-2 rounded-xl bg-muted p-3 text-[11px] leading-4 text-muted-foreground"><ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-secondary" />Ce membre préfère garder ses coordonnées privées.</div>}
               </aside>
             </div>

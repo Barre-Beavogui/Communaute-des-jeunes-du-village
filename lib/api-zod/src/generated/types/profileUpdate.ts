@@ -10,11 +10,6 @@ import type { ProfileUpdatePrivacy } from './profileUpdatePrivacy';
 export interface ProfileUpdate {
   /** @minLength 2 */
   name?: string;
-  /**
-     * @minimum 13
-     * @maximum 30
-     */
-  age?: number;
   neighborhood?: string;
   /** @nullable */
   avatarUrl?: string | null;

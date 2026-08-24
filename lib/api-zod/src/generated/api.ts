@@ -24,7 +24,6 @@ export const ListProfilesResponseItem = zod.object({
   "id": zod.string(),
   "name": zod.string(),
   "initials": zod.string(),
-  "age": zod.number(),
   "neighborhood": zod.string(),
   "avatarUrl": zod.string().nullish(),
   "bio": zod.string(),
@@ -49,7 +48,6 @@ export const GetProfileResponse = zod.object({
   "id": zod.string(),
   "name": zod.string(),
   "initials": zod.string(),
-  "age": zod.number(),
   "neighborhood": zod.string(),
   "avatarUrl": zod.string().nullish(),
   "bio": zod.string(),
@@ -67,16 +65,12 @@ export const GetProfileResponse = zod.object({
  */
 export const updateMyProfileBodyNameMin = 2;
 
-export const updateMyProfileBodyAgeMin = 13;
-export const updateMyProfileBodyAgeMax = 30;
-
 export const updateMyProfileBodyBioMax = 500;
 
 
 
 export const UpdateMyProfileBody = zod.object({
   "name": zod.string().min(updateMyProfileBodyNameMin).optional(),
-  "age": zod.number().min(updateMyProfileBodyAgeMin).max(updateMyProfileBodyAgeMax).optional(),
   "neighborhood": zod.string().optional(),
   "avatarUrl": zod.string().nullish(),
   "bio": zod.string().max(updateMyProfileBodyBioMax).optional(),
@@ -91,7 +85,6 @@ export const UpdateMyProfileResponse = zod.object({
   "id": zod.string(),
   "name": zod.string(),
   "initials": zod.string(),
-  "age": zod.number(),
   "neighborhood": zod.string(),
   "avatarUrl": zod.string().nullish(),
   "bio": zod.string(),

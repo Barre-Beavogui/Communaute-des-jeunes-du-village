@@ -7,11 +7,11 @@ import { demoProfiles } from '@/lib/demo-data';
 
 const fallbackSummary = {
   totalMembers: demoProfiles.length,
-  activeProjects: 4,
+  activeProjects: 0,
   topActivities: [
-    { label: 'Musique', count: 12 },
-    { label: 'Photo', count: 8 },
-    { label: 'Cuisine', count: 7 },
+    { label: 'Étudiant', count: 7 },
+    { label: 'Salarié', count: 6 },
+    { label: 'Autre', count: 4 },
   ],
 };
 
@@ -20,8 +20,8 @@ export default function HomePage() {
   const summaryQuery = useGetMembersSummary({ query: { queryKey: getGetMembersSummaryQueryKey() } });
   const [search, setSearch] = useState('');
   const [activity, setActivity] = useState('Tous');
-  const profiles = profilesQuery.data ?? demoProfiles;
-  const summary = summaryQuery.data ?? fallbackSummary;
+  const profiles = Array.isArray(profilesQuery.data) ? profilesQuery.data : demoProfiles;
+  const summary = summaryQuery.data && typeof summaryQuery.data.totalMembers === 'number' ? summaryQuery.data : fallbackSummary;
   const activities = useMemo(() => ['Tous', ...Array.from(new Set(profiles.flatMap((profile) => profile.activities)))], [profiles]);
   const filteredProfiles = profiles.filter((profile) => {
     const query = search.trim().toLowerCase();
@@ -71,7 +71,7 @@ export default function HomePage() {
         <div className="vj-enter vj-enter-delay-3 rounded-2xl border border-border bg-accent/35 p-5 shadow-sm">
           <div className="flex items-center justify-between"><span className="text-lg font-bold text-primary">#</span><span className="font-mono text-[10px] text-muted-foreground">03</span></div>
           <p className="mt-6 text-lg font-extrabold tracking-[-.04em]" data-testid="text-top-activity">{summary.topActivities[0]?.label ?? 'Les idées'}</p>
-          <p className="mt-1 text-xs font-semibold text-muted-foreground">passion la plus partagée</p>
+          <p className="mt-1 text-xs font-semibold text-muted-foreground">statut le plus représenté</p>
         </div>
       </section>
 
@@ -83,7 +83,7 @@ export default function HomePage() {
           </div>
           <div className="relative w-full md:w-72">
             <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Chercher un prénom, une passion…" className="h-11 w-full rounded-xl border border-border bg-card pl-10 pr-4 text-xs outline-none placeholder:text-muted-foreground focus:border-primary focus:ring-4 focus:ring-primary/10" data-testid="input-search-members" />
+            <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Chercher un prénom, une ville, un métier…" className="h-11 w-full rounded-xl border border-border bg-card pl-10 pr-4 text-xs outline-none placeholder:text-muted-foreground focus:border-primary focus:ring-4 focus:ring-primary/10" data-testid="input-search-members" />
           </div>
         </div>
         <div className="flex gap-2 overflow-x-auto pb-1">
@@ -107,7 +107,7 @@ export default function HomePage() {
                 </div>
                 <div className="mt-5">
                   <h3 className="text-lg font-extrabold tracking-[-.04em]" data-testid={`text-member-name-${profile.id}`}>{profile.name}</h3>
-                  <p className="mt-1 flex items-center gap-1 text-xs font-semibold text-muted-foreground"><MapPin className="h-3 w-3" />{profile.neighborhood} · {profile.age} ans</p>
+                  <p className="mt-1 flex items-center gap-1 text-xs font-semibold text-muted-foreground"><MapPin className="h-3 w-3" />{profile.neighborhood}</p>
                   <p className="mt-4 line-clamp-2 text-sm leading-6 text-muted-foreground">{profile.bio}</p>
                   <div className="mt-4 flex flex-wrap gap-1.5">{profile.activities.slice(0, 3).map((tag) => <span key={tag} className="rounded-full bg-muted px-2.5 py-1 text-[10px] font-bold text-muted-foreground">{tag}</span>)}</div>
                 </div>

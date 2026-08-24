@@ -1,12 +1,14 @@
 import { createInsertSchema } from "drizzle-zod";
-import { pgTable, text, timestamp, integer, boolean } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, integer } from "drizzle-orm/pg-core";
 import { z } from "zod/v4";
 
 export const profilesTable = pgTable("profiles", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
   initials: text("initials").notNull(),
-  age: integer("age").notNull(),
+  // Legacy column kept nullable so existing databases migrate without losing data.
+  // Age is no longer collected, imported, or exposed by the application.
+  age: integer("age"),
   neighborhood: text("neighborhood").notNull(),
   avatarUrl: text("avatar_url"),
   bio: text("bio").notNull(),

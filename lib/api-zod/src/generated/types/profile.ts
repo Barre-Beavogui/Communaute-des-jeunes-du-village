@@ -12,7 +12,6 @@ export interface Profile {
   id: string;
   name: string;
   initials: string;
-  age: number;
   neighborhood: string;
   /** @nullable */
   avatarUrl?: string | null;

@@ -1,4 +1,5 @@
 import app from "./app";
+import { syncZoboromaMembers } from "./data/sync-zoboroma-members";
 import { logger } from "./lib/logger";
 
 const rawPort = process.env["PORT"];
@@ -14,6 +15,9 @@ const port = Number(rawPort);
 if (Number.isNaN(port) || port <= 0) {
   throw new Error(`Invalid PORT value: "${rawPort}"`);
 }
+
+await syncZoboromaMembers();
+logger.info({ memberCount: 21 }, "Zoboroma member directory synchronized");
 
 app.listen(port, (err) => {
   if (err) {
