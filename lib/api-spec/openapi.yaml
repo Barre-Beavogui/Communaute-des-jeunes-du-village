@@ -10,6 +10,10 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: profiles
+    description: Community member profiles
+  - name: moderation
+    description: Admin moderation operations
 paths:
   /healthz:
     get:
@@ -24,6 +28,108 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /profiles:
+    get:
+      operationId: listProfiles
+      tags: [profiles]
+      summary: List approved community profiles
+      responses:
+        "200":
+          description: Approved profiles
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Profile"
+  /profiles/{id}:
+    get:
+      operationId: getProfile
+      tags: [profiles]
+      summary: Get a profile by id
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Profile"
+        "404":
+          description: Profile not found
+  /profiles/me:
+    patch:
+      operationId: updateMyProfile
+      tags: [profiles]
+      summary: Update the signed-in member profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProfileUpdate"
+      responses:
+        "200":
+          description: Updated profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Profile"
+  /members/summary:
+    get:
+      operationId: getMembersSummary
+      tags: [profiles]
+      summary: Get lightweight community summary
+      responses:
+        "200":
+          description: Community summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MembersSummary"
+  /moderation/requests:
+    get:
+      operationId: listModerationRequests
+      tags: [moderation]
+      summary: List pending membership requests
+      responses:
+        "200":
+          description: Pending requests
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MembershipRequest"
+  /moderation/requests/{id}:
+    patch:
+      operationId: reviewModerationRequest
+      tags: [moderation]
+      summary: Approve or reject a membership request
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ModerationReview"
+      responses:
+        "200":
+          description: Reviewed request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MembershipRequest"
 components:
   schemas:
     HealthStatus:
@@ -33,4 +139,77 @@ components:
           type: string
       required:
         - status
+    Profile:
+      type: object
+      required: [id, name, initials, age, neighborhood, bio, activities, privacy, status]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        initials: { type: string }
+        age: { type: number }
+        neighborhood: { type: string }
+        avatarUrl: { type: ["string", "null"] }
+        bio: { type: string }
+        activities:
+          type: array
+          items: { type: string }
+        project: { type: ["string", "null"] }
+        contact: { type: ["string", "null"] }
+        instagram: { type: ["string", "null"] }
+        privacy:
+          type: string
+          enum: [community, private]
+        status:
+          type: string
+          enum: [approved, pending]
+    ProfileUpdate:
+      type: object
+      properties:
+        name: { type: string, minLength: 2 }
+        age: { type: number, minimum: 13, maximum: 30 }
+        neighborhood: { type: string }
+        avatarUrl: { type: ["string", "null"] }
+        bio: { type: string, maxLength: 500 }
+        activities:
+          type: array
+          items: { type: string }
+        project: { type: ["string", "null"] }
+        contact: { type: ["string", "null"] }
+        instagram: { type: ["string", "null"] }
+        privacy:
+          type: string
+          enum: [community, private]
+    MembersSummary:
+      type: object
+      required: [totalMembers, activeProjects, topActivities]
+      properties:
+        totalMembers: { type: number }
+        activeProjects: { type: number }
+        topActivities:
+          type: array
+          items:
+            type: object
+            required: [label, count]
+            properties:
+              label: { type: string }
+              count: { type: number }
+    MembershipRequest:
+      type: object
+      required: [id, name, email, neighborhood, submittedAt, status]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        email: { type: string }
+        neighborhood: { type: string }
+        submittedAt: { type: string }
+        status:
+          type: string
+          enum: [pending, approved, rejected]
+    ModerationReview:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [approved, rejected]
 

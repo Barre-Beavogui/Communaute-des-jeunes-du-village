@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Village Jeunes"
+description = "Une communauté privée et chaleureuse pour permettre aux jeunes du village de se présenter, découvrir les autres membres et partager leurs projets."
+version = "1.0.0"
+id = "artifacts/village-jeunes"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 21115
+
+[services.development]
+run = "pnpm --filter @workspace/village-jeunes run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/village-jeunes", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/village-jeunes/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "21115"
+BASE_PATH = "/"

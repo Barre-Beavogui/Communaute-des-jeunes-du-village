@@ -1,6 +1,6 @@
-# [Project name]
+# Village Jeunes
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+Une communauté privée où les jeunes du village peuvent se présenter, découvrir les autres membres et partager leurs projets.
 
 ## Run & Operate
 
@@ -22,15 +22,24 @@ _Replace the heading above with the project's name, and this line with one sente
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/village-jeunes` — application React/Vite, navigation et écrans communautaires.
+- `lib/api-spec/openapi.yaml` — contrat source des profils, du résumé communautaire et de la modération.
+- `artifacts/api-server/src/routes` — routes Express branchées sur PostgreSQL.
+- `lib/db/src/schema/members.ts` — tables `profiles` et `membership_requests`.
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- Le profil courant est provisoirement identifié par `mina` pour rendre la première version démontrable ; remplacer ce point par l’identité Clerk/Replit avant une mise en production multi-utilisateur.
+- Les informations de contact sont soumises à un choix de visibilité `community` ou `private`.
+- Les profils publics sont limités aux membres dont le statut est `approved`.
+- Le contrat OpenAPI reste la source unique avant toute modification d’API ou de hooks.
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+- Annuaire filtrable et recherche de membres.
+- Profils individuels avec bio, activités, projet, contact et réglage de confidentialité.
+- Formulaire de demande d’adhésion et file de modération admin.
+- Résumé de la vie de la communauté avec membres, projets et activités partagées.
 
 ## User preferences
 
@@ -38,7 +47,8 @@ _Populate as you build — explicit user instructions worth remembering across s
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- Après chaque changement dans `lib/api-spec/openapi.yaml`, lancer `pnpm --filter @workspace/api-spec run codegen`.
+- La version Zod actuellement installée génère mal les raccourcis `zod.int()` ; les champs numériques du contrat utilisent donc `type: number` avec contraintes explicites.
 
 ## Pointers
 

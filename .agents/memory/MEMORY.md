@@ -1,0 +1,1 @@
+- [API validation compatibility](api-contract-validation.md) — OpenAPI integer fields can generate unsupported `zod.int()` in the current workspace runtime.
