@@ -154,6 +154,22 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/MembershipRequest"
+  /moderation/profiles/{id}:
+    delete:
+      operationId: deleteModerationProfile
+      tags: [moderation]
+      summary: Permanently remove a community profile
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Profile removed
+        "404":
+          description: Profile not found
 components:
   schemas:
     HealthStatus:

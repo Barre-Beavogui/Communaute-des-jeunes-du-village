@@ -33,9 +33,15 @@ export const membershipRequestsTable = pgTable("membership_requests", {
   status: text("status").notNull().default("pending"),
 });
 
+export const deletedProfilesTable = pgTable("deleted_profiles", {
+  id: text("id").primaryKey(),
+  deletedAt: timestamp("deleted_at").notNull().defaultNow(),
+});
+
 export const insertProfileSchema = createInsertSchema(profilesTable);
 export const insertMembershipRequestSchema = createInsertSchema(
   membershipRequestsTable,
 );
 export type Profile = typeof profilesTable.$inferSelect;
 export type MembershipRequest = typeof membershipRequestsTable.$inferSelect;
+export type DeletedProfile = typeof deletedProfilesTable.$inferSelect;

@@ -5,10 +5,20 @@ import router from "./routes";
 import { logger } from "./lib/logger";
 
 const app: Express = express();
-const allowedOrigins = (process.env["PUBLIC_WEB_ORIGINS"] ?? "")
+const configuredOrigins = (process.env["PUBLIC_WEB_ORIGINS"] ?? "")
   .split(",")
   .map((origin) => origin.trim())
   .filter(Boolean);
+const allowedOrigins = new Set([
+  ...configuredOrigins,
+  "https://zoboroma.online",
+  "https://www.zoboroma.online",
+  "https://barre-beavogui.github.io",
+  "http://localhost:5173",
+  "http://127.0.0.1:5173",
+]);
+const allowAnyOrigin =
+  configuredOrigins.length === 0 && process.env["NODE_ENV"] !== "production";
 const publicReadOnly = process.env["PUBLIC_READ_ONLY"] === "true";
 
 app.set("trust proxy", 1);
@@ -35,11 +45,7 @@ app.use(
 app.use(
   cors({
     origin(origin, callback) {
-      if (
-        !origin ||
-        allowedOrigins.length === 0 ||
-        allowedOrigins.includes(origin)
-      ) {
+      if (!origin || allowAnyOrigin || allowedOrigins.has(origin)) {
         callback(null, true);
         return;
       }

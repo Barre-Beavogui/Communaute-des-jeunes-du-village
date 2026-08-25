@@ -8,18 +8,34 @@ import {
   MapPin,
   Phone,
   ShieldCheck,
+  Trash2,
   UserRound,
+  UsersRound,
   X,
 } from "lucide-react";
 import { type FormEvent, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
+  getGetMembersSummaryQueryKey,
   getListModerationRequestsQueryKey,
   getListProfilesQueryKey,
   useAdminLogin,
+  useDeleteModerationProfile,
   useListModerationRequests,
+  useListProfiles,
   useReviewModerationRequest,
 } from "@workspace/api-client-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 const TOKEN_KEY = "zoboroma_admin_token";
 
@@ -31,6 +47,8 @@ export default function AdminPage() {
   );
   const [loginError, setLoginError] = useState("");
   const [reviewingId, setReviewingId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState("");
   const login = useAdminLogin();
   const requestsQuery = useListModerationRequests({
     query: {
@@ -39,8 +57,17 @@ export default function AdminPage() {
       queryKey: getListModerationRequestsQueryKey(),
     },
   });
+  const membersQuery = useListProfiles({
+    query: {
+      enabled: authenticated,
+      retry: false,
+      queryKey: getListProfilesQueryKey(),
+    },
+  });
   const reviewRequest = useReviewModerationRequest();
+  const deleteProfile = useDeleteModerationProfile();
   const requests = requestsQuery.data ?? [];
+  const members = membersQuery.data ?? [];
 
   const openSession = (event: FormEvent) => {
     event.preventDefault();
@@ -54,6 +81,9 @@ export default function AdminPage() {
           setAuthenticated(true);
           await queryClient.invalidateQueries({
             queryKey: getListModerationRequestsQueryKey(),
+          });
+          await queryClient.invalidateQueries({
+            queryKey: getListProfilesQueryKey(),
           });
         },
         onError: () =>
@@ -70,6 +100,7 @@ export default function AdminPage() {
     queryClient.removeQueries({
       queryKey: getListModerationRequestsQueryKey(),
     });
+    queryClient.removeQueries({ queryKey: getListProfilesQueryKey() });
   };
 
   const review = (id: string, status: "approved" | "rejected") => {
@@ -92,6 +123,31 @@ export default function AdminPage() {
     );
   };
 
+  const removeMember = (id: string) => {
+    setDeletingId(id);
+    setDeleteError("");
+    deleteProfile.mutate(
+      { id },
+      {
+        onSuccess: async () => {
+          await Promise.all([
+            queryClient.invalidateQueries({
+              queryKey: getListProfilesQueryKey(),
+            }),
+            queryClient.invalidateQueries({
+              queryKey: getGetMembersSummaryQueryKey(),
+            }),
+          ]);
+        },
+        onError: () =>
+          setDeleteError(
+            "La suppression n’a pas abouti. Reconnectez-vous puis réessayez.",
+          ),
+        onSettled: () => setDeletingId(null),
+      },
+    );
+  };
+
   if (!authenticated) {
     return (
       <div className="mx-auto grid min-h-[68vh] max-w-5xl items-center gap-10 lg:grid-cols-[1fr_.85fr]">
@@ -108,8 +164,8 @@ export default function AdminPage() {
             <em className="text-primary">de l’équipe.</em>
           </h1>
           <p className="mt-6 max-w-md text-sm leading-7 text-muted-foreground">
-            Cet espace permet de relire les nouvelles inscriptions et d’ajouter
-            uniquement les profils approuvés au recensement.
+            Cet espace permet de relire les nouvelles inscriptions, de valider
+            les profils et de gérer les membres déjà publiés.
           </p>
         </section>
 
@@ -174,11 +230,11 @@ export default function AdminPage() {
             Administration Zoboroma
           </p>
           <h1 className="vj-display mt-2 text-5xl leading-[.9] sm:text-6xl">
-            Les nouvelles demandes.
+            Inscriptions et membres.
           </h1>
           <p className="mt-4 max-w-lg text-sm leading-6 text-muted-foreground">
-            Vérifiez les informations, puis acceptez ou refusez chaque
-            inscription.
+            Validez les nouvelles inscriptions et gérez les profils déjà
+            visibles dans l’annuaire.
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -331,6 +387,116 @@ export default function AdminPage() {
           </p>
         </div>
       )}
+
+      <section className="vj-enter overflow-hidden rounded-[28px] border border-border bg-card shadow-sm">
+        <div className="flex flex-col justify-between gap-4 border-b border-border p-5 sm:flex-row sm:items-center sm:p-6">
+          <div className="flex items-center gap-3">
+            <span className="grid h-11 w-11 place-items-center rounded-2xl bg-secondary/10 text-secondary">
+              <UsersRound className="h-5 w-5" />
+            </span>
+            <div>
+              <h2 className="text-lg font-extrabold tracking-[-.03em]">
+                Membres publiés
+              </h2>
+              <p className="text-xs text-muted-foreground">
+                {members.length} profil{members.length > 1 ? "s" : ""} dans
+                l’annuaire
+              </p>
+            </div>
+          </div>
+          <p className="max-w-sm text-xs leading-5 text-muted-foreground">
+            La suppression retire définitivement le profil du site et de la base
+            de données.
+          </p>
+        </div>
+
+        {deleteError && (
+          <p className="border-b border-destructive/20 bg-destructive/5 px-5 py-3 text-xs font-semibold text-destructive sm:px-6">
+            {deleteError}
+          </p>
+        )}
+
+        {membersQuery.isLoading ? (
+          <div className="space-y-3 p-5 sm:p-6">
+            {[1, 2, 3].map((item) => (
+              <div
+                className="h-16 animate-pulse rounded-2xl bg-muted"
+                key={item}
+              />
+            ))}
+          </div>
+        ) : membersQuery.isError ? (
+          <div className="px-6 py-12 text-center text-sm text-muted-foreground">
+            Impossible de charger les membres. Reconnectez-vous puis réessayez.
+          </div>
+        ) : members.length ? (
+          <div className="divide-y divide-border">
+            {members.map((member) => (
+              <article
+                key={member.id}
+                className="flex flex-col justify-between gap-4 px-5 py-4 sm:flex-row sm:items-center sm:px-6"
+                data-testid={`row-member-admin-${member.id}`}
+              >
+                <div className="flex min-w-0 items-center gap-3">
+                  <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-muted text-xs font-extrabold text-secondary">
+                    {member.initials}
+                  </span>
+                  <div className="min-w-0">
+                    <h3 className="truncate text-sm font-extrabold">
+                      {member.name}
+                    </h3>
+                    <p className="mt-1 flex flex-wrap items-center gap-x-2 text-[11px] text-muted-foreground">
+                      <span className="inline-flex items-center gap-1">
+                        <MapPin className="h-3 w-3" />
+                        {member.neighborhood}
+                      </span>
+                      {member.activities.length > 0 && (
+                        <span>• {member.activities.join(", ")}</span>
+                      )}
+                    </p>
+                  </div>
+                </div>
+
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <button
+                      type="button"
+                      disabled={deletingId === member.id}
+                      className="inline-flex items-center justify-center gap-2 rounded-full border border-destructive/30 px-4 py-2.5 text-xs font-bold text-destructive hover:bg-destructive hover:text-destructive-foreground disabled:opacity-50"
+                      data-testid={`button-delete-member-${member.id}`}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      {deletingId === member.id ? "Suppression…" : "Supprimer"}
+                    </button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Supprimer ce membre ?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Le profil de {member.name} disparaîtra immédiatement de
+                        l’annuaire. Cette action est définitive.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Annuler</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={() => removeMember(member.id)}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      >
+                        Supprimer définitivement
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <div className="px-6 py-12 text-center text-sm text-muted-foreground">
+            Aucun membre publié pour le moment.
+          </div>
+        )}
+      </section>
     </div>
   );
 }

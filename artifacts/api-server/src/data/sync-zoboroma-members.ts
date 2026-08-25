@@ -1,6 +1,6 @@
 import { inArray, sql } from "drizzle-orm";
 import { db } from "@workspace/db";
-import { profilesTable } from "@workspace/db/schema";
+import { deletedProfilesTable, profilesTable } from "@workspace/db/schema";
 import { previousDemoProfileIds, zoboromaMembers } from "./zoboroma-members";
 
 export async function syncZoboromaMembers() {
@@ -37,6 +37,13 @@ export async function syncZoboromaMembers() {
     )
   `);
 
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS deleted_profiles (
+      id text PRIMARY KEY,
+      deleted_at timestamp NOT NULL DEFAULT now()
+    )
+  `);
+
   await db.execute(
     sql`ALTER TABLE membership_requests ADD COLUMN IF NOT EXISTS phone text`,
   );
@@ -54,10 +61,20 @@ export async function syncZoboromaMembers() {
     // Existing deployments created this legacy field as NOT NULL.
     await tx.execute(sql`ALTER TABLE profiles ALTER COLUMN age DROP NOT NULL`);
 
-    await tx
-      .insert(profilesTable)
-      .values(zoboromaMembers)
-      .onConflictDoNothing({ target: profilesTable.id });
+    const deletedProfiles = await tx
+      .select({ id: deletedProfilesTable.id })
+      .from(deletedProfilesTable);
+    const deletedIds = new Set(deletedProfiles.map(({ id }) => id));
+    const membersToSync = zoboromaMembers.filter(
+      ({ id }) => !deletedIds.has(id),
+    );
+
+    if (membersToSync.length) {
+      await tx
+        .insert(profilesTable)
+        .values(membersToSync)
+        .onConflictDoNothing({ target: profilesTable.id });
+    }
 
     await tx
       .delete(profilesTable)

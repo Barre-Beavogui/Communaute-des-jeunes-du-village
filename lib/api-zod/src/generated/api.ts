@@ -173,3 +173,13 @@ export const ReviewModerationRequestResponse = zod.object({
 })
 
 
+/**
+ * @summary Permanently remove a community profile
+ */
+export const DeleteModerationProfileParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const DeleteModerationProfileResponse = zod.void()
+
+

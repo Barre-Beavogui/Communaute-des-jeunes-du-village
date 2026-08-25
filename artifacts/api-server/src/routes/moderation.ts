@@ -1,8 +1,13 @@
 import { Router, type IRouter } from "express";
 import { eq } from "drizzle-orm";
 import { db } from "@workspace/db";
-import { membershipRequestsTable, profilesTable } from "@workspace/db/schema";
 import {
+  deletedProfilesTable,
+  membershipRequestsTable,
+  profilesTable,
+} from "@workspace/db/schema";
+import {
+  DeleteModerationProfileParams,
   ListModerationRequestsResponse,
   ReviewModerationRequestParams,
   ReviewModerationRequestBody,
@@ -94,6 +99,32 @@ router.patch("/moderation/requests/:id", async (req, res) => {
     return;
   }
   res.json(ReviewModerationRequestResponse.parse(toRequest(row)));
+});
+
+router.delete("/moderation/profiles/:id", async (req, res) => {
+  const params = DeleteModerationProfileParams.parse(req.params);
+  const deleted = await db.transaction(async (tx) => {
+    const [profile] = await tx
+      .select({ id: profilesTable.id })
+      .from(profilesTable)
+      .where(eq(profilesTable.id, params.id));
+
+    if (!profile) return false;
+
+    await tx
+      .insert(deletedProfilesTable)
+      .values({ id: profile.id })
+      .onConflictDoNothing({ target: deletedProfilesTable.id });
+    await tx.delete(profilesTable).where(eq(profilesTable.id, profile.id));
+    return true;
+  });
+
+  if (!deleted) {
+    res.status(404).json({ error: "Profil introuvable" });
+    return;
+  }
+
+  res.status(204).send();
 });
 
 export default router;
