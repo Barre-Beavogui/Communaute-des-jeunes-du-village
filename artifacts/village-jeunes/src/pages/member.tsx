@@ -1,4 +1,4 @@
-import { ArrowLeft, LockKeyhole, MapPin, ShieldCheck } from "lucide-react";
+import { ArrowLeft, Mail, MapPin, Phone, ShieldCheck } from "lucide-react";
 import { useMemo } from "react";
 import { Link, useParams } from "wouter";
 import {
@@ -139,17 +139,36 @@ export default function MemberPage() {
                 )}
               </div>
               <aside className="h-fit rounded-2xl border border-border bg-background p-5">
-                <div className="grid h-9 w-9 place-items-center rounded-xl bg-secondary/15 text-secondary">
-                  <LockKeyhole className="h-4 w-4" />
+                <p className="font-mono text-[10px] font-bold uppercase tracking-[.17em] text-secondary">
+                  Contacter ce membre
+                </p>
+                <div className="mt-4 space-y-3">
+                  {profile.email && (
+                    <a
+                      href={`mailto:${profile.email}`}
+                      className="flex items-start gap-3 rounded-xl border border-border bg-card p-3 text-xs font-bold hover:border-primary hover:text-primary"
+                      data-testid="link-member-email"
+                    >
+                      <Mail className="mt-0.5 h-4 w-4 shrink-0" />
+                      <span className="min-w-0 break-all">{profile.email}</span>
+                    </a>
+                  )}
+                  {profile.phone && (
+                    <a
+                      href={`tel:${profile.phone}`}
+                      className="flex items-start gap-3 rounded-xl border border-border bg-card p-3 text-xs font-bold hover:border-primary hover:text-primary"
+                      data-testid="link-member-phone"
+                    >
+                      <Phone className="mt-0.5 h-4 w-4 shrink-0" />
+                      <span>{profile.phone}</span>
+                    </a>
+                  )}
+                  {!profile.email && !profile.phone && (
+                    <p className="text-xs leading-5 text-muted-foreground">
+                      Aucune coordonnée renseignée pour ce membre.
+                    </p>
+                  )}
                 </div>
-                <p className="mt-4 text-xs font-extrabold">
-                  Coordonnées protégées
-                </p>
-                <p className="mt-2 text-xs leading-5 text-muted-foreground">
-                  Le téléphone et l’email ne sont jamais affichés dans cet
-                  annuaire public. L’équipe de Zoboroma conserve ces
-                  informations uniquement pour la gestion du recensement.
-                </p>
               </aside>
             </div>
           </div>

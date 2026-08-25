@@ -463,6 +463,8 @@ components:
           items: { type: string }
         project: { type: ["string", "null"] }
         contact: { type: ["string", "null"] }
+        email: { type: ["string", "null"] }
+        phone: { type: ["string", "null"] }
         instagram: { type: ["string", "null"] }
         privacy:
           type: string

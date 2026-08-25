@@ -1,4 +1,4 @@
-import { ArrowUpRight, FolderKanban, MapPin } from "lucide-react";
+import { ArrowUpRight, FolderKanban, Mail, MapPin, Phone } from "lucide-react";
 import type { Profile } from "@workspace/api-client-react";
 import { Link } from "wouter";
 import { Avatar } from "@/components/village-shell";
@@ -35,6 +35,22 @@ export function MemberCard({
         <p className="mt-4 line-clamp-2 text-sm leading-6 text-muted-foreground">
           {profile.bio}
         </p>
+        {(profile.email || profile.phone) && (
+          <div className="mt-4 space-y-1.5 border-t border-border pt-3 text-[11px] font-semibold text-muted-foreground">
+            {profile.email && (
+              <p className="flex min-w-0 items-center gap-2">
+                <Mail className="h-3.5 w-3.5 shrink-0 text-primary" />
+                <span className="truncate">{profile.email}</span>
+              </p>
+            )}
+            {profile.phone && (
+              <p className="flex items-center gap-2">
+                <Phone className="h-3.5 w-3.5 shrink-0 text-primary" />
+                <span>{profile.phone}</span>
+              </p>
+            )}
+          </div>
+        )}
         <div className="mt-auto flex flex-wrap gap-1.5 pt-4">
           {profile.activities.slice(0, 3).map((tag) => (
             <span

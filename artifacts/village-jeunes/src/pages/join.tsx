@@ -20,7 +20,6 @@ import { prepareProfilePhoto } from "@/lib/profile-photo";
 const professions = [
   "Élève / Lycéen",
   "Étudiant",
-  "Salarié",
   "Entrepreneur",
   "Agriculteur",
   "Artisan",
@@ -41,6 +40,7 @@ export default function JoinPage() {
     avatarUrl: "",
     neighborhood: "",
     profession: "",
+    otherProfession: "",
     bio: "",
     project: "",
   });
@@ -78,7 +78,10 @@ export default function JoinPage() {
           phone: form.phone || null,
           avatarUrl: form.avatarUrl || null,
           neighborhood: form.neighborhood,
-          profession: form.profession,
+          profession:
+            form.profession === "Autre"
+              ? form.otherProfession.trim()
+              : form.profession,
           bio: form.bio,
           project: form.project || null,
         },
@@ -128,8 +131,9 @@ export default function JoinPage() {
           <em className="text-primary">compte ici.</em>
         </h1>
         <p className="mt-6 max-w-sm text-sm leading-7 text-muted-foreground">
-          Présentez-vous en quelques lignes. Aucun âge n’est demandé et vos
-          coordonnées restent privées.
+          Présentez-vous en quelques lignes. Aucun âge n’est demandé. Après
+          validation, votre email et votre téléphone seront visibles dans
+          l’annuaire.
         </p>
         <div className="mt-8 space-y-3 text-xs font-semibold text-foreground/75">
           <p className="flex items-start gap-3">
@@ -308,6 +312,24 @@ export default function JoinPage() {
               ))}
             </select>
           </label>
+          {form.profession === "Autre" && (
+            <label className="block space-y-2 text-xs font-bold sm:col-span-2">
+              Précisez votre profession ou votre situation
+              <input
+                required
+                autoFocus
+                minLength={2}
+                maxLength={80}
+                value={form.otherProfession}
+                onChange={(event) =>
+                  setField("otherProfession", event.target.value)
+                }
+                className="field"
+                placeholder="Écrivez votre situation…"
+                data-testid="input-join-other-profession"
+              />
+            </label>
+          )}
           <label className="block space-y-2 text-xs font-bold sm:col-span-2">
             Présentez-vous en quelques mots
             <textarea
@@ -354,9 +376,9 @@ export default function JoinPage() {
             <strong className="text-foreground">
               J’accepte que l’équipe de Zoboroma examine ces informations.
             </strong>{" "}
-            L’email et le téléphone servent uniquement à la gestion de
-            l’inscription et ne seront pas publiés. Si j’ajoute une photo, elle
-            sera visible sur mon profil après validation.
+            L’email et le téléphone seront visibles dans l’annuaire après
+            validation. Si j’ajoute une photo, elle sera également visible sur
+            mon profil.
           </span>
         </label>
 
@@ -378,7 +400,7 @@ export default function JoinPage() {
         </button>
         <p className="mt-4 flex items-center justify-center gap-1.5 text-center text-[10px] font-semibold text-muted-foreground">
           <LockKeyhole className="h-3 w-3" /> Aucun âge demandé · coordonnées
-          protégées
+          visibles après validation
         </p>
       </form>
     </div>

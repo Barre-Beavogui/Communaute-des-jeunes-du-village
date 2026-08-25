@@ -53,7 +53,7 @@ export default function MembersPage() {
     return profiles
       .filter((profile) => {
         const searchable = normalizeText(
-          `${profile.name} ${profile.neighborhood} ${profile.bio} ${profile.activities.join(" ")} ${profile.project ?? ""}`,
+          `${profile.name} ${profile.neighborhood} ${profile.bio} ${profile.activities.join(" ")} ${profile.project ?? ""} ${profile.email ?? ""} ${profile.phone ?? ""}`,
         );
         return (
           (!query || searchable.includes(query)) &&

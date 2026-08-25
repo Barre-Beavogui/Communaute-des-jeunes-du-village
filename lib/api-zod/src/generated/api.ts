@@ -30,6 +30,8 @@ export const ListProfilesResponseItem = zod.object({
   "activities": zod.array(zod.string()),
   "project": zod.string().nullish(),
   "contact": zod.string().nullish(),
+  "email": zod.string().nullish(),
+  "phone": zod.string().nullish(),
   "instagram": zod.string().nullish(),
   "privacy": zod.enum(['community', 'private']),
   "status": zod.enum(['approved', 'pending'])
@@ -54,6 +56,8 @@ export const GetProfileResponse = zod.object({
   "activities": zod.array(zod.string()),
   "project": zod.string().nullish(),
   "contact": zod.string().nullish(),
+  "email": zod.string().nullish(),
+  "phone": zod.string().nullish(),
   "instagram": zod.string().nullish(),
   "privacy": zod.enum(['community', 'private']),
   "status": zod.enum(['approved', 'pending'])

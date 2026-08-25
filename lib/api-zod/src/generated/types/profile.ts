@@ -22,6 +22,10 @@ export interface Profile {
   /** @nullable */
   contact?: string | null;
   /** @nullable */
+  email?: string | null;
+  /** @nullable */
+  phone?: string | null;
+  /** @nullable */
   instagram?: string | null;
   privacy: ProfilePrivacy;
   status: ProfileStatus;

@@ -22,8 +22,9 @@ function toProfile(row: typeof profilesTable.$inferSelect) {
     bio: row.bio,
     activities: row.activities ?? [],
     project: row.project,
-    // The directory is public: contact details are never returned here.
-    contact: null,
+    contact: row.loginPhone ?? row.contact,
+    email: row.loginEmail,
+    phone: row.loginPhone ?? row.contact,
     instagram: null,
     privacy: row.privacy as "community" | "private",
     status: row.status as "approved" | "pending",
