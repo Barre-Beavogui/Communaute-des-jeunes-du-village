@@ -8,6 +8,7 @@ import {
   ListProfilesResponse,
   GetMembersSummaryResponse,
 } from "@workspace/api-zod";
+import { requireCommunityAccess } from "../lib/community-access";
 
 const router: IRouter = Router();
 
@@ -29,7 +30,7 @@ function toProfile(row: typeof profilesTable.$inferSelect) {
   };
 }
 
-router.get("/profiles", async (req, res) => {
+router.get("/profiles", requireCommunityAccess, async (_req, res) => {
   const rows = await db
     .select()
     .from(profilesTable)
@@ -37,7 +38,7 @@ router.get("/profiles", async (req, res) => {
   res.json(ListProfilesResponse.parse(rows.map(toProfile)));
 });
 
-router.get("/profiles/:id", async (req, res) => {
+router.get("/profiles/:id", requireCommunityAccess, async (req, res) => {
   const params = GetProfileParams.parse(req.params);
   const [row] = await db
     .select()
@@ -50,7 +51,7 @@ router.get("/profiles/:id", async (req, res) => {
   res.json(GetProfileResponse.parse(toProfile(row)));
 });
 
-router.get("/members/summary", async (_req, res) => {
+router.get("/members/summary", requireCommunityAccess, async (_req, res) => {
   const rows = await db
     .select()
     .from(profilesTable)

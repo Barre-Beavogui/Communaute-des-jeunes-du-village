@@ -51,6 +51,12 @@ export async function syncZoboromaMembers() {
   await db.execute(
     sql`ALTER TABLE profiles ADD COLUMN IF NOT EXISTS member_code_created_at timestamp`,
   );
+  await db.execute(
+    sql`ALTER TABLE profiles ADD COLUMN IF NOT EXISTS member_password_hash text`,
+  );
+  await db.execute(
+    sql`ALTER TABLE profiles ADD COLUMN IF NOT EXISTS member_password_set_at timestamp`,
+  );
   await db.execute(sql`
     CREATE UNIQUE INDEX IF NOT EXISTS profiles_member_code_hash_unique
     ON profiles (member_code_hash)

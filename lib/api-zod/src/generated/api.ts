@@ -139,21 +139,42 @@ export const AdminLoginResponse = zod.object({
 export const memberLoginBodyCodeMin = 8;
 export const memberLoginBodyCodeMax = 32;
 
+export const memberLoginBodyPasswordMax = 128;
+
 
 
 export const MemberLoginBody = zod.object({
-  "code": zod.string().min(memberLoginBodyCodeMin).max(memberLoginBodyCodeMax)
+  "code": zod.string().min(memberLoginBodyCodeMin).max(memberLoginBodyCodeMax),
+  "password": zod.string().max(memberLoginBodyPasswordMax).nullish()
 })
 
 export const MemberLoginResponse = zod.object({
   "token": zod.string(),
   "expiresAt": zod.string(),
+  "requiresPasswordChange": zod.boolean(),
   "profile": zod.object({
   "id": zod.string(),
   "name": zod.string(),
   "initials": zod.string(),
   "avatarUrl": zod.string().nullish()
 })
+})
+
+
+/**
+ * @summary Set a member password during first login
+ */
+export const setMemberPasswordBodyPasswordMin = 8;
+export const setMemberPasswordBodyPasswordMax = 128;
+
+
+
+export const SetMemberPasswordBody = zod.object({
+  "password": zod.string().min(setMemberPasswordBodyPasswordMin).max(setMemberPasswordBodyPasswordMax)
+})
+
+export const SetMemberPasswordResponse = zod.object({
+  "success": zod.literal(true)
 })
 
 
@@ -249,7 +270,8 @@ export const ListModerationRequestsResponseItem = zod.object({
   "bio": zod.string(),
   "project": zod.string().nullish(),
   "submittedAt": zod.string(),
-  "status": zod.enum(['pending', 'approved', 'rejected'])
+  "status": zod.enum(['pending', 'approved', 'rejected']),
+  "memberCode": zod.string().nullish()
 })
 export const ListModerationRequestsResponse = zod.array(ListModerationRequestsResponseItem)
 
@@ -280,7 +302,8 @@ export const ReviewModerationRequestResponse = zod.object({
   "bio": zod.string(),
   "project": zod.string().nullish(),
   "submittedAt": zod.string(),
-  "status": zod.enum(['pending', 'approved', 'rejected'])
+  "status": zod.enum(['pending', 'approved', 'rejected']),
+  "memberCode": zod.string().nullish()
 })
 
 

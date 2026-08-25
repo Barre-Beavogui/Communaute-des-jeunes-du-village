@@ -28,6 +28,8 @@ import type {
   HealthStatus,
   MemberCode,
   MemberLogin,
+  MemberPasswordSetup,
+  MemberPasswordSetupReceipt,
   MemberSession,
   MembersSummary,
   MembershipRequest,
@@ -588,6 +590,77 @@ export const useMemberLogin = <TError = ErrorType<void>,
         TContext
       > => {
       return useMutation(getMemberLoginMutationOptions(options));
+    }
+
+export const getSetMemberPasswordUrl = () => {
+
+
+
+
+  return `/api/member/set-password`
+}
+
+/**
+ * @summary Set a member password during first login
+ */
+export const setMemberPassword = async (memberPasswordSetup: MemberPasswordSetup, options?: Parameters<typeof customFetch>[1]): Promise<MemberPasswordSetupReceipt> => {
+
+  return customFetch<MemberPasswordSetupReceipt>(getSetMemberPasswordUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(memberPasswordSetup)
+  }
+);}
+
+
+
+
+
+export const getSetMemberPasswordMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setMemberPassword>>, TError,{data: BodyType<MemberPasswordSetup>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof setMemberPassword>>, TError,{data: BodyType<MemberPasswordSetup>}, TContext> => {
+
+const mutationKey = ['setMemberPassword'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof setMemberPassword>>, {data: BodyType<MemberPasswordSetup>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  setMemberPassword(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SetMemberPasswordMutationResult = NonNullable<Awaited<ReturnType<typeof setMemberPassword>>>
+    export type SetMemberPasswordMutationBody = BodyType<MemberPasswordSetup>
+    export type SetMemberPasswordMutationError = ErrorType<void>
+
+    /**
+ * @summary Set a member password during first login
+ */
+export const useSetMemberPassword = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setMemberPassword>>, TError,{data: BodyType<MemberPasswordSetup>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof setMemberPassword>>,
+        TError,
+        {data: BodyType<MemberPasswordSetup>},
+        TContext
+      > => {
+      return useMutation(getSetMemberPasswordMutationOptions(options));
     }
 
 export const getListAnnouncementsUrl = () => {

@@ -64,9 +64,12 @@ app.use(
     const isAdminRequest = req.path.startsWith("/moderation");
     const isPublicWrite =
       req.method === "POST" &&
-      ["/admin/login", "/member/login", "/membership-requests"].includes(
-        req.path,
-      );
+      [
+        "/admin/login",
+        "/member/login",
+        "/member/set-password",
+        "/membership-requests",
+      ].includes(req.path);
     const isMemberWrite =
       req.method === "POST" &&
       (/^\/announcements\/[^/]+\/like$/.test(req.path) ||

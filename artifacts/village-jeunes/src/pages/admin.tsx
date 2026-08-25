@@ -139,7 +139,13 @@ export default function AdminPage() {
     reviewRequest.mutate(
       { id, data: { status } },
       {
-        onSuccess: async () => {
+        onSuccess: async (result) => {
+          if (status === "approved" && result.memberCode) {
+            setGeneratedCode({
+              memberName: result.name,
+              code: result.memberCode,
+            });
+          }
           await Promise.all([
             queryClient.invalidateQueries({
               queryKey: getListModerationRequestsQueryKey(),
@@ -288,8 +294,9 @@ export default function AdminPage() {
 
       <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4 text-xs leading-5 text-muted-foreground">
         <ShieldCheck className="mr-2 inline h-4 w-4 text-primary" />
-        L’email et le téléphone restent privés. Après validation, seuls le nom,
-        le lieu, la présentation et les activités apparaissent publiquement.
+        L’email et le téléphone restent privés. À chaque approbation, un code de
+        première connexion est créé automatiquement et s’affiche pour que vous
+        puissiez le transmettre au membre.
       </div>
 
       <AdminCommunity />
@@ -475,8 +482,9 @@ export default function AdminPage() {
                   {generatedCode.code}
                 </p>
                 <p className="mt-2 text-[10px] leading-4 text-muted-foreground">
-                  Transmettez-le en privé. Pour des raisons de sécurité, ce code
-                  complet ne sera affiché qu’ici.
+                  Transmettez-le en privé. Il servira d’identifiant personnel au
+                  membre. Pour des raisons de sécurité, ce code complet ne sera
+                  affiché qu’ici.
                 </p>
               </div>
               <button
@@ -562,9 +570,10 @@ export default function AdminPage() {
                           Créer un code pour {member.name} ?
                         </AlertDialogTitle>
                         <AlertDialogDescription>
-                          Un nouveau code personnel sera créé. Si ce membre en
-                          avait déjà un, l’ancien code cessera immédiatement de
-                          fonctionner.
+                          Un nouveau code personnel sera créé. L’ancien code et
+                          l’ancien mot de passe cesseront immédiatement de
+                          fonctionner. Le membre devra refaire sa première
+                          connexion et choisir un nouveau mot de passe.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>

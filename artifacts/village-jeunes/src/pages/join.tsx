@@ -101,8 +101,9 @@ export default function JoinPage() {
           <br />à très bientôt.
         </h1>
         <p className="mt-5 max-w-sm text-sm leading-6 text-muted-foreground">
-          L’équipe de Zoboroma va relire votre demande. Votre profil ne sera
-          visible qu’après validation.
+          L’équipe de Zoboroma va relire votre demande. Après validation,
+          l’administrateur vous transmettra votre code personnel de première
+          connexion.
         </p>
         <Link
           href="/"
@@ -150,7 +151,8 @@ export default function JoinPage() {
             <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-accent text-[10px] font-extrabold">
               3
             </span>
-            Le profil approuvé rejoint l’annuaire.
+            Après approbation, l’administrateur vous envoie votre code de
+            première connexion.
           </p>
         </div>
       </aside>

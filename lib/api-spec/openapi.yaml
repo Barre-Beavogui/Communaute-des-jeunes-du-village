@@ -140,6 +140,26 @@ paths:
                 $ref: "#/components/schemas/MemberSession"
         "401":
           description: Invalid member code
+  /member/set-password:
+    post:
+      operationId: setMemberPassword
+      tags: [member]
+      summary: Set a member password during first login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MemberPasswordSetup"
+      responses:
+        "200":
+          description: Password created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MemberPasswordSetupReceipt"
+        "401":
+          description: First-login session required
   /announcements:
     get:
       operationId: listAnnouncements
@@ -437,6 +457,7 @@ components:
         status:
           type: string
           enum: [pending, approved, rejected]
+        memberCode: { type: ["string", "null"] }
     MembershipRequestCreate:
       type: object
       required: [name, email, neighborhood, profession, bio]
@@ -481,6 +502,7 @@ components:
       required: [code]
       properties:
         code: { type: string, minLength: 8, maxLength: 32 }
+        password: { type: ["string", "null"], maxLength: 128 }
     MemberIdentity:
       type: object
       required: [id, name, initials]
@@ -491,12 +513,23 @@ components:
         avatarUrl: { type: ["string", "null"] }
     MemberSession:
       type: object
-      required: [token, expiresAt, profile]
+      required: [token, expiresAt, profile, requiresPasswordChange]
       properties:
         token: { type: string }
         expiresAt: { type: string }
+        requiresPasswordChange: { type: boolean }
         profile:
           $ref: "#/components/schemas/MemberIdentity"
+    MemberPasswordSetup:
+      type: object
+      required: [password]
+      properties:
+        password: { type: string, minLength: 8, maxLength: 128 }
+    MemberPasswordSetupReceipt:
+      type: object
+      required: [success]
+      properties:
+        success: { type: boolean, enum: [true] }
     MemberCode:
       type: object
       required: [code, createdAt]

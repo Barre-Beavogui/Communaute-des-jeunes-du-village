@@ -17,6 +17,8 @@ export * from './healthStatus';
 export * from './memberCode';
 export * from './memberIdentity';
 export * from './memberLogin';
+export * from './memberPasswordSetup';
+export * from './memberPasswordSetupReceipt';
 export * from './memberSession';
 export * from './membershipRequest';
 export * from './membershipRequestCreate';

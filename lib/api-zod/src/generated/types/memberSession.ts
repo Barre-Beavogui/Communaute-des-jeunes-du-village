@@ -10,5 +10,6 @@ import type { MemberIdentity } from './memberIdentity';
 export interface MemberSession {
   token: string;
   expiresAt: string;
+  requiresPasswordChange: boolean;
   profile: MemberIdentity;
 }

@@ -82,6 +82,8 @@ export interface MembershipRequest {
   project?: string | null;
   submittedAt: string;
   status: MembershipRequestStatus;
+  /** @nullable */
+  memberCode?: string | null;
 }
 
 export interface MembershipRequestCreate {
@@ -168,6 +170,11 @@ export interface MemberLogin {
      * @maxLength 32
      */
   code: string;
+  /**
+     * @maxLength 128
+     * @nullable
+     */
+  password?: string | null;
 }
 
 export interface MemberIdentity {
@@ -181,7 +188,20 @@ export interface MemberIdentity {
 export interface MemberSession {
   token: string;
   expiresAt: string;
+  requiresPasswordChange: boolean;
   profile: MemberIdentity;
+}
+
+export interface MemberPasswordSetup {
+  /**
+     * @minLength 8
+     * @maxLength 128
+     */
+  password: string;
+}
+
+export interface MemberPasswordSetupReceipt {
+  success: true;
 }
 
 export interface MemberCode {

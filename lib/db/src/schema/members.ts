@@ -20,6 +20,8 @@ export const profilesTable = pgTable("profiles", {
   status: text("status").notNull().default("approved"),
   memberCodeHash: text("member_code_hash"),
   memberCodeCreatedAt: timestamp("member_code_created_at"),
+  memberPasswordHash: text("member_password_hash"),
+  memberPasswordSetAt: timestamp("member_password_set_at"),
 });
 
 export const membershipRequestsTable = pgTable("membership_requests", {

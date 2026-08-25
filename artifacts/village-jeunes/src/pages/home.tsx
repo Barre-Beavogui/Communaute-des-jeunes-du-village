@@ -5,7 +5,6 @@ import {
   MapPin,
   Search,
   ShieldCheck,
-  UserPlus,
   UsersRound,
 } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -103,11 +102,11 @@ export default function HomePage() {
               <ArrowUpRight className="h-4 w-4" />
             </Link>
             <Link
-              href="/inscription"
+              href="/actualites"
               className="inline-flex items-center gap-2 rounded-full border border-background/25 bg-background/10 px-5 py-3 text-sm font-extrabold text-background backdrop-blur-sm hover:bg-background/20"
-              data-testid="link-home-join"
+              data-testid="link-home-news"
             >
-              <UserPlus className="h-4 w-4" /> Rejoindre l’annuaire
+              <FolderKanban className="h-4 w-4" /> Voir les actualités
             </Link>
           </div>
         </div>
@@ -342,11 +341,11 @@ export default function HomePage() {
               rejoindre le village.
             </p>
             <Link
-              href="/inscription"
+              href="/actualites"
               className="mt-6 inline-flex rounded-full bg-primary px-4 py-2.5 text-xs font-bold text-primary-foreground"
-              data-testid="link-empty-join"
+              data-testid="link-empty-news"
             >
-              Proposer une inscription
+              Voir les actualités
             </Link>
           </div>
         )}

@@ -19,6 +19,7 @@ import {
   VotePollResponse,
 } from "@workspace/api-zod";
 import { loadAnnouncements, loadPolls } from "../lib/community-data";
+import { requireCommunityAccess } from "../lib/community-access";
 import { optionalMemberProfileId, requireMember } from "../lib/member-auth";
 
 const router: IRouter = Router();
@@ -36,7 +37,7 @@ async function isApprovedMember(profileId: string) {
   return Boolean(profile);
 }
 
-router.get("/announcements", async (req, res) => {
+router.get("/announcements", requireCommunityAccess, async (req, res) => {
   const rows = await loadAnnouncements(optionalMemberProfileId(req));
   res.json(ListAnnouncementsResponse.parse(rows));
 });
@@ -99,7 +100,7 @@ router.post("/announcements/:id/like", requireMember, async (req, res) => {
   );
 });
 
-router.get("/polls", async (req, res) => {
+router.get("/polls", requireCommunityAccess, async (req, res) => {
   const rows = await loadPolls(optionalMemberProfileId(req));
   res.json(ListPollsResponse.parse(rows));
 });

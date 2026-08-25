@@ -55,7 +55,7 @@ router.get("/moderation/requests", async (_req, res) => {
 router.patch("/moderation/requests/:id", async (req, res) => {
   const params = ReviewModerationRequestParams.parse(req.params);
   const body = ReviewModerationRequestBody.parse(req.body);
-  const row = await db.transaction(async (tx) => {
+  const result = await db.transaction(async (tx) => {
     const [request] = await tx
       .select()
       .from(membershipRequestsTable)
@@ -63,8 +63,11 @@ router.patch("/moderation/requests/:id", async (req, res) => {
 
     if (!request || request.status !== "pending") return null;
 
+    let memberCode: string | null = null;
     if (body.status === "approved") {
       const profileId = `${slugify(request.name)}-${request.id.slice(0, 8)}`;
+      memberCode = generateMemberCode();
+      const codeCreatedAt = new Date();
       const initials = request.name
         .split(/\s+/)
         .filter(Boolean)
@@ -88,6 +91,10 @@ router.patch("/moderation/requests/:id", async (req, res) => {
           instagram: null,
           privacy: "private",
           status: "approved",
+          memberCodeHash: hashMemberCode(memberCode),
+          memberCodeCreatedAt: codeCreatedAt,
+          memberPasswordHash: null,
+          memberPasswordSetAt: null,
         })
         .onConflictDoNothing({ target: profilesTable.id });
     }
@@ -97,14 +104,19 @@ router.patch("/moderation/requests/:id", async (req, res) => {
       .set({ status: body.status })
       .where(eq(membershipRequestsTable.id, params.id))
       .returning();
-    return updated;
+    return { request: updated, memberCode };
   });
 
-  if (!row) {
+  if (!result) {
     res.status(404).json({ error: "Demande introuvable" });
     return;
   }
-  res.json(ReviewModerationRequestResponse.parse(toRequest(row)));
+  res.json(
+    ReviewModerationRequestResponse.parse({
+      ...toRequest(result.request),
+      memberCode: result.memberCode,
+    }),
+  );
 });
 
 router.delete("/moderation/profiles/:id", async (req, res) => {
@@ -148,6 +160,8 @@ router.post("/moderation/profiles/:id/member-code", async (req, res) => {
     .set({
       memberCodeHash: hashMemberCode(code),
       memberCodeCreatedAt: createdAt,
+      memberPasswordHash: null,
+      memberPasswordSetAt: null,
     })
     .where(eq(profilesTable.id, params.id))
     .returning({ id: profilesTable.id });

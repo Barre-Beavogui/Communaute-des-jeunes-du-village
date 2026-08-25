@@ -1,40 +1,51 @@
 import {
   ArrowUpRight,
   Compass,
+  KeyRound,
   LockKeyhole,
   MapPinned,
   Newspaper,
-  ShieldCheck,
-  Sparkles,
-  UserPlus,
+  UserRound,
   UsersRound,
 } from "lucide-react";
-import type { ReactNode } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useHealthCheck } from "@workspace/api-client-react";
+import { hasMemberSession } from "@/lib/member-session";
 
 const navItems = [
-  { href: "/", label: "Accueil", icon: Compass },
+  { href: "/accueil", label: "Accueil", icon: Compass },
   { href: "/membres", label: "Membres", icon: UsersRound },
   { href: "/actualites", label: "Actualités", icon: Newspaper },
   { href: "/zoboroma", label: "Zoboroma", icon: MapPinned },
-  { href: "/inscription", label: "Inscription", icon: UserPlus },
-  { href: "/admin", label: "Administration", icon: ShieldCheck },
 ];
-
-const mobileNavItems = navItems.filter((item) => item.href !== "/zoboroma");
 
 export function VillageShell({ children }: { children: ReactNode }) {
   const [location] = useLocation();
+  const [memberActive, setMemberActive] = useState(() => hasMemberSession());
   const health = useHealthCheck();
   const currentYear = new Date().getFullYear();
+  const isAdminPage = location.startsWith("/admin");
+  const isEntryPage =
+    location === "/" ||
+    location.startsWith("/inscription") ||
+    location.startsWith("/connexion-membre");
+  const showPrivateNavigation = memberActive && !isAdminPage && !isEntryPage;
+  const homeHref = showPrivateNavigation ? "/accueil" : "/";
+
+  useEffect(() => {
+    const refreshSession = () => setMemberActive(hasMemberSession());
+    window.addEventListener("zoboroma-member-session", refreshSession);
+    return () =>
+      window.removeEventListener("zoboroma-member-session", refreshSession);
+  }, []);
 
   return (
     <div className="vj-noise min-h-[100dvh] bg-background text-foreground">
       <header className="sticky top-0 z-40 border-b border-border/70 bg-background/90 backdrop-blur-xl">
         <div className="mx-auto flex h-[74px] max-w-[1240px] items-center justify-between px-5 sm:px-8">
           <Link
-            href="/"
+            href={homeHref}
             className="group flex items-center gap-3"
             data-testid="link-home-logo"
           >
@@ -46,18 +57,14 @@ export function VillageShell({ children }: { children: ReactNode }) {
             </span>
           </Link>
 
-          <nav
-            className="hidden items-center gap-1 md:flex"
-            aria-label="Navigation principale"
-          >
-            {navItems
-              .filter((item) => item.href !== "/inscription")
-              .map((item) => {
+          {showPrivateNavigation && (
+            <nav
+              className="hidden items-center gap-1 md:flex"
+              aria-label="Navigation principale"
+            >
+              {navItems.map((item) => {
                 const Icon = item.icon;
-                const isActive =
-                  item.href === "/"
-                    ? location === "/"
-                    : location.startsWith(item.href);
+                const isActive = location.startsWith(item.href);
                 return (
                   <Link
                     key={item.href}
@@ -70,7 +77,8 @@ export function VillageShell({ children }: { children: ReactNode }) {
                   </Link>
                 );
               })}
-          </nav>
+            </nav>
+          )}
 
           <div className="flex items-center gap-3">
             <div
@@ -82,14 +90,30 @@ export function VillageShell({ children }: { children: ReactNode }) {
               />
               {health.isError ? "Mode aperçu" : "Village en ligne"}
             </div>
-            <Link
-              href="/inscription"
-              className="flex items-center gap-2 rounded-full bg-foreground px-4 py-2.5 text-xs font-bold text-background hover:-translate-y-0.5 hover:shadow-lg"
-              data-testid="link-join-header"
-            >
-              <Sparkles className="h-3.5 w-3.5" />
-              Rejoindre
-            </Link>
+            {!isAdminPage && (
+              <Link
+                href={
+                  showPrivateNavigation
+                    ? "/connexion-membre"
+                    : location.startsWith("/connexion-membre")
+                      ? "/"
+                      : "/connexion-membre"
+                }
+                className="flex items-center gap-2 rounded-full bg-foreground px-4 py-2.5 text-xs font-bold text-background hover:-translate-y-0.5 hover:shadow-lg"
+                data-testid="link-member-header"
+              >
+                {showPrivateNavigation ? (
+                  <UserRound className="h-3.5 w-3.5" />
+                ) : (
+                  <KeyRound className="h-3.5 w-3.5" />
+                )}
+                {showPrivateNavigation
+                  ? "Mon espace"
+                  : location.startsWith("/connexion-membre")
+                    ? "S’inscrire"
+                    : "Connexion"}
+              </Link>
+            )}
           </div>
         </div>
       </header>
@@ -129,7 +153,7 @@ export function VillageShell({ children }: { children: ReactNode }) {
           <div className="grid gap-9 border-b border-background/15 pb-10 lg:grid-cols-[1.25fr_.75fr_.9fr]">
             <div>
               <Link
-                href="/"
+                href={homeHref}
                 className="inline-flex items-center gap-3"
                 data-testid="link-footer-home"
               >
@@ -152,14 +176,19 @@ export function VillageShell({ children }: { children: ReactNode }) {
                 Découvrir
               </p>
               <div className="mt-4 grid gap-3 text-sm font-bold">
-                {[
-                  ["/membres", "Les membres"],
-                  ["/actualites", "Actualités et sondages"],
-                  ["/connexion-membre", "Connexion membre"],
-                  ["/zoboroma", "Le village"],
-                  ["/inscription", "Rejoindre l’annuaire"],
-                  ["/admin", "Administration"],
-                ].map(([href, label]) => (
+                {(showPrivateNavigation
+                  ? [
+                      ["/accueil", "Accueil"],
+                      ["/membres", "Les membres"],
+                      ["/actualites", "Actualités et sondages"],
+                      ["/zoboroma", "Le village"],
+                      ["/connexion-membre", "Mon espace membre"],
+                    ]
+                  : [
+                      ["/", "Demander une inscription"],
+                      ["/connexion-membre", "Connexion membre"],
+                    ]
+                ).map(([href, label]) => (
                   <Link
                     key={href}
                     href={href}
@@ -194,29 +223,28 @@ export function VillageShell({ children }: { children: ReactNode }) {
         </div>
       </footer>
 
-      <nav
-        className="fixed bottom-0 left-0 right-0 z-40 grid grid-cols-5 border-t border-border/80 bg-background/95 px-2 py-2 backdrop-blur-xl md:hidden"
-        aria-label="Navigation mobile"
-      >
-        {mobileNavItems.map((item) => {
-          const Icon = item.icon;
-          const isActive =
-            item.href === "/"
-              ? location === "/"
-              : location.startsWith(item.href);
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`flex flex-col items-center gap-1 py-1.5 text-[10px] font-bold ${isActive ? "text-primary" : "text-muted-foreground"}`}
-              data-testid={`link-mobile-${item.label.toLowerCase().replaceAll(" ", "-")}`}
-            >
-              <Icon className="h-5 w-5" />
-              {item.label}
-            </Link>
-          );
-        })}
-      </nav>
+      {showPrivateNavigation && (
+        <nav
+          className="fixed bottom-0 left-0 right-0 z-40 grid grid-cols-4 border-t border-border/80 bg-background/95 px-2 py-2 backdrop-blur-xl md:hidden"
+          aria-label="Navigation mobile"
+        >
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = location.startsWith(item.href);
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`flex flex-col items-center gap-1 py-1.5 text-[10px] font-bold ${isActive ? "text-primary" : "text-muted-foreground"}`}
+                data-testid={`link-mobile-${item.label.toLowerCase().replaceAll(" ", "-")}`}
+              >
+                <Icon className="h-5 w-5" />
+                {item.label}
+              </Link>
+            );
+          })}
+        </nav>
+      )}
     </div>
   );
 }

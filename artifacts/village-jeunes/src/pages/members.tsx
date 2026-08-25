@@ -109,10 +109,10 @@ export default function MembersPage() {
             </div>
           </div>
           <Link
-            href="/inscription"
+            href="/actualites"
             className="mt-5 flex items-center justify-between border-t border-background/15 pt-4 text-xs font-bold text-accent"
           >
-            Ajouter mon parcours <ArrowRight className="h-4 w-4" />
+            Voir les actualités <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
       </section>

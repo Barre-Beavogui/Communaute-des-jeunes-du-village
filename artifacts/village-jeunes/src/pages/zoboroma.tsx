@@ -243,10 +243,10 @@ export default function ZoboromaPage() {
           </h2>
         </div>
         <Link
-          href="/inscription"
+          href="/actualites"
           className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full bg-foreground px-5 py-3 text-xs font-bold text-background"
         >
-          Rejoindre la communauté <ArrowRight className="h-4 w-4" />
+          Participer aux actualités <ArrowRight className="h-4 w-4" />
         </Link>
       </section>
     </div>

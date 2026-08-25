@@ -6,15 +6,10 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface MemberLogin {
+export interface MemberPasswordSetup {
   /**
      * @minLength 8
-     * @maxLength 32
-     */
-  code: string;
-  /**
      * @maxLength 128
-     * @nullable
      */
-  password?: string | null;
+  password: string;
 }

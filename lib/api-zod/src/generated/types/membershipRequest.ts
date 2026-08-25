@@ -25,4 +25,6 @@ export interface MembershipRequest {
   project?: string | null;
   submittedAt: string;
   status: MembershipRequestStatus;
+  /** @nullable */
+  memberCode?: string | null;
 }
