@@ -6,15 +6,15 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface MemberLogin {
+export interface MemberContactUpdate {
   /**
-     * @minLength 5
      * @maxLength 254
+     * @nullable
      */
-  identifier: string;
+  email?: string | null;
   /**
-     * @minLength 8
-     * @maxLength 128
+     * @maxLength 40
+     * @nullable
      */
-  password: string;
+  phone?: string | null;
 }

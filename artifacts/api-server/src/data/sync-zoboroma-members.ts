@@ -57,6 +57,18 @@ export async function syncZoboromaMembers() {
   await db.execute(
     sql`ALTER TABLE profiles ADD COLUMN IF NOT EXISTS member_password_set_at timestamp`,
   );
+  await db.execute(
+    sql`ALTER TABLE profiles ADD COLUMN IF NOT EXISTS login_email text`,
+  );
+  await db.execute(
+    sql`ALTER TABLE profiles ADD COLUMN IF NOT EXISTS login_email_normalized text`,
+  );
+  await db.execute(
+    sql`ALTER TABLE profiles ADD COLUMN IF NOT EXISTS login_phone text`,
+  );
+  await db.execute(
+    sql`ALTER TABLE profiles ADD COLUMN IF NOT EXISTS login_phone_normalized text`,
+  );
   await db.execute(sql`
     CREATE UNIQUE INDEX IF NOT EXISTS profiles_member_code_hash_unique
     ON profiles (member_code_hash)
@@ -126,6 +138,25 @@ export async function syncZoboromaMembers() {
   await db.execute(
     sql`ALTER TABLE membership_requests ADD COLUMN IF NOT EXISTS project text`,
   );
+
+  await db.execute(sql`
+    UPDATE profiles AS profile
+    SET
+      login_email = COALESCE(profile.login_email, request.email),
+      login_email_normalized = COALESCE(
+        profile.login_email_normalized,
+        lower(trim(request.email))
+      ),
+      login_phone = COALESCE(profile.login_phone, request.phone),
+      login_phone_normalized = COALESCE(
+        profile.login_phone_normalized,
+        NULLIF(regexp_replace(COALESCE(request.phone, ''), '[^0-9]', '', 'g'), '')
+      )
+    FROM membership_requests AS request
+    WHERE
+      request.status = 'approved'
+      AND right(profile.id, 8) = left(request.id, 8)
+  `);
 
   await db.transaction(async (tx) => {
     // Existing deployments created this legacy field as NOT NULL.

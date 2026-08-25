@@ -6,15 +6,10 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface MemberLogin {
-  /**
-     * @minLength 5
-     * @maxLength 254
-     */
-  identifier: string;
+export interface MemberActivation {
   /**
      * @minLength 8
-     * @maxLength 128
+     * @maxLength 32
      */
-  password: string;
+  code: string;
 }

@@ -134,21 +134,47 @@ export const AdminLoginResponse = zod.object({
 
 
 /**
- * @summary Open a member session with a personal code
+ * @summary Open a member session with an email or phone and password
  */
-export const memberLoginBodyCodeMin = 8;
-export const memberLoginBodyCodeMax = 32;
+export const memberLoginBodyIdentifierMin = 5;
+export const memberLoginBodyIdentifierMax = 254;
 
+export const memberLoginBodyPasswordMin = 8;
 export const memberLoginBodyPasswordMax = 128;
 
 
 
 export const MemberLoginBody = zod.object({
-  "code": zod.string().min(memberLoginBodyCodeMin).max(memberLoginBodyCodeMax),
-  "password": zod.string().max(memberLoginBodyPasswordMax).nullish()
+  "identifier": zod.string().min(memberLoginBodyIdentifierMin).max(memberLoginBodyIdentifierMax),
+  "password": zod.string().min(memberLoginBodyPasswordMin).max(memberLoginBodyPasswordMax)
 })
 
 export const MemberLoginResponse = zod.object({
+  "token": zod.string(),
+  "expiresAt": zod.string(),
+  "requiresPasswordChange": zod.boolean(),
+  "profile": zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "initials": zod.string(),
+  "avatarUrl": zod.string().nullish()
+})
+})
+
+
+/**
+ * @summary Start first-login activation with a personal code
+ */
+export const memberActivateBodyCodeMin = 8;
+export const memberActivateBodyCodeMax = 32;
+
+
+
+export const MemberActivateBody = zod.object({
+  "code": zod.string().min(memberActivateBodyCodeMin).max(memberActivateBodyCodeMax)
+})
+
+export const MemberActivateResponse = zod.object({
   "token": zod.string(),
   "expiresAt": zod.string(),
   "requiresPasswordChange": zod.boolean(),
@@ -322,6 +348,17 @@ export const DeleteModerationProfileResponse = zod.void()
  */
 export const GenerateMemberCodeParams = zod.object({
   "id": zod.coerce.string()
+})
+
+export const generateMemberCodeBodyEmailMax = 254;
+
+export const generateMemberCodeBodyPhoneMax = 40;
+
+
+
+export const GenerateMemberCodeBody = zod.object({
+  "email": zod.string().max(generateMemberCodeBodyEmailMax).nullish(),
+  "phone": zod.string().max(generateMemberCodeBodyPhoneMax).nullish()
 })
 
 export const GenerateMemberCodeResponse = zod.object({

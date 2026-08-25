@@ -7,6 +7,7 @@ import {
   LogOut,
   Mail,
   MapPin,
+  MessageCircle,
   Phone,
   ShieldCheck,
   Trash2,
@@ -30,6 +31,7 @@ import {
   useReviewModerationRequest,
 } from "@workspace/api-client-react";
 import { AdminCommunity } from "@/components/admin-community";
+import { buildMemberInvitation } from "@/lib/member-invitation";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -56,9 +58,13 @@ export default function AdminPage() {
   const [deleteError, setDeleteError] = useState("");
   const [generatingCodeId, setGeneratingCodeId] = useState<string | null>(null);
   const [codeError, setCodeError] = useState("");
+  const [manualEmail, setManualEmail] = useState("");
+  const [manualPhone, setManualPhone] = useState("");
   const [generatedCode, setGeneratedCode] = useState<{
     memberName: string;
     code: string;
+    email: string;
+    phone: string;
   } | null>(null);
   const login = useAdminLogin();
   const requestsQuery = useListModerationRequests({
@@ -80,6 +86,9 @@ export default function AdminPage() {
   const generateCode = useGenerateMemberCode();
   const requests = requestsQuery.data ?? [];
   const members = membersQuery.data ?? [];
+  const invitation = generatedCode
+    ? buildMemberInvitation(generatedCode)
+    : null;
 
   const openSession = (event: FormEvent) => {
     event.preventDefault();
@@ -121,10 +130,24 @@ export default function AdminPage() {
     setGeneratingCodeId(id);
     setCodeError("");
     generateCode.mutate(
-      { id },
       {
-        onSuccess: (result) =>
-          setGeneratedCode({ memberName, code: result.code }),
+        id,
+        data: {
+          email: manualEmail.trim() || null,
+          phone: manualPhone.trim() || null,
+        },
+      },
+      {
+        onSuccess: (result) => {
+          setGeneratedCode({
+            memberName,
+            code: result.code,
+            email: manualEmail.trim(),
+            phone: manualPhone.trim(),
+          });
+          setManualEmail("");
+          setManualPhone("");
+        },
         onError: () =>
           setCodeError(
             "Le code n’a pas pu être créé. Reconnectez-vous puis réessayez.",
@@ -144,6 +167,8 @@ export default function AdminPage() {
             setGeneratedCode({
               memberName: result.name,
               code: result.memberCode,
+              email: result.email,
+              phone: result.phone ?? "",
             });
           }
           await Promise.all([
@@ -471,30 +496,110 @@ export default function AdminPage() {
           </p>
         )}
 
-        {generatedCode && (
+        {generatedCode && invitation && (
           <div className="border-b border-secondary/20 bg-secondary/8 px-5 py-5 sm:px-6">
-            <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+            <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
               <div>
                 <p className="text-xs font-extrabold text-secondary">
-                  Code personnel de {generatedCode.memberName}
+                  Invitation de {generatedCode.memberName}
                 </p>
                 <p className="mt-2 font-mono text-xl font-bold tracking-[.12em]">
                   {generatedCode.code}
                 </p>
                 <p className="mt-2 text-[10px] leading-4 text-muted-foreground">
-                  Transmettez-le en privé. Il servira d’identifiant personnel au
-                  membre. Pour des raisons de sécurité, ce code complet ne sera
-                  affiché qu’ici.
+                  Le code et le lien sont déjà insérés dans le message
+                  ci-dessous.
                 </p>
               </div>
               <button
                 type="button"
-                onClick={() =>
-                  navigator.clipboard.writeText(generatedCode.code)
-                }
-                className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full bg-secondary px-4 py-2.5 text-xs font-bold text-secondary-foreground"
+                onClick={() => setGeneratedCode(null)}
+                className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-border text-muted-foreground"
+                aria-label="Fermer l’invitation"
               >
-                <Copy className="h-4 w-4" /> Copier le code
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="mt-5 grid gap-3 sm:grid-cols-2">
+              <label className="block space-y-2 text-[10px] font-bold">
+                Adresse email du membre
+                <input
+                  type="email"
+                  value={generatedCode.email}
+                  onChange={(event) =>
+                    setGeneratedCode((current) =>
+                      current
+                        ? { ...current, email: event.target.value }
+                        : current,
+                    )
+                  }
+                  className="field"
+                  placeholder="membre@exemple.com"
+                />
+              </label>
+              <label className="block space-y-2 text-[10px] font-bold">
+                Numéro WhatsApp
+                <input
+                  type="tel"
+                  value={generatedCode.phone}
+                  onChange={(event) =>
+                    setGeneratedCode((current) =>
+                      current
+                        ? { ...current, phone: event.target.value }
+                        : current,
+                    )
+                  }
+                  className="field"
+                  placeholder="+224…"
+                />
+              </label>
+            </div>
+
+            <div className="mt-4 rounded-2xl border border-border bg-card p-4">
+              <p className="text-[10px] font-bold uppercase tracking-[.12em] text-muted-foreground">
+                Objet : {invitation.subject}
+              </p>
+              <pre className="mt-3 whitespace-pre-wrap font-sans text-xs leading-6 text-foreground/75">
+                {invitation.message}
+              </pre>
+            </div>
+
+            <div className="mt-4 flex flex-wrap gap-2">
+              {invitation.emailHref ? (
+                <a
+                  href={invitation.emailHref}
+                  className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-4 py-2.5 text-xs font-bold text-primary-foreground"
+                >
+                  <Mail className="h-4 w-4" /> Envoyer par email
+                </a>
+              ) : (
+                <span className="inline-flex cursor-not-allowed items-center gap-2 rounded-full bg-muted px-4 py-2.5 text-xs font-bold text-muted-foreground">
+                  <Mail className="h-4 w-4" /> Email manquant
+                </span>
+              )}
+              {invitation.whatsappHref ? (
+                <a
+                  href={invitation.whatsappHref}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center justify-center gap-2 rounded-full bg-secondary px-4 py-2.5 text-xs font-bold text-secondary-foreground"
+                >
+                  <MessageCircle className="h-4 w-4" /> Envoyer sur WhatsApp
+                </a>
+              ) : (
+                <span className="inline-flex cursor-not-allowed items-center gap-2 rounded-full bg-muted px-4 py-2.5 text-xs font-bold text-muted-foreground">
+                  <MessageCircle className="h-4 w-4" /> WhatsApp manquant
+                </span>
+              )}
+              <button
+                type="button"
+                onClick={() =>
+                  navigator.clipboard.writeText(invitation.message)
+                }
+                className="inline-flex items-center justify-center gap-2 rounded-full border border-border bg-card px-4 py-2.5 text-xs font-bold text-muted-foreground"
+              >
+                <Copy className="h-4 w-4" /> Copier le message
               </button>
             </div>
           </div>
@@ -554,6 +659,10 @@ export default function AdminPage() {
                     <AlertDialogTrigger asChild>
                       <button
                         type="button"
+                        onClick={() => {
+                          setManualEmail("");
+                          setManualPhone("");
+                        }}
                         disabled={generatingCodeId === member.id}
                         className="inline-flex items-center justify-center gap-2 rounded-full border border-secondary/30 px-4 py-2.5 text-xs font-bold text-secondary hover:bg-secondary hover:text-secondary-foreground disabled:opacity-50"
                         data-testid={`button-member-code-${member.id}`}
@@ -576,9 +685,41 @@ export default function AdminPage() {
                           connexion et choisir un nouveau mot de passe.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        <label className="space-y-2 text-xs font-bold">
+                          Email de connexion
+                          <input
+                            type="email"
+                            value={manualEmail}
+                            onChange={(event) =>
+                              setManualEmail(event.target.value)
+                            }
+                            className="field"
+                            placeholder="membre@exemple.com"
+                          />
+                        </label>
+                        <label className="space-y-2 text-xs font-bold">
+                          Téléphone / WhatsApp
+                          <input
+                            type="tel"
+                            value={manualPhone}
+                            onChange={(event) =>
+                              setManualPhone(event.target.value)
+                            }
+                            className="field"
+                            placeholder="+224…"
+                          />
+                        </label>
+                        <p className="text-[10px] leading-4 text-muted-foreground sm:col-span-2">
+                          Indiquez au moins l’email ou le téléphone. Le membre
+                          utilisera cet identifiant après avoir créé son mot de
+                          passe.
+                        </p>
+                      </div>
                       <AlertDialogFooter>
                         <AlertDialogCancel>Annuler</AlertDialogCancel>
                         <AlertDialogAction
+                          disabled={!manualEmail.trim() && !manualPhone.trim()}
                           onClick={() =>
                             createMemberCode(member.id, member.name)
                           }

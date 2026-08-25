@@ -1,9 +1,12 @@
-import { Router, type IRouter } from "express";
+import { Router, type IRouter, type Request } from "express";
 import { and, eq, isNull } from "drizzle-orm";
 import { db } from "@workspace/db";
 import { profilesTable } from "@workspace/db/schema";
-import { MemberLoginBody, MemberLoginResponse } from "@workspace/api-zod";
 import {
+  MemberActivateBody,
+  MemberActivateResponse,
+  MemberLoginBody,
+  MemberLoginResponse,
   SetMemberPasswordBody,
   SetMemberPasswordResponse,
 } from "@workspace/api-zod";
@@ -13,6 +16,8 @@ import {
   hashMemberCode,
   hashMemberPassword,
   memberAuthIsConfigured,
+  normalizeLoginEmail,
+  normalizeLoginPhone,
   requireMemberSetup,
   verifyMemberPassword,
 } from "../lib/member-auth";
@@ -22,14 +27,7 @@ const attempts = new Map<string, { count: number; resetAt: number }>();
 const MAX_ATTEMPTS = 8;
 const WINDOW_MS = 15 * 60 * 1000;
 
-router.post("/member/login", async (req, res) => {
-  if (!memberAuthIsConfigured()) {
-    res
-      .status(503)
-      .json({ error: "L’espace membre n’est pas encore configuré." });
-    return;
-  }
-
+function attemptEntry(req: Request) {
   const key = req.ip || "unknown";
   const now = Date.now();
   const current = attempts.get(key);
@@ -37,13 +35,23 @@ router.post("/member/login", async (req, res) => {
     !current || current.resetAt <= now
       ? { count: 0, resetAt: now + WINDOW_MS }
       : current;
+  return { key, entry };
+}
 
+router.post("/member/activate", async (req, res) => {
+  if (!memberAuthIsConfigured()) {
+    res
+      .status(503)
+      .json({ error: "L’espace membre n’est pas encore configuré." });
+    return;
+  }
+  const { key, entry } = attemptEntry(req);
   if (entry.count >= MAX_ATTEMPTS) {
     res.status(429).json({ error: "Trop de tentatives. Réessayez plus tard." });
     return;
   }
 
-  const body = MemberLoginBody.parse(req.body);
+  const body = MemberActivateBody.parse(req.body);
   const [profile] = await db
     .select({
       id: profilesTable.id,
@@ -51,6 +59,8 @@ router.post("/member/login", async (req, res) => {
       initials: profilesTable.initials,
       avatarUrl: profilesTable.avatarUrl,
       memberPasswordHash: profilesTable.memberPasswordHash,
+      loginEmailNormalized: profilesTable.loginEmailNormalized,
+      loginPhoneNormalized: profilesTable.loginPhoneNormalized,
     })
     .from(profilesTable)
     .where(
@@ -62,30 +72,97 @@ router.post("/member/login", async (req, res) => {
 
   if (!profile) {
     attempts.set(key, { ...entry, count: entry.count + 1 });
-    res.status(401).json({ error: "Code membre incorrect." });
+    res.status(401).json({ error: "Code de première connexion incorrect." });
+    return;
+  }
+  if (profile.memberPasswordHash) {
+    res.status(409).json({
+      error:
+        "Ce compte est déjà activé. Connectez-vous avec votre email ou téléphone.",
+    });
+    return;
+  }
+  if (!profile.loginEmailNormalized && !profile.loginPhoneNormalized) {
+    res.status(409).json({
+      error:
+        "L’administrateur doit ajouter un email ou un téléphone à ce compte.",
+    });
     return;
   }
 
   attempts.delete(key);
-  const requiresPasswordChange = !profile.memberPasswordHash;
-  if (
-    profile.memberPasswordHash &&
-    (!body.password ||
-      !(await verifyMemberPassword(body.password, profile.memberPasswordHash)))
-  ) {
-    attempts.set(key, { ...entry, count: entry.count + 1 });
-    res.status(401).json({ error: "Code ou mot de passe incorrect." });
+  const session = createMemberSetupSession(profile.id);
+  res.json(
+    MemberActivateResponse.parse({
+      token: session.token,
+      expiresAt: session.expiresAt.toISOString(),
+      requiresPasswordChange: true,
+      profile: {
+        id: profile.id,
+        name: profile.name,
+        initials: profile.initials,
+        avatarUrl: profile.avatarUrl,
+      },
+    }),
+  );
+});
+
+router.post("/member/login", async (req, res) => {
+  if (!memberAuthIsConfigured()) {
+    res
+      .status(503)
+      .json({ error: "L’espace membre n’est pas encore configuré." });
+    return;
+  }
+  const { key, entry } = attemptEntry(req);
+  if (entry.count >= MAX_ATTEMPTS) {
+    res.status(429).json({ error: "Trop de tentatives. Réessayez plus tard." });
     return;
   }
 
-  const session = requiresPasswordChange
-    ? createMemberSetupSession(profile.id)
-    : createMemberSession(profile.id);
+  const body = MemberLoginBody.parse(req.body);
+  const identifier = body.identifier.trim();
+  const isEmail = identifier.includes("@");
+  const normalizedIdentifier = isEmail
+    ? normalizeLoginEmail(identifier)
+    : normalizeLoginPhone(identifier);
+  const rows = await db
+    .select({
+      id: profilesTable.id,
+      name: profilesTable.name,
+      initials: profilesTable.initials,
+      avatarUrl: profilesTable.avatarUrl,
+      memberPasswordHash: profilesTable.memberPasswordHash,
+    })
+    .from(profilesTable)
+    .where(
+      and(
+        isEmail
+          ? eq(profilesTable.loginEmailNormalized, normalizedIdentifier)
+          : eq(profilesTable.loginPhoneNormalized, normalizedIdentifier),
+        eq(profilesTable.status, "approved"),
+      ),
+    );
+  const profile = rows.length === 1 ? rows[0] : null;
+
+  if (
+    !profile?.memberPasswordHash ||
+    !(await verifyMemberPassword(body.password, profile.memberPasswordHash))
+  ) {
+    attempts.set(key, { ...entry, count: entry.count + 1 });
+    res
+      .status(401)
+      .json({ error: "Email, téléphone ou mot de passe incorrect." });
+    return;
+  }
+
+  attempts.delete(key);
+  const session = createMemberSession(profile.id);
   res.json(
     MemberLoginResponse.parse({
       token: session.token,
       expiresAt: session.expiresAt.toISOString(),
-      requiresPasswordChange,
+      requiresPasswordChange: false,
       profile: {
         id: profile.id,
         name: profile.name,

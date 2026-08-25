@@ -26,7 +26,9 @@ import type {
   AnnouncementCreate,
   AnnouncementLike,
   HealthStatus,
+  MemberActivation,
   MemberCode,
+  MemberContactUpdate,
   MemberLogin,
   MemberPasswordSetup,
   MemberPasswordSetupReceipt,
@@ -530,7 +532,7 @@ export const getMemberLoginUrl = () => {
 }
 
 /**
- * @summary Open a member session with a personal code
+ * @summary Open a member session with an email or phone and password
  */
 export const memberLogin = async (memberLogin: MemberLogin, options?: Parameters<typeof customFetch>[1]): Promise<MemberSession> => {
 
@@ -579,7 +581,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type MemberLoginMutationError = ErrorType<void>
 
     /**
- * @summary Open a member session with a personal code
+ * @summary Open a member session with an email or phone and password
  */
 export const useMemberLogin = <TError = ErrorType<void>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof memberLogin>>, TError,{data: BodyType<MemberLogin>}, TContext>, request?: SecondParameter<typeof customFetch>}
@@ -590,6 +592,77 @@ export const useMemberLogin = <TError = ErrorType<void>,
         TContext
       > => {
       return useMutation(getMemberLoginMutationOptions(options));
+    }
+
+export const getMemberActivateUrl = () => {
+
+
+
+
+  return `/api/member/activate`
+}
+
+/**
+ * @summary Start first-login activation with a personal code
+ */
+export const memberActivate = async (memberActivation: MemberActivation, options?: Parameters<typeof customFetch>[1]): Promise<MemberSession> => {
+
+  return customFetch<MemberSession>(getMemberActivateUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(memberActivation)
+  }
+);}
+
+
+
+
+
+export const getMemberActivateMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof memberActivate>>, TError,{data: BodyType<MemberActivation>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof memberActivate>>, TError,{data: BodyType<MemberActivation>}, TContext> => {
+
+const mutationKey = ['memberActivate'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof memberActivate>>, {data: BodyType<MemberActivation>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  memberActivate(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type MemberActivateMutationResult = NonNullable<Awaited<ReturnType<typeof memberActivate>>>
+    export type MemberActivateMutationBody = BodyType<MemberActivation>
+    export type MemberActivateMutationError = ErrorType<void>
+
+    /**
+ * @summary Start first-login activation with a personal code
+ */
+export const useMemberActivate = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof memberActivate>>, TError,{data: BodyType<MemberActivation>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof memberActivate>>,
+        TError,
+        {data: BodyType<MemberActivation>},
+        TContext
+      > => {
+      return useMutation(getMemberActivateMutationOptions(options));
     }
 
 export const getSetMemberPasswordUrl = () => {
@@ -1191,14 +1264,15 @@ export const getGenerateMemberCodeUrl = (id: string,) => {
 /**
  * @summary Create or replace a member personal code
  */
-export const generateMemberCode = async (id: string, options?: Parameters<typeof customFetch>[1]): Promise<MemberCode> => {
+export const generateMemberCode = async (id: string,
+    memberContactUpdate: MemberContactUpdate, options?: Parameters<typeof customFetch>[1]): Promise<MemberCode> => {
 
   return customFetch<MemberCode>(getGenerateMemberCodeUrl(id),
   {
     ...options,
-    method: 'POST'
-
-
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(memberContactUpdate)
   }
 );}
 
@@ -1207,8 +1281,8 @@ export const generateMemberCode = async (id: string, options?: Parameters<typeof
 
 
 export const getGenerateMemberCodeMutationOptions = <TError = ErrorType<void>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof generateMemberCode>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof generateMemberCode>>, TError,{id: string}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof generateMemberCode>>, TError,{id: string;data: BodyType<MemberContactUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof generateMemberCode>>, TError,{id: string;data: BodyType<MemberContactUpdate>}, TContext> => {
 
 const mutationKey = ['generateMemberCode'];
 const {mutation: mutationOptions, request: requestOptions} = options ?
@@ -1220,10 +1294,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof generateMemberCode>>, {id: string}> = (props) => {
-          const {id} = props ?? {};
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof generateMemberCode>>, {id: string;data: BodyType<MemberContactUpdate>}> = (props) => {
+          const {id,data} = props ?? {};
 
-          return  generateMemberCode(id,requestOptions)
+          return  generateMemberCode(id,data,requestOptions)
         }
 
 
@@ -1234,18 +1308,18 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
   return  { mutationFn, ...mutationOptions }}
 
     export type GenerateMemberCodeMutationResult = NonNullable<Awaited<ReturnType<typeof generateMemberCode>>>
-
+    export type GenerateMemberCodeMutationBody = BodyType<MemberContactUpdate>
     export type GenerateMemberCodeMutationError = ErrorType<void>
 
     /**
  * @summary Create or replace a member personal code
  */
 export const useGenerateMemberCode = <TError = ErrorType<void>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof generateMemberCode>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof generateMemberCode>>, TError,{id: string;data: BodyType<MemberContactUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof generateMemberCode>>,
         TError,
-        {id: string},
+        {id: string;data: BodyType<MemberContactUpdate>},
         TContext
       > => {
       return useMutation(getGenerateMemberCodeMutationOptions(options));

@@ -166,15 +166,23 @@ export interface ModerationReview {
 
 export interface MemberLogin {
   /**
+     * @minLength 5
+     * @maxLength 254
+     */
+  identifier: string;
+  /**
+     * @minLength 8
+     * @maxLength 128
+     */
+  password: string;
+}
+
+export interface MemberActivation {
+  /**
      * @minLength 8
      * @maxLength 32
      */
   code: string;
-  /**
-     * @maxLength 128
-     * @nullable
-     */
-  password?: string | null;
 }
 
 export interface MemberIdentity {
@@ -207,6 +215,19 @@ export interface MemberPasswordSetupReceipt {
 export interface MemberCode {
   code: string;
   createdAt: string;
+}
+
+export interface MemberContactUpdate {
+  /**
+     * @maxLength 254
+     * @nullable
+     */
+  email?: string | null;
+  /**
+     * @maxLength 40
+     * @nullable
+     */
+  phone?: string | null;
 }
 
 /**

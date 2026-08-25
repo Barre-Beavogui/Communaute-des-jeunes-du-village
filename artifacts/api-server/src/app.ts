@@ -66,6 +66,7 @@ app.use(
       req.method === "POST" &&
       [
         "/admin/login",
+        "/member/activate",
         "/member/login",
         "/member/set-password",
         "/membership-requests",

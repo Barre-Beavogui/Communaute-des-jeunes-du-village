@@ -10,6 +10,7 @@ import {
 } from "@workspace/db/schema";
 import {
   DeleteModerationProfileParams,
+  GenerateMemberCodeBody,
   GenerateMemberCodeParams,
   GenerateMemberCodeResponse,
   ListModerationRequestsResponse,
@@ -18,7 +19,12 @@ import {
   ReviewModerationRequestResponse,
 } from "@workspace/api-zod";
 import { requireAdmin } from "../lib/admin-auth";
-import { generateMemberCode, hashMemberCode } from "../lib/member-auth";
+import {
+  generateMemberCode,
+  hashMemberCode,
+  normalizeLoginEmail,
+  normalizeLoginPhone,
+} from "../lib/member-auth";
 
 const router: IRouter = Router();
 
@@ -95,6 +101,12 @@ router.patch("/moderation/requests/:id", async (req, res) => {
           memberCodeCreatedAt: codeCreatedAt,
           memberPasswordHash: null,
           memberPasswordSetAt: null,
+          loginEmail: request.email,
+          loginEmailNormalized: normalizeLoginEmail(request.email),
+          loginPhone: request.phone,
+          loginPhoneNormalized: request.phone
+            ? normalizeLoginPhone(request.phone)
+            : null,
         })
         .onConflictDoNothing({ target: profilesTable.id });
     }
@@ -153,6 +165,19 @@ router.delete("/moderation/profiles/:id", async (req, res) => {
 
 router.post("/moderation/profiles/:id/member-code", async (req, res) => {
   const params = GenerateMemberCodeParams.parse(req.params);
+  const body = GenerateMemberCodeBody.parse(req.body);
+  const email = body.email?.trim() || null;
+  const phone = body.phone?.trim() || null;
+  const normalizedPhone = phone ? normalizeLoginPhone(phone) : null;
+  if (
+    (!email || !email.includes("@")) &&
+    (!normalizedPhone || normalizedPhone.length < 6)
+  ) {
+    res.status(400).json({
+      error: "Ajoutez une adresse email ou un numéro de téléphone valide.",
+    });
+    return;
+  }
   const code = generateMemberCode();
   const createdAt = new Date();
   const [updated] = await db
@@ -162,6 +187,18 @@ router.post("/moderation/profiles/:id/member-code", async (req, res) => {
       memberCodeCreatedAt: createdAt,
       memberPasswordHash: null,
       memberPasswordSetAt: null,
+      ...(email
+        ? {
+            loginEmail: email,
+            loginEmailNormalized: normalizeLoginEmail(email),
+          }
+        : {}),
+      ...(phone
+        ? {
+            loginPhone: phone,
+            loginPhoneNormalized: normalizedPhone,
+          }
+        : {}),
     })
     .where(eq(profilesTable.id, params.id))
     .returning({ id: profilesTable.id });

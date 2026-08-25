@@ -124,7 +124,7 @@ paths:
     post:
       operationId: memberLogin
       tags: [member]
-      summary: Open a member session with a personal code
+      summary: Open a member session with an email or phone and password
       requestBody:
         required: true
         content:
@@ -139,7 +139,27 @@ paths:
               schema:
                 $ref: "#/components/schemas/MemberSession"
         "401":
-          description: Invalid member code
+          description: Invalid member credentials
+  /member/activate:
+    post:
+      operationId: memberActivate
+      tags: [member]
+      summary: Start first-login activation with a personal code
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MemberActivation"
+      responses:
+        "200":
+          description: First-login session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MemberSession"
+        "401":
+          description: Invalid personal code
   /member/set-password:
     post:
       operationId: setMemberPassword
@@ -296,6 +316,12 @@ paths:
           in: path
           required: true
           schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MemberContactUpdate"
       responses:
         "200":
           description: Newly generated personal code
@@ -499,10 +525,15 @@ components:
           enum: [approved, rejected]
     MemberLogin:
       type: object
+      required: [identifier, password]
+      properties:
+        identifier: { type: string, minLength: 5, maxLength: 254 }
+        password: { type: string, minLength: 8, maxLength: 128 }
+    MemberActivation:
+      type: object
       required: [code]
       properties:
         code: { type: string, minLength: 8, maxLength: 32 }
-        password: { type: ["string", "null"], maxLength: 128 }
     MemberIdentity:
       type: object
       required: [id, name, initials]
@@ -536,6 +567,11 @@ components:
       properties:
         code: { type: string }
         createdAt: { type: string }
+    MemberContactUpdate:
+      type: object
+      properties:
+        email: { type: ["string", "null"], maxLength: 254 }
+        phone: { type: ["string", "null"], maxLength: 40 }
     Announcement:
       type: object
       required: [id, title, content, createdAt, likeCount, likedByMember]

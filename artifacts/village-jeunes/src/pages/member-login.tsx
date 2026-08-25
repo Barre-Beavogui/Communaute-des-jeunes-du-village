@@ -9,6 +9,7 @@ import {
   UserRoundCheck,
 } from "lucide-react";
 import {
+  useMemberActivate,
   useMemberLogin,
   useSetMemberPassword,
 } from "@workspace/api-client-react";
@@ -23,7 +24,13 @@ import {
 
 export default function MemberLoginPage() {
   const [, navigate] = useLocation();
-  const [code, setCode] = useState("");
+  const initialCode =
+    new URLSearchParams(window.location.search).get("code") ?? "";
+  const [mode, setMode] = useState<"login" | "activate">(
+    initialCode ? "activate" : "login",
+  );
+  const [activationCode, setActivationCode] = useState(initialCode);
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmation, setConfirmation] = useState("");
@@ -34,6 +41,7 @@ export default function MemberLoginPage() {
   const [member, setMember] = useState(() =>
     hasMemberSession() ? getMemberIdentity() : null,
   );
+  const activate = useMemberActivate();
   const login = useMemberLogin();
   const setMemberPassword = useSetMemberPassword({
     request: setupToken
@@ -46,24 +54,33 @@ export default function MemberLoginPage() {
     setError("");
     setPasswordCreated(false);
     login.mutate(
-      { data: { code: code.trim(), password: password || null } },
+      { data: { identifier: identifier.trim(), password } },
       {
         onSuccess: (session) => {
-          if (session.requiresPasswordChange) {
-            setSetupToken(session.token);
-            setSetupProfile(session.profile);
-            setPassword("");
-            return;
-          }
-
           saveMemberSession(session);
           setMember(session.profile);
           navigate("/accueil");
         },
         onError: () =>
           setError(
-            "Code ou mot de passe incorrect. Pour une première connexion, laissez le mot de passe vide.",
+            "Adresse email, numéro de téléphone ou mot de passe incorrect.",
           ),
+      },
+    );
+  };
+
+  const activateAccount = (event: FormEvent) => {
+    event.preventDefault();
+    setError("");
+    activate.mutate(
+      { data: { code: activationCode.trim() } },
+      {
+        onSuccess: (session) => {
+          setSetupToken(session.token);
+          setSetupProfile(session.profile);
+        },
+        onError: () =>
+          setError("Ce code n’est pas reconnu ou le compte a déjà été activé."),
       },
     );
   };
@@ -90,6 +107,7 @@ export default function MemberLoginPage() {
           setConfirmation("");
           setPassword("");
           setPasswordCreated(true);
+          setMode("login");
         },
         onError: () =>
           setError(
@@ -102,7 +120,7 @@ export default function MemberLoginPage() {
   const logout = () => {
     clearMemberSession();
     setMember(null);
-    setCode("");
+    setIdentifier("");
     setPassword("");
   };
 
@@ -222,7 +240,8 @@ export default function MemberLoginPage() {
         </h1>
         <p className="mt-6 max-w-md text-sm leading-7 text-muted-foreground">
           Après validation de votre inscription, l’administrateur vous transmet
-          un code personnel. Ce code restera votre identifiant de connexion.
+          un code personnel et un lien d’activation. Ensuite, vous vous
+          connecterez avec votre email ou votre numéro de téléphone.
         </p>
         <Link
           href="/"
@@ -233,7 +252,7 @@ export default function MemberLoginPage() {
       </section>
 
       <form
-        onSubmit={submitLogin}
+        onSubmit={mode === "activate" ? activateAccount : submitLogin}
         className="vj-enter vj-enter-delay-1 rounded-[28px] border border-border bg-card p-7 shadow-md sm:p-9"
       >
         <div className="flex items-center gap-3">
@@ -242,10 +261,12 @@ export default function MemberLoginPage() {
           </span>
           <div>
             <h2 className="text-lg font-extrabold tracking-[-.04em]">
-              Connexion membre
+              {mode === "activate" ? "Première connexion" : "Connexion membre"}
             </h2>
             <p className="text-xs text-muted-foreground">
-              Code personnel puis mot de passe
+              {mode === "activate"
+                ? "Activez le compte avec le code reçu"
+                : "Email ou téléphone et mot de passe"}
             </p>
           </div>
         </div>
@@ -253,53 +274,92 @@ export default function MemberLoginPage() {
         {passwordCreated && (
           <div className="mt-6 rounded-2xl border border-secondary/20 bg-secondary/8 p-4 text-xs leading-5 text-secondary">
             <CheckCircle2 className="mr-2 inline h-4 w-4" />
-            Mot de passe créé. Reconnectez-vous maintenant avec votre code et ce
-            nouveau mot de passe.
+            Mot de passe créé. Reconnectez-vous maintenant avec l’email ou le
+            téléphone fourni lors de votre inscription.
           </div>
         )}
 
-        <label className="mt-7 block space-y-2 text-xs font-bold">
-          Code personnel
-          <input
-            type="text"
-            autoComplete="username"
-            required
-            minLength={8}
-            maxLength={32}
-            value={code}
-            onChange={(event) => setCode(event.target.value.toUpperCase())}
-            className="field font-mono uppercase tracking-[.12em]"
-            placeholder="ZOB-XXXX-XXXX"
-            data-testid="input-member-code"
-          />
-        </label>
-        <label className="mt-4 block space-y-2 text-xs font-bold">
-          Mot de passe
-          <input
-            type="password"
-            autoComplete="current-password"
-            maxLength={128}
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            className="field"
-            placeholder="Laissez vide pour la première connexion"
-            data-testid="input-member-password"
-          />
-        </label>
+        {mode === "activate" ? (
+          <label className="mt-7 block space-y-2 text-xs font-bold">
+            Code de première connexion
+            <input
+              type="text"
+              autoComplete="one-time-code"
+              required
+              minLength={8}
+              maxLength={32}
+              value={activationCode}
+              onChange={(event) =>
+                setActivationCode(event.target.value.toUpperCase())
+              }
+              className="field font-mono uppercase tracking-[.12em]"
+              placeholder="ZOB-XXXX-XXXX"
+              data-testid="input-member-code"
+            />
+          </label>
+        ) : (
+          <>
+            <label className="mt-7 block space-y-2 text-xs font-bold">
+              Email ou numéro de téléphone
+              <input
+                type="text"
+                autoComplete="username"
+                required
+                minLength={5}
+                maxLength={254}
+                value={identifier}
+                onChange={(event) => setIdentifier(event.target.value)}
+                className="field"
+                placeholder="vous@exemple.com ou +224…"
+                data-testid="input-member-identifier"
+              />
+            </label>
+            <label className="mt-4 block space-y-2 text-xs font-bold">
+              Mot de passe
+              <input
+                type="password"
+                autoComplete="current-password"
+                required
+                minLength={8}
+                maxLength={128}
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                className="field"
+                placeholder="Votre mot de passe"
+                data-testid="input-member-password"
+              />
+            </label>
+          </>
+        )}
         {error && <ErrorMessage text={error} />}
         <button
           type="submit"
-          disabled={login.isPending}
+          disabled={mode === "activate" ? activate.isPending : login.isPending}
           className="mt-6 flex w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 py-3.5 text-xs font-extrabold text-background hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-60"
           data-testid="button-member-login"
         >
           <LogIn className="h-4 w-4" />
-          {login.isPending ? "Vérification…" : "Se connecter"}
+          {mode === "activate"
+            ? activate.isPending
+              ? "Vérification…"
+              : "Activer mon compte"
+            : login.isPending
+              ? "Connexion…"
+              : "Se connecter"}
         </button>
-        <p className="mt-5 text-center text-[10px] leading-5 text-muted-foreground">
-          Première connexion : saisissez uniquement le code reçu, puis créez
-          votre mot de passe personnel.
-        </p>
+        <button
+          type="button"
+          onClick={() => {
+            setMode(mode === "activate" ? "login" : "activate");
+            setError("");
+            setPasswordCreated(false);
+          }}
+          className="mx-auto mt-5 block text-[10px] font-bold leading-5 text-primary"
+        >
+          {mode === "activate"
+            ? "Mon compte est déjà activé"
+            : "C’est ma première connexion"}
+        </button>
       </form>
     </div>
   );

@@ -96,14 +96,11 @@ export default function JoinPage() {
         <p className="mt-8 font-mono text-[10px] font-bold uppercase tracking-[.18em] text-secondary">
           Demande bien enregistrée
         </p>
-        <h1 className="vj-display mt-3 text-6xl leading-[.9]">
-          Merci et
-          <br />à très bientôt.
-        </h1>
+        <h1 className="vj-display mt-3 text-6xl leading-[.9]">Merci.</h1>
         <p className="mt-5 max-w-sm text-sm leading-6 text-muted-foreground">
-          L’équipe de Zoboroma va relire votre demande. Après validation,
-          l’administrateur vous transmettra votre code personnel de première
-          connexion.
+          Votre demande a bien été envoyée. Après sa validation, vous recevrez
+          un email ou un message WhatsApp contenant votre code et le lien qui
+          vous permettra de créer votre mot de passe et de vous connecter.
         </p>
         <Link
           href="/"

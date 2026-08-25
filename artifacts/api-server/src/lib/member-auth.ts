@@ -35,6 +35,15 @@ export function hashMemberCode(value: string) {
   return createHash("sha256").update(normalizeMemberCode(value)).digest("hex");
 }
 
+export function normalizeLoginEmail(value: string) {
+  return value.trim().toLowerCase();
+}
+
+export function normalizeLoginPhone(value: string) {
+  const digits = value.replace(/[^0-9]/g, "");
+  return digits.startsWith("00") ? digits.slice(2) : digits;
+}
+
 export function generateMemberCode() {
   const bytes = randomBytes(8);
   const suffix = Array.from(
