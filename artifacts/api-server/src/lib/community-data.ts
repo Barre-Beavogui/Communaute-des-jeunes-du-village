@@ -1,6 +1,7 @@
 import { desc, eq } from "drizzle-orm";
 import { db } from "@workspace/db";
 import {
+  announcementDislikesTable,
   announcementLikesTable,
   announcementsTable,
   pollOptionsTable,
@@ -9,19 +10,33 @@ import {
 } from "@workspace/db/schema";
 
 export async function loadAnnouncements(memberProfileId: string | null) {
-  const [announcements, likes] = await Promise.all([
+  const [announcements, likes, dislikes] = await Promise.all([
     db
       .select()
       .from(announcementsTable)
       .orderBy(desc(announcementsTable.createdAt)),
     db.select().from(announcementLikesTable),
+    db.select().from(announcementDislikesTable),
   ]);
 
-  const counts = new Map<string, number>();
+  const likeCounts = new Map<string, number>();
+  const dislikeCounts = new Map<string, number>();
   const liked = new Set<string>();
+  const disliked = new Set<string>();
   for (const like of likes) {
-    counts.set(like.announcementId, (counts.get(like.announcementId) ?? 0) + 1);
+    likeCounts.set(
+      like.announcementId,
+      (likeCounts.get(like.announcementId) ?? 0) + 1,
+    );
     if (like.profileId === memberProfileId) liked.add(like.announcementId);
+  }
+  for (const dislike of dislikes) {
+    dislikeCounts.set(
+      dislike.announcementId,
+      (dislikeCounts.get(dislike.announcementId) ?? 0) + 1,
+    );
+    if (dislike.profileId === memberProfileId)
+      disliked.add(dislike.announcementId);
   }
 
   return announcements.map((row) => ({
@@ -31,8 +46,10 @@ export async function loadAnnouncements(memberProfileId: string | null) {
     mediaType: row.mediaType as "image" | "video" | null,
     mediaUrl: row.mediaUrl,
     createdAt: row.createdAt.toISOString(),
-    likeCount: counts.get(row.id) ?? 0,
+    likeCount: likeCounts.get(row.id) ?? 0,
+    dislikeCount: dislikeCounts.get(row.id) ?? 0,
     likedByMember: liked.has(row.id),
+    dislikedByMember: disliked.has(row.id),
   }));
 }
 

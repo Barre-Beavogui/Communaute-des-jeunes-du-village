@@ -306,6 +306,7 @@ function AdminAnnouncements() {
                   </p>
                   <p className="mt-1 text-[10px] text-muted-foreground">
                     {announcement.likeCount} J’aime ·{" "}
+                    {announcement.dislikeCount} Je n’aime pas ·{" "}
                     {new Date(announcement.createdAt).toLocaleDateString(
                       "fr-FR",
                     )}
@@ -313,7 +314,7 @@ function AdminAnnouncements() {
                 </div>
                 <DeleteButton
                   title="Supprimer cette annonce ?"
-                  description={`« ${announcement.title} » et tous ses J’aime seront définitivement supprimés.`}
+                  description={`« ${announcement.title} » et toutes ses réactions seront définitivement supprimés.`}
                   pending={deletingId === announcement.id}
                   onDelete={() => remove(announcement.id)}
                 />

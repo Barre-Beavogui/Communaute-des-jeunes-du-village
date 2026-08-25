@@ -25,6 +25,16 @@ export const announcementLikesTable = pgTable(
   (table) => [primaryKey({ columns: [table.announcementId, table.profileId] })],
 );
 
+export const announcementDislikesTable = pgTable(
+  "announcement_dislikes",
+  {
+    announcementId: text("announcement_id").notNull(),
+    profileId: text("profile_id").notNull(),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (table) => [primaryKey({ columns: [table.announcementId, table.profileId] })],
+);
+
 export const pollsTable = pgTable("polls", {
   id: text("id").primaryKey(),
   question: text("question").notNull(),
@@ -52,6 +62,7 @@ export const pollVotesTable = pgTable(
 
 export type Announcement = typeof announcementsTable.$inferSelect;
 export type AnnouncementLike = typeof announcementLikesTable.$inferSelect;
+export type AnnouncementDislike = typeof announcementDislikesTable.$inferSelect;
 export type Poll = typeof pollsTable.$inferSelect;
 export type PollOption = typeof pollOptionsTable.$inferSelect;
 export type PollVote = typeof pollVotesTable.$inferSelect;

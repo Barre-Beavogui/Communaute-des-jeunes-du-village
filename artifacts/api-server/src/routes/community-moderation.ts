@@ -3,6 +3,7 @@ import { Router, type IRouter } from "express";
 import { eq } from "drizzle-orm";
 import { db } from "@workspace/db";
 import {
+  announcementDislikesTable,
   announcementLikesTable,
   announcementsTable,
   pollOptionsTable,
@@ -88,7 +89,9 @@ router.post("/moderation/announcements", async (req, res) => {
       mediaUrl: row!.mediaUrl,
       createdAt: row!.createdAt.toISOString(),
       likeCount: 0,
+      dislikeCount: 0,
       likedByMember: false,
+      dislikedByMember: false,
     }),
   );
 });
@@ -105,6 +108,9 @@ router.delete("/moderation/announcements/:id", async (req, res) => {
     await tx
       .delete(announcementLikesTable)
       .where(eq(announcementLikesTable.announcementId, params.id));
+    await tx
+      .delete(announcementDislikesTable)
+      .where(eq(announcementDislikesTable.announcementId, params.id));
     await tx
       .delete(announcementsTable)
       .where(eq(announcementsTable.id, params.id));

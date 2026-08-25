@@ -1,10 +1,8 @@
 import {
   ArrowUpRight,
-  CheckCircle2,
   FolderKanban,
   MapPin,
   Search,
-  ShieldCheck,
   UsersRound,
 } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -181,56 +179,6 @@ export default function HomePage() {
           <p className="mt-1 text-xs font-semibold text-muted-foreground">
             statut le plus représenté
           </p>
-        </div>
-      </section>
-
-      <section className="grid overflow-hidden rounded-[28px] border border-border bg-card lg:grid-cols-[1fr_1.1fr]">
-        <div className="bg-primary px-6 py-8 text-primary-foreground sm:px-9 sm:py-10">
-          <ShieldCheck className="h-7 w-7 text-accent" />
-          <p className="mt-7 font-mono text-[10px] font-bold uppercase tracking-[.18em] text-primary-foreground/70">
-            Un recensement responsable
-          </p>
-          <h2 className="vj-display mt-3 text-4xl leading-[.94] sm:text-5xl">
-            La confiance avant la publication.
-          </h2>
-          <p className="mt-5 max-w-md text-sm leading-7 text-primary-foreground/80">
-            Chaque demande est vérifiée par l’équipe. Aucun âge n’est collecté
-            et les coordonnées personnelles restent privées.
-          </p>
-        </div>
-        <div className="grid gap-5 px-6 py-8 sm:px-9 sm:py-10">
-          {[
-            [
-              "01",
-              "Remplir le formulaire",
-              "Quelques informations sur votre parcours et vos activités.",
-            ],
-            [
-              "02",
-              "Validation par l’équipe",
-              "Une personne responsable relit la demande avant publication.",
-            ],
-            [
-              "03",
-              "Bienvenue dans l’annuaire",
-              "Le profil approuvé rejoint automatiquement la communauté.",
-            ],
-          ].map(([number, title, description]) => (
-            <div key={number} className="flex gap-4">
-              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-accent/45 font-mono text-[10px] font-bold text-primary">
-                {number}
-              </span>
-              <div>
-                <p className="flex items-center gap-2 text-sm font-extrabold">
-                  <CheckCircle2 className="h-4 w-4 text-secondary" />
-                  {title}
-                </p>
-                <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                  {description}
-                </p>
-              </div>
-            </div>
-          ))}
         </div>
       </section>
 

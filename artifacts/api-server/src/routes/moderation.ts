@@ -2,6 +2,7 @@ import { Router, type IRouter } from "express";
 import { eq } from "drizzle-orm";
 import { db } from "@workspace/db";
 import {
+  announcementDislikesTable,
   announcementLikesTable,
   deletedProfilesTable,
   pollVotesTable,
@@ -148,6 +149,9 @@ router.delete("/moderation/profiles/:id", async (req, res) => {
     await tx
       .delete(announcementLikesTable)
       .where(eq(announcementLikesTable.profileId, profile.id));
+    await tx
+      .delete(announcementDislikesTable)
+      .where(eq(announcementDislikesTable.profileId, profile.id));
     await tx
       .delete(pollVotesTable)
       .where(eq(pollVotesTable.profileId, profile.id));

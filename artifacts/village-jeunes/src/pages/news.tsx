@@ -5,16 +5,18 @@ import {
   getListPollsQueryKey,
   useListAnnouncements,
   useListPolls,
+  useToggleAnnouncementDislike,
   useToggleAnnouncementLike,
   useVotePoll,
 } from "@workspace/api-client-react";
 import {
   BarChart3,
   CheckCircle2,
-  Heart,
   KeyRound,
   Megaphone,
   Newspaper,
+  ThumbsDown,
+  ThumbsUp,
   Vote,
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
@@ -25,12 +27,13 @@ export default function NewsPage() {
   const queryClient = useQueryClient();
   const [, navigate] = useLocation();
   const [actionError, setActionError] = useState("");
-  const [likingId, setLikingId] = useState<string | null>(null);
+  const [reactingId, setReactingId] = useState<string | null>(null);
   const [votingPollId, setVotingPollId] = useState<string | null>(null);
   const member = hasMemberSession() ? getMemberIdentity() : null;
   const announcementsQuery = useListAnnouncements();
   const pollsQuery = useListPolls();
   const toggleLike = useToggleAnnouncementLike();
+  const toggleDislike = useToggleAnnouncementDislike();
   const vote = useVotePoll();
   const announcements = announcementsQuery.data ?? [];
   const polls = pollsQuery.data ?? [];
@@ -44,7 +47,7 @@ export default function NewsPage() {
   const likeAnnouncement = (id: string) => {
     if (!requireMember()) return;
     setActionError("");
-    setLikingId(id);
+    setReactingId(id);
     toggleLike.mutate(
       { id },
       {
@@ -56,7 +59,27 @@ export default function NewsPage() {
           setActionError(
             "Votre réaction n’a pas été enregistrée. Reconnectez-vous puis réessayez.",
           ),
-        onSettled: () => setLikingId(null),
+        onSettled: () => setReactingId(null),
+      },
+    );
+  };
+
+  const dislikeAnnouncement = (id: string) => {
+    if (!requireMember()) return;
+    setActionError("");
+    setReactingId(id);
+    toggleDislike.mutate(
+      { id },
+      {
+        onSuccess: () =>
+          queryClient.invalidateQueries({
+            queryKey: getListAnnouncementsQueryKey(),
+          }),
+        onError: () =>
+          setActionError(
+            "Votre réaction n’a pas été enregistrée. Reconnectez-vous puis réessayez.",
+          ),
+        onSettled: () => setReactingId(null),
       },
     );
   };
@@ -105,9 +128,9 @@ export default function NewsPage() {
                   Connecté : {member.name}
                 </p>
                 <p className="mt-2 text-xs leading-5 text-background/60">
-                  Vous pouvez aimer et voter. Un seul vote par sondage est
-                  compté, mais vous pouvez changer votre choix tant qu’il reste
-                  ouvert.
+                  Vous pouvez réagir aux annonces et voter. Un seul vote par
+                  sondage est compté, mais vous pouvez changer votre choix tant
+                  qu’il reste ouvert.
                 </p>
               </>
             ) : (
@@ -200,18 +223,32 @@ export default function NewsPage() {
                     <p className="mt-4 whitespace-pre-line text-sm leading-7 text-foreground/75">
                       {announcement.content}
                     </p>
-                    <button
-                      type="button"
-                      onClick={() => likeAnnouncement(announcement.id)}
-                      disabled={likingId === announcement.id}
-                      className={`mt-6 inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-xs font-extrabold transition ${announcement.likedByMember ? "bg-primary text-primary-foreground" : "border border-border bg-background text-muted-foreground hover:border-primary hover:text-primary"}`}
-                      data-testid={`button-like-${announcement.id}`}
-                    >
-                      <Heart
-                        className={`h-4 w-4 ${announcement.likedByMember ? "fill-current" : ""}`}
-                      />
-                      {announcement.likeCount} J’aime
-                    </button>
+                    <div className="mt-6 flex flex-wrap gap-3">
+                      <button
+                        type="button"
+                        onClick={() => likeAnnouncement(announcement.id)}
+                        disabled={reactingId === announcement.id}
+                        className={`inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-xs font-extrabold transition ${announcement.likedByMember ? "bg-primary text-primary-foreground" : "border border-border bg-background text-muted-foreground hover:border-primary hover:text-primary"}`}
+                        data-testid={`button-like-${announcement.id}`}
+                      >
+                        <ThumbsUp
+                          className={`h-4 w-4 ${announcement.likedByMember ? "fill-current" : ""}`}
+                        />
+                        {announcement.likeCount} J’aime
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => dislikeAnnouncement(announcement.id)}
+                        disabled={reactingId === announcement.id}
+                        className={`inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-xs font-extrabold transition ${announcement.dislikedByMember ? "bg-destructive text-destructive-foreground" : "border border-border bg-background text-muted-foreground hover:border-destructive hover:text-destructive"}`}
+                        data-testid={`button-dislike-${announcement.id}`}
+                      >
+                        <ThumbsDown
+                          className={`h-4 w-4 ${announcement.dislikedByMember ? "fill-current" : ""}`}
+                        />
+                        {announcement.dislikeCount} Je n’aime pas
+                      </button>
+                    </div>
                   </div>
                 </article>
               );

@@ -24,7 +24,7 @@ import type {
   AdminSession,
   Announcement,
   AnnouncementCreate,
-  AnnouncementLike,
+  AnnouncementReaction,
   HealthStatus,
   MemberActivation,
   MemberCode,
@@ -824,9 +824,9 @@ export const getToggleAnnouncementLikeUrl = (id: string,) => {
 /**
  * @summary Like or unlike an announcement as a member
  */
-export const toggleAnnouncementLike = async (id: string, options?: Parameters<typeof customFetch>[1]): Promise<AnnouncementLike> => {
+export const toggleAnnouncementLike = async (id: string, options?: Parameters<typeof customFetch>[1]): Promise<AnnouncementReaction> => {
 
-  return customFetch<AnnouncementLike>(getToggleAnnouncementLikeUrl(id),
+  return customFetch<AnnouncementReaction>(getToggleAnnouncementLikeUrl(id),
   {
     ...options,
     method: 'POST'
@@ -882,6 +882,77 @@ export const useToggleAnnouncementLike = <TError = ErrorType<void>,
         TContext
       > => {
       return useMutation(getToggleAnnouncementLikeMutationOptions(options));
+    }
+
+export const getToggleAnnouncementDislikeUrl = (id: string,) => {
+
+
+
+
+  return `/api/announcements/${id}/dislike`
+}
+
+/**
+ * @summary Dislike or remove a dislike from an announcement as a member
+ */
+export const toggleAnnouncementDislike = async (id: string, options?: Parameters<typeof customFetch>[1]): Promise<AnnouncementReaction> => {
+
+  return customFetch<AnnouncementReaction>(getToggleAnnouncementDislikeUrl(id),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getToggleAnnouncementDislikeMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof toggleAnnouncementDislike>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof toggleAnnouncementDislike>>, TError,{id: string}, TContext> => {
+
+const mutationKey = ['toggleAnnouncementDislike'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof toggleAnnouncementDislike>>, {id: string}> = (props) => {
+          const {id} = props ?? {};
+
+          return  toggleAnnouncementDislike(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ToggleAnnouncementDislikeMutationResult = NonNullable<Awaited<ReturnType<typeof toggleAnnouncementDislike>>>
+
+    export type ToggleAnnouncementDislikeMutationError = ErrorType<void>
+
+    /**
+ * @summary Dislike or remove a dislike from an announcement as a member
+ */
+export const useToggleAnnouncementDislike = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof toggleAnnouncementDislike>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof toggleAnnouncementDislike>>,
+        TError,
+        {id: string},
+        TContext
+      > => {
+      return useMutation(getToggleAnnouncementDislikeMutationOptions(options));
     }
 
 export const getListPollsUrl = () => {

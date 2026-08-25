@@ -215,7 +215,9 @@ export const ListAnnouncementsResponseItem = zod.object({
   "mediaUrl": zod.string().nullish(),
   "createdAt": zod.string(),
   "likeCount": zod.number(),
-  "likedByMember": zod.boolean()
+  "dislikeCount": zod.number(),
+  "likedByMember": zod.boolean(),
+  "dislikedByMember": zod.boolean()
 })
 export const ListAnnouncementsResponse = zod.array(ListAnnouncementsResponseItem)
 
@@ -229,7 +231,24 @@ export const ToggleAnnouncementLikeParams = zod.object({
 
 export const ToggleAnnouncementLikeResponse = zod.object({
   "liked": zod.boolean(),
-  "likeCount": zod.number()
+  "disliked": zod.boolean(),
+  "likeCount": zod.number(),
+  "dislikeCount": zod.number()
+})
+
+
+/**
+ * @summary Dislike or remove a dislike from an announcement as a member
+ */
+export const ToggleAnnouncementDislikeParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const ToggleAnnouncementDislikeResponse = zod.object({
+  "liked": zod.boolean(),
+  "disliked": zod.boolean(),
+  "likeCount": zod.number(),
+  "dislikeCount": zod.number()
 })
 
 
@@ -395,7 +414,9 @@ export const CreateAnnouncementResponse = zod.object({
   "mediaUrl": zod.string().nullish(),
   "createdAt": zod.string(),
   "likeCount": zod.number(),
-  "likedByMember": zod.boolean()
+  "dislikeCount": zod.number(),
+  "likedByMember": zod.boolean(),
+  "dislikedByMember": zod.boolean()
 })
 
 

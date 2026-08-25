@@ -210,7 +210,26 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/AnnouncementLike"
+                $ref: "#/components/schemas/AnnouncementReaction"
+        "401":
+          description: Member session required
+  /announcements/{id}/dislike:
+    post:
+      operationId: toggleAnnouncementDislike
+      tags: [community]
+      summary: Dislike or remove a dislike from an announcement as a member
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Updated reaction state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnnouncementReaction"
         "401":
           description: Member session required
   /polls:
@@ -574,7 +593,17 @@ components:
         phone: { type: ["string", "null"], maxLength: 40 }
     Announcement:
       type: object
-      required: [id, title, content, createdAt, likeCount, likedByMember]
+      required:
+        [
+          id,
+          title,
+          content,
+          createdAt,
+          likeCount,
+          dislikeCount,
+          likedByMember,
+          dislikedByMember,
+        ]
       properties:
         id: { type: string }
         title: { type: string }
@@ -585,7 +614,9 @@ components:
         mediaUrl: { type: ["string", "null"] }
         createdAt: { type: string }
         likeCount: { type: number }
+        dislikeCount: { type: number }
         likedByMember: { type: boolean }
+        dislikedByMember: { type: boolean }
     AnnouncementCreate:
       type: object
       required: [title, content]
@@ -596,12 +627,14 @@ components:
           type: ["string", "null"]
           enum: [image, video, null]
         mediaUrl: { type: ["string", "null"], maxLength: 500000 }
-    AnnouncementLike:
+    AnnouncementReaction:
       type: object
-      required: [liked, likeCount]
+      required: [liked, disliked, likeCount, dislikeCount]
       properties:
         liked: { type: boolean }
+        disliked: { type: boolean }
         likeCount: { type: number }
+        dislikeCount: { type: number }
     PollOption:
       type: object
       required: [id, label, voteCount]

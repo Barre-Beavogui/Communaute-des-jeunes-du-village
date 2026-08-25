@@ -2,6 +2,7 @@ import { Router, type IRouter } from "express";
 import { and, eq } from "drizzle-orm";
 import { db } from "@workspace/db";
 import {
+  announcementDislikesTable,
   announcementLikesTable,
   announcementsTable,
   pollOptionsTable,
@@ -12,6 +13,8 @@ import {
 import {
   ListAnnouncementsResponse,
   ListPollsResponse,
+  ToggleAnnouncementDislikeParams,
+  ToggleAnnouncementDislikeResponse,
   ToggleAnnouncementLikeParams,
   ToggleAnnouncementLikeResponse,
   VotePollBody,
@@ -23,6 +26,26 @@ import { requireCommunityAccess } from "../lib/community-access";
 import { optionalMemberProfileId, requireMember } from "../lib/member-auth";
 
 const router: IRouter = Router();
+
+async function loadReactionState(announcementId: string, profileId: string) {
+  const [likes, dislikes] = await Promise.all([
+    db
+      .select({ profileId: announcementLikesTable.profileId })
+      .from(announcementLikesTable)
+      .where(eq(announcementLikesTable.announcementId, announcementId)),
+    db
+      .select({ profileId: announcementDislikesTable.profileId })
+      .from(announcementDislikesTable)
+      .where(eq(announcementDislikesTable.announcementId, announcementId)),
+  ]);
+
+  return {
+    liked: likes.some((reaction) => reaction.profileId === profileId),
+    disliked: dislikes.some((reaction) => reaction.profileId === profileId),
+    likeCount: likes.length,
+    dislikeCount: dislikes.length,
+  };
+}
 
 async function isApprovedMember(profileId: string) {
   const [profile] = await db
@@ -72,8 +95,84 @@ router.post("/announcements/:id/like", requireMember, async (req, res) => {
       ),
     );
 
-  if (existing) {
-    await db
+  await db.transaction(async (tx) => {
+    if (existing) {
+      await tx
+        .delete(announcementLikesTable)
+        .where(
+          and(
+            eq(announcementLikesTable.announcementId, params.id),
+            eq(announcementLikesTable.profileId, profileId),
+          ),
+        );
+      return;
+    }
+
+    await tx
+      .delete(announcementDislikesTable)
+      .where(
+        and(
+          eq(announcementDislikesTable.announcementId, params.id),
+          eq(announcementDislikesTable.profileId, profileId),
+        ),
+      );
+    await tx.insert(announcementLikesTable).values({
+      announcementId: params.id,
+      profileId,
+    });
+  });
+
+  res.json(
+    ToggleAnnouncementLikeResponse.parse(
+      await loadReactionState(params.id, profileId),
+    ),
+  );
+});
+
+router.post("/announcements/:id/dislike", requireMember, async (req, res) => {
+  const params = ToggleAnnouncementDislikeParams.parse(req.params);
+  const profileId = res.locals["memberProfileId"] as string;
+  const [[announcement], approved] = await Promise.all([
+    db
+      .select({ id: announcementsTable.id })
+      .from(announcementsTable)
+      .where(eq(announcementsTable.id, params.id)),
+    isApprovedMember(profileId),
+  ]);
+
+  if (!approved) {
+    res.status(401).json({ error: "Ce compte membre n’est plus actif." });
+    return;
+  }
+  if (!announcement) {
+    res.status(404).json({ error: "Annonce introuvable." });
+    return;
+  }
+
+  const [existing] = await db
+    .select()
+    .from(announcementDislikesTable)
+    .where(
+      and(
+        eq(announcementDislikesTable.announcementId, params.id),
+        eq(announcementDislikesTable.profileId, profileId),
+      ),
+    );
+
+  await db.transaction(async (tx) => {
+    if (existing) {
+      await tx
+        .delete(announcementDislikesTable)
+        .where(
+          and(
+            eq(announcementDislikesTable.announcementId, params.id),
+            eq(announcementDislikesTable.profileId, profileId),
+          ),
+        );
+      return;
+    }
+
+    await tx
       .delete(announcementLikesTable)
       .where(
         and(
@@ -81,22 +180,16 @@ router.post("/announcements/:id/like", requireMember, async (req, res) => {
           eq(announcementLikesTable.profileId, profileId),
         ),
       );
-  } else {
-    await db.insert(announcementLikesTable).values({
+    await tx.insert(announcementDislikesTable).values({
       announcementId: params.id,
       profileId,
     });
-  }
+  });
 
-  const likes = await db
-    .select({ profileId: announcementLikesTable.profileId })
-    .from(announcementLikesTable)
-    .where(eq(announcementLikesTable.announcementId, params.id));
   res.json(
-    ToggleAnnouncementLikeResponse.parse({
-      liked: !existing,
-      likeCount: likes.length,
-    }),
+    ToggleAnnouncementDislikeResponse.parse(
+      await loadReactionState(params.id, profileId),
+    ),
   );
 });
 

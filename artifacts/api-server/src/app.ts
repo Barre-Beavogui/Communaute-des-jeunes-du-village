@@ -74,6 +74,7 @@ app.use(
     const isMemberWrite =
       req.method === "POST" &&
       (/^\/announcements\/[^/]+\/like$/.test(req.path) ||
+        /^\/announcements\/[^/]+\/dislike$/.test(req.path) ||
         /^\/polls\/[^/]+\/vote$/.test(req.path));
 
     if (

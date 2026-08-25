@@ -251,7 +251,9 @@ export interface Announcement {
   mediaUrl?: string | null;
   createdAt: string;
   likeCount: number;
+  dislikeCount: number;
   likedByMember: boolean;
+  dislikedByMember: boolean;
 }
 
 /**
@@ -285,9 +287,11 @@ export interface AnnouncementCreate {
   mediaUrl?: string | null;
 }
 
-export interface AnnouncementLike {
+export interface AnnouncementReaction {
   liked: boolean;
+  disliked: boolean;
   likeCount: number;
+  dislikeCount: number;
 }
 
 export interface PollOption {

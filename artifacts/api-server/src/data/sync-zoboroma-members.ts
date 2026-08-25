@@ -96,6 +96,15 @@ export async function syncZoboromaMembers() {
   `);
 
   await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS announcement_dislikes (
+      announcement_id text NOT NULL,
+      profile_id text NOT NULL,
+      created_at timestamp NOT NULL DEFAULT now(),
+      PRIMARY KEY (announcement_id, profile_id)
+    )
+  `);
+
+  await db.execute(sql`
     CREATE TABLE IF NOT EXISTS polls (
       id text PRIMARY KEY,
       question text NOT NULL,
@@ -121,6 +130,42 @@ export async function syncZoboromaMembers() {
       created_at timestamp NOT NULL DEFAULT now(),
       PRIMARY KEY (poll_id, profile_id)
     )
+  `);
+
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS app_content_seeds (
+      key text PRIMARY KEY,
+      applied_at timestamp NOT NULL DEFAULT now()
+    )
+  `);
+
+  await db.execute(sql`
+    WITH inserted_seed AS (
+      INSERT INTO app_content_seeds (key)
+      VALUES ('prochaine-reunion-2026-08')
+      ON CONFLICT DO NOTHING
+      RETURNING key
+    ),
+    inserted_poll AS (
+      INSERT INTO polls (id, question, status)
+      SELECT
+        'sondage-prochaine-reunion-2026-08',
+        'Quel jour vous conviendrait pour la prochaine réunion ?',
+        'open'
+      FROM inserted_seed
+      ON CONFLICT DO NOTHING
+      RETURNING id
+    )
+    INSERT INTO poll_options (id, poll_id, label, position)
+    SELECT option.id, inserted_poll.id, option.label, option.position
+    FROM inserted_poll
+    CROSS JOIN (
+      VALUES
+        ('choix-reunion-vendredi-soir', 'Vendredi soir', 0),
+        ('choix-reunion-samedi', 'Samedi', 1),
+        ('choix-reunion-dimanche-soir', 'Dimanche soir', 2)
+    ) AS option(id, label, position)
+    ON CONFLICT DO NOTHING
   `);
 
   await db.execute(

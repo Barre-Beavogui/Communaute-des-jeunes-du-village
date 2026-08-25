@@ -17,5 +17,7 @@ export interface Announcement {
   mediaUrl?: string | null;
   createdAt: string;
   likeCount: number;
+  dislikeCount: number;
   likedByMember: boolean;
+  dislikedByMember: boolean;
 }

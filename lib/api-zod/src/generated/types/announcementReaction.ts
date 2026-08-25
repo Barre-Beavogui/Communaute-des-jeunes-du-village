@@ -6,7 +6,9 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface AnnouncementLike {
+export interface AnnouncementReaction {
   liked: boolean;
+  disliked: boolean;
   likeCount: number;
+  dislikeCount: number;
 }

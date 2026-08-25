@@ -2,7 +2,6 @@ import {
   ArrowUpRight,
   Compass,
   KeyRound,
-  LockKeyhole,
   MapPinned,
   Newspaper,
   UserRound,
@@ -200,20 +199,6 @@ export function VillageShell({ children }: { children: ReactNode }) {
                 ))}
               </div>
             </nav>
-
-            <div className="rounded-2xl border border-background/15 bg-background/5 p-5">
-              <span className="grid h-10 w-10 place-items-center rounded-xl bg-accent text-accent-foreground">
-                <LockKeyhole className="h-4 w-4" />
-              </span>
-              <p className="mt-4 text-sm font-extrabold">
-                La confiance avant tout.
-              </p>
-              <p className="mt-2 text-xs leading-6 text-background/62">
-                Aucun âge n’est collecté. Les coordonnées personnelles des
-                membres restent privées et chaque profil est vérifié avant sa
-                publication.
-              </p>
-            </div>
           </div>
 
           <div className="flex flex-col justify-between gap-3 pt-6 text-[10px] font-semibold text-background/48 sm:flex-row sm:items-center">
