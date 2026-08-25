@@ -168,6 +168,22 @@ export async function syncZoboromaMembers() {
     ON CONFLICT DO NOTHING
   `);
 
+  await db.execute(sql`
+    WITH inserted_seed AS (
+      INSERT INTO app_content_seeds (key)
+      VALUES ('annonce-partage-communaute-2026-08')
+      ON CONFLICT DO NOTHING
+      RETURNING key
+    )
+    INSERT INTO announcements (id, title, content)
+    SELECT
+      'annonce-partage-communaute-2026-08',
+      'Hello la famille Zoboroma !',
+      'Partagez cette annonce afin de permettre aux autres jeunes de Zoboroma de nous rejoindre et de se retrouver ici. Ensemble, faisons grandir notre communauté !'
+    FROM inserted_seed
+    ON CONFLICT DO NOTHING
+  `);
+
   await db.execute(
     sql`ALTER TABLE membership_requests ADD COLUMN IF NOT EXISTS phone text`,
   );
