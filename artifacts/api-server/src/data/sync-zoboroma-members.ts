@@ -46,6 +46,66 @@ export async function syncZoboromaMembers() {
   `);
 
   await db.execute(
+    sql`ALTER TABLE profiles ADD COLUMN IF NOT EXISTS member_code_hash text`,
+  );
+  await db.execute(
+    sql`ALTER TABLE profiles ADD COLUMN IF NOT EXISTS member_code_created_at timestamp`,
+  );
+  await db.execute(sql`
+    CREATE UNIQUE INDEX IF NOT EXISTS profiles_member_code_hash_unique
+    ON profiles (member_code_hash)
+    WHERE member_code_hash IS NOT NULL
+  `);
+
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS announcements (
+      id text PRIMARY KEY,
+      title text NOT NULL,
+      content text NOT NULL,
+      media_type text,
+      media_url text,
+      created_at timestamp NOT NULL DEFAULT now()
+    )
+  `);
+
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS announcement_likes (
+      announcement_id text NOT NULL,
+      profile_id text NOT NULL,
+      created_at timestamp NOT NULL DEFAULT now(),
+      PRIMARY KEY (announcement_id, profile_id)
+    )
+  `);
+
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS polls (
+      id text PRIMARY KEY,
+      question text NOT NULL,
+      status text NOT NULL DEFAULT 'open',
+      created_at timestamp NOT NULL DEFAULT now()
+    )
+  `);
+
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS poll_options (
+      id text PRIMARY KEY,
+      poll_id text NOT NULL,
+      label text NOT NULL,
+      position integer NOT NULL
+    )
+  `);
+
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS poll_votes (
+      poll_id text NOT NULL,
+      option_id text NOT NULL,
+      profile_id text NOT NULL,
+      created_at timestamp NOT NULL DEFAULT now(),
+      PRIMARY KEY (poll_id, profile_id)
+    )
+  `);
+
+  await db.execute(
     sql`ALTER TABLE membership_requests ADD COLUMN IF NOT EXISTS phone text`,
   );
   await db.execute(

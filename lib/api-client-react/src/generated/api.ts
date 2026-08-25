@@ -22,12 +22,22 @@ import type {
 import type {
   AdminLogin,
   AdminSession,
+  Announcement,
+  AnnouncementCreate,
+  AnnouncementLike,
   HealthStatus,
+  MemberCode,
+  MemberLogin,
+  MemberSession,
   MembersSummary,
   MembershipRequest,
   MembershipRequestCreate,
   MembershipRequestReceipt,
   ModerationReview,
+  Poll,
+  PollCreate,
+  PollStatusUpdate,
+  PollVote,
   Profile
 } from './api.schemas';
 
@@ -509,6 +519,374 @@ export const useAdminLogin = <TError = ErrorType<void>,
       return useMutation(getAdminLoginMutationOptions(options));
     }
 
+export const getMemberLoginUrl = () => {
+
+
+
+
+  return `/api/member/login`
+}
+
+/**
+ * @summary Open a member session with a personal code
+ */
+export const memberLogin = async (memberLogin: MemberLogin, options?: Parameters<typeof customFetch>[1]): Promise<MemberSession> => {
+
+  return customFetch<MemberSession>(getMemberLoginUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(memberLogin)
+  }
+);}
+
+
+
+
+
+export const getMemberLoginMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof memberLogin>>, TError,{data: BodyType<MemberLogin>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof memberLogin>>, TError,{data: BodyType<MemberLogin>}, TContext> => {
+
+const mutationKey = ['memberLogin'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof memberLogin>>, {data: BodyType<MemberLogin>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  memberLogin(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type MemberLoginMutationResult = NonNullable<Awaited<ReturnType<typeof memberLogin>>>
+    export type MemberLoginMutationBody = BodyType<MemberLogin>
+    export type MemberLoginMutationError = ErrorType<void>
+
+    /**
+ * @summary Open a member session with a personal code
+ */
+export const useMemberLogin = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof memberLogin>>, TError,{data: BodyType<MemberLogin>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof memberLogin>>,
+        TError,
+        {data: BodyType<MemberLogin>},
+        TContext
+      > => {
+      return useMutation(getMemberLoginMutationOptions(options));
+    }
+
+export const getListAnnouncementsUrl = () => {
+
+
+
+
+  return `/api/announcements`
+}
+
+/**
+ * @summary List community announcements
+ */
+export const listAnnouncements = async ( options?: Parameters<typeof customFetch>[1]): Promise<Announcement[]> => {
+
+  return customFetch<Announcement[]>(getListAnnouncementsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListAnnouncementsQueryKey = () => {
+    return [
+    `/api/announcements`
+    ] as const;
+    }
+
+
+export const getListAnnouncementsQueryOptions = <TData = Awaited<ReturnType<typeof listAnnouncements>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listAnnouncements>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListAnnouncementsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listAnnouncements>>> = ({ signal }) => listAnnouncements({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listAnnouncements>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListAnnouncementsQueryResult = NonNullable<Awaited<ReturnType<typeof listAnnouncements>>>
+export type ListAnnouncementsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List community announcements
+ */
+
+export function useListAnnouncements<TData = Awaited<ReturnType<typeof listAnnouncements>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listAnnouncements>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListAnnouncementsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getToggleAnnouncementLikeUrl = (id: string,) => {
+
+
+
+
+  return `/api/announcements/${id}/like`
+}
+
+/**
+ * @summary Like or unlike an announcement as a member
+ */
+export const toggleAnnouncementLike = async (id: string, options?: Parameters<typeof customFetch>[1]): Promise<AnnouncementLike> => {
+
+  return customFetch<AnnouncementLike>(getToggleAnnouncementLikeUrl(id),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getToggleAnnouncementLikeMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof toggleAnnouncementLike>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof toggleAnnouncementLike>>, TError,{id: string}, TContext> => {
+
+const mutationKey = ['toggleAnnouncementLike'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof toggleAnnouncementLike>>, {id: string}> = (props) => {
+          const {id} = props ?? {};
+
+          return  toggleAnnouncementLike(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ToggleAnnouncementLikeMutationResult = NonNullable<Awaited<ReturnType<typeof toggleAnnouncementLike>>>
+
+    export type ToggleAnnouncementLikeMutationError = ErrorType<void>
+
+    /**
+ * @summary Like or unlike an announcement as a member
+ */
+export const useToggleAnnouncementLike = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof toggleAnnouncementLike>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof toggleAnnouncementLike>>,
+        TError,
+        {id: string},
+        TContext
+      > => {
+      return useMutation(getToggleAnnouncementLikeMutationOptions(options));
+    }
+
+export const getListPollsUrl = () => {
+
+
+
+
+  return `/api/polls`
+}
+
+/**
+ * @summary List community polls
+ */
+export const listPolls = async ( options?: Parameters<typeof customFetch>[1]): Promise<Poll[]> => {
+
+  return customFetch<Poll[]>(getListPollsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListPollsQueryKey = () => {
+    return [
+    `/api/polls`
+    ] as const;
+    }
+
+
+export const getListPollsQueryOptions = <TData = Awaited<ReturnType<typeof listPolls>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listPolls>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListPollsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listPolls>>> = ({ signal }) => listPolls({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listPolls>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListPollsQueryResult = NonNullable<Awaited<ReturnType<typeof listPolls>>>
+export type ListPollsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List community polls
+ */
+
+export function useListPolls<TData = Awaited<ReturnType<typeof listPolls>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listPolls>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListPollsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getVotePollUrl = (id: string,) => {
+
+
+
+
+  return `/api/polls/${id}/vote`
+}
+
+/**
+ * @summary Vote in a poll as a member
+ */
+export const votePoll = async (id: string,
+    pollVote: PollVote, options?: Parameters<typeof customFetch>[1]): Promise<Poll> => {
+
+  return customFetch<Poll>(getVotePollUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(pollVote)
+  }
+);}
+
+
+
+
+
+export const getVotePollMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof votePoll>>, TError,{id: string;data: BodyType<PollVote>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof votePoll>>, TError,{id: string;data: BodyType<PollVote>}, TContext> => {
+
+const mutationKey = ['votePoll'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof votePoll>>, {id: string;data: BodyType<PollVote>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  votePoll(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type VotePollMutationResult = NonNullable<Awaited<ReturnType<typeof votePoll>>>
+    export type VotePollMutationBody = BodyType<PollVote>
+    export type VotePollMutationError = ErrorType<void>
+
+    /**
+ * @summary Vote in a poll as a member
+ */
+export const useVotePoll = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof votePoll>>, TError,{id: string;data: BodyType<PollVote>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof votePoll>>,
+        TError,
+        {id: string;data: BodyType<PollVote>},
+        TContext
+      > => {
+      return useMutation(getVotePollMutationOptions(options));
+    }
+
 export const getListModerationRequestsUrl = () => {
 
 
@@ -727,5 +1105,432 @@ export const useDeleteModerationProfile = <TError = ErrorType<void>,
         TContext
       > => {
       return useMutation(getDeleteModerationProfileMutationOptions(options));
+    }
+
+export const getGenerateMemberCodeUrl = (id: string,) => {
+
+
+
+
+  return `/api/moderation/profiles/${id}/member-code`
+}
+
+/**
+ * @summary Create or replace a member personal code
+ */
+export const generateMemberCode = async (id: string, options?: Parameters<typeof customFetch>[1]): Promise<MemberCode> => {
+
+  return customFetch<MemberCode>(getGenerateMemberCodeUrl(id),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getGenerateMemberCodeMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof generateMemberCode>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof generateMemberCode>>, TError,{id: string}, TContext> => {
+
+const mutationKey = ['generateMemberCode'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof generateMemberCode>>, {id: string}> = (props) => {
+          const {id} = props ?? {};
+
+          return  generateMemberCode(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type GenerateMemberCodeMutationResult = NonNullable<Awaited<ReturnType<typeof generateMemberCode>>>
+
+    export type GenerateMemberCodeMutationError = ErrorType<void>
+
+    /**
+ * @summary Create or replace a member personal code
+ */
+export const useGenerateMemberCode = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof generateMemberCode>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof generateMemberCode>>,
+        TError,
+        {id: string},
+        TContext
+      > => {
+      return useMutation(getGenerateMemberCodeMutationOptions(options));
+    }
+
+export const getCreateAnnouncementUrl = () => {
+
+
+
+
+  return `/api/moderation/announcements`
+}
+
+/**
+ * @summary Publish an announcement
+ */
+export const createAnnouncement = async (announcementCreate: AnnouncementCreate, options?: Parameters<typeof customFetch>[1]): Promise<Announcement> => {
+
+  return customFetch<Announcement>(getCreateAnnouncementUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(announcementCreate)
+  }
+);}
+
+
+
+
+
+export const getCreateAnnouncementMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAnnouncement>>, TError,{data: BodyType<AnnouncementCreate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createAnnouncement>>, TError,{data: BodyType<AnnouncementCreate>}, TContext> => {
+
+const mutationKey = ['createAnnouncement'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createAnnouncement>>, {data: BodyType<AnnouncementCreate>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createAnnouncement(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateAnnouncementMutationResult = NonNullable<Awaited<ReturnType<typeof createAnnouncement>>>
+    export type CreateAnnouncementMutationBody = BodyType<AnnouncementCreate>
+    export type CreateAnnouncementMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Publish an announcement
+ */
+export const useCreateAnnouncement = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAnnouncement>>, TError,{data: BodyType<AnnouncementCreate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createAnnouncement>>,
+        TError,
+        {data: BodyType<AnnouncementCreate>},
+        TContext
+      > => {
+      return useMutation(getCreateAnnouncementMutationOptions(options));
+    }
+
+export const getDeleteAnnouncementUrl = (id: string,) => {
+
+
+
+
+  return `/api/moderation/announcements/${id}`
+}
+
+/**
+ * @summary Delete an announcement
+ */
+export const deleteAnnouncement = async (id: string, options?: Parameters<typeof customFetch>[1]): Promise<void> => {
+
+  return customFetch<void>(getDeleteAnnouncementUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getDeleteAnnouncementMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAnnouncement>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteAnnouncement>>, TError,{id: string}, TContext> => {
+
+const mutationKey = ['deleteAnnouncement'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteAnnouncement>>, {id: string}> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteAnnouncement(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteAnnouncementMutationResult = NonNullable<Awaited<ReturnType<typeof deleteAnnouncement>>>
+
+    export type DeleteAnnouncementMutationError = ErrorType<void>
+
+    /**
+ * @summary Delete an announcement
+ */
+export const useDeleteAnnouncement = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAnnouncement>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteAnnouncement>>,
+        TError,
+        {id: string},
+        TContext
+      > => {
+      return useMutation(getDeleteAnnouncementMutationOptions(options));
+    }
+
+export const getCreatePollUrl = () => {
+
+
+
+
+  return `/api/moderation/polls`
+}
+
+/**
+ * @summary Create a poll
+ */
+export const createPoll = async (pollCreate: PollCreate, options?: Parameters<typeof customFetch>[1]): Promise<Poll> => {
+
+  return customFetch<Poll>(getCreatePollUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(pollCreate)
+  }
+);}
+
+
+
+
+
+export const getCreatePollMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPoll>>, TError,{data: BodyType<PollCreate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createPoll>>, TError,{data: BodyType<PollCreate>}, TContext> => {
+
+const mutationKey = ['createPoll'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createPoll>>, {data: BodyType<PollCreate>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createPoll(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreatePollMutationResult = NonNullable<Awaited<ReturnType<typeof createPoll>>>
+    export type CreatePollMutationBody = BodyType<PollCreate>
+    export type CreatePollMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Create a poll
+ */
+export const useCreatePoll = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPoll>>, TError,{data: BodyType<PollCreate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createPoll>>,
+        TError,
+        {data: BodyType<PollCreate>},
+        TContext
+      > => {
+      return useMutation(getCreatePollMutationOptions(options));
+    }
+
+export const getUpdatePollStatusUrl = (id: string,) => {
+
+
+
+
+  return `/api/moderation/polls/${id}`
+}
+
+/**
+ * @summary Open or close a poll
+ */
+export const updatePollStatus = async (id: string,
+    pollStatusUpdate: PollStatusUpdate, options?: Parameters<typeof customFetch>[1]): Promise<Poll> => {
+
+  return customFetch<Poll>(getUpdatePollStatusUrl(id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(pollStatusUpdate)
+  }
+);}
+
+
+
+
+
+export const getUpdatePollStatusMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updatePollStatus>>, TError,{id: string;data: BodyType<PollStatusUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updatePollStatus>>, TError,{id: string;data: BodyType<PollStatusUpdate>}, TContext> => {
+
+const mutationKey = ['updatePollStatus'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updatePollStatus>>, {id: string;data: BodyType<PollStatusUpdate>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updatePollStatus(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdatePollStatusMutationResult = NonNullable<Awaited<ReturnType<typeof updatePollStatus>>>
+    export type UpdatePollStatusMutationBody = BodyType<PollStatusUpdate>
+    export type UpdatePollStatusMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Open or close a poll
+ */
+export const useUpdatePollStatus = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updatePollStatus>>, TError,{id: string;data: BodyType<PollStatusUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updatePollStatus>>,
+        TError,
+        {id: string;data: BodyType<PollStatusUpdate>},
+        TContext
+      > => {
+      return useMutation(getUpdatePollStatusMutationOptions(options));
+    }
+
+export const getDeletePollUrl = (id: string,) => {
+
+
+
+
+  return `/api/moderation/polls/${id}`
+}
+
+/**
+ * @summary Delete a poll
+ */
+export const deletePoll = async (id: string, options?: Parameters<typeof customFetch>[1]): Promise<void> => {
+
+  return customFetch<void>(getDeletePollUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getDeletePollMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deletePoll>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deletePoll>>, TError,{id: string}, TContext> => {
+
+const mutationKey = ['deletePoll'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deletePoll>>, {id: string}> = (props) => {
+          const {id} = props ?? {};
+
+          return  deletePoll(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeletePollMutationResult = NonNullable<Awaited<ReturnType<typeof deletePoll>>>
+
+    export type DeletePollMutationError = ErrorType<void>
+
+    /**
+ * @summary Delete a poll
+ */
+export const useDeletePoll = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deletePoll>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deletePoll>>,
+        TError,
+        {id: string},
+        TContext
+      > => {
+      return useMutation(getDeletePollMutationOptions(options));
     }
 

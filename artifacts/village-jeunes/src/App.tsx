@@ -8,7 +8,9 @@ import AdminPage from "@/pages/admin";
 import HomePage from "@/pages/home";
 import JoinPage from "@/pages/join";
 import MemberPage from "@/pages/member";
+import MemberLoginPage from "@/pages/member-login";
 import MembersPage from "@/pages/members";
+import NewsPage from "@/pages/news";
 import NotFound from "@/pages/not-found";
 import ZoboromaPage from "@/pages/zoboroma";
 import { Route, Switch, useLocation, Router as WouterRouter } from "wouter";
@@ -24,6 +26,8 @@ function Router() {
         <Route path="/" component={HomePage} />
         <Route path="/membres" component={MembersPage} />
         <Route path="/membre/:id" component={MemberPage} />
+        <Route path="/actualites" component={NewsPage} />
+        <Route path="/connexion-membre" component={MemberLoginPage} />
         <Route path="/zoboroma" component={ZoboromaPage} />
         <Route path="/inscription" component={JoinPage} />
         <Route path="/admin" component={AdminPage} />

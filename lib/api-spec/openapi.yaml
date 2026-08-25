@@ -18,6 +18,10 @@ tags:
     description: Public membership requests
   - name: admin
     description: Administrator authentication
+  - name: community
+    description: Announcements, likes, polls, and member voting
+  - name: member
+    description: Community member authentication
 paths:
   /healthz:
     get:
@@ -116,6 +120,98 @@ paths:
                 $ref: "#/components/schemas/AdminSession"
         "401":
           description: Invalid password
+  /member/login:
+    post:
+      operationId: memberLogin
+      tags: [member]
+      summary: Open a member session with a personal code
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MemberLogin"
+      responses:
+        "200":
+          description: Member session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MemberSession"
+        "401":
+          description: Invalid member code
+  /announcements:
+    get:
+      operationId: listAnnouncements
+      tags: [community]
+      summary: List community announcements
+      responses:
+        "200":
+          description: Community announcements
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Announcement"
+  /announcements/{id}/like:
+    post:
+      operationId: toggleAnnouncementLike
+      tags: [community]
+      summary: Like or unlike an announcement as a member
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Updated like state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnnouncementLike"
+        "401":
+          description: Member session required
+  /polls:
+    get:
+      operationId: listPolls
+      tags: [community]
+      summary: List community polls
+      responses:
+        "200":
+          description: Community polls
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Poll"
+  /polls/{id}/vote:
+    post:
+      operationId: votePoll
+      tags: [community]
+      summary: Vote in a poll as a member
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PollVote"
+      responses:
+        "200":
+          description: Updated poll
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Poll"
+        "401":
+          description: Member session required
   /moderation/requests:
     get:
       operationId: listModerationRequests
@@ -170,6 +266,113 @@ paths:
           description: Profile removed
         "404":
           description: Profile not found
+  /moderation/profiles/{id}/member-code:
+    post:
+      operationId: generateMemberCode
+      tags: [moderation]
+      summary: Create or replace a member personal code
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Newly generated personal code
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MemberCode"
+        "404":
+          description: Profile not found
+  /moderation/announcements:
+    post:
+      operationId: createAnnouncement
+      tags: [moderation]
+      summary: Publish an announcement
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AnnouncementCreate"
+      responses:
+        "201":
+          description: Published announcement
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Announcement"
+  /moderation/announcements/{id}:
+    delete:
+      operationId: deleteAnnouncement
+      tags: [moderation]
+      summary: Delete an announcement
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "204":
+          description: Announcement removed
+        "404":
+          description: Announcement not found
+  /moderation/polls:
+    post:
+      operationId: createPoll
+      tags: [moderation]
+      summary: Create a poll
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PollCreate"
+      responses:
+        "201":
+          description: Created poll
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Poll"
+  /moderation/polls/{id}:
+    patch:
+      operationId: updatePollStatus
+      tags: [moderation]
+      summary: Open or close a poll
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PollStatusUpdate"
+      responses:
+        "200":
+          description: Updated poll
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Poll"
+    delete:
+      operationId: deletePoll
+      tags: [moderation]
+      summary: Delete a poll
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "204":
+          description: Poll removed
+        "404":
+          description: Poll not found
 components:
   schemas:
     HealthStatus:
@@ -273,3 +476,105 @@ components:
         status:
           type: string
           enum: [approved, rejected]
+    MemberLogin:
+      type: object
+      required: [code]
+      properties:
+        code: { type: string, minLength: 8, maxLength: 32 }
+    MemberIdentity:
+      type: object
+      required: [id, name, initials]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        initials: { type: string }
+        avatarUrl: { type: ["string", "null"] }
+    MemberSession:
+      type: object
+      required: [token, expiresAt, profile]
+      properties:
+        token: { type: string }
+        expiresAt: { type: string }
+        profile:
+          $ref: "#/components/schemas/MemberIdentity"
+    MemberCode:
+      type: object
+      required: [code, createdAt]
+      properties:
+        code: { type: string }
+        createdAt: { type: string }
+    Announcement:
+      type: object
+      required: [id, title, content, createdAt, likeCount, likedByMember]
+      properties:
+        id: { type: string }
+        title: { type: string }
+        content: { type: string }
+        mediaType:
+          type: ["string", "null"]
+          enum: [image, video, null]
+        mediaUrl: { type: ["string", "null"] }
+        createdAt: { type: string }
+        likeCount: { type: number }
+        likedByMember: { type: boolean }
+    AnnouncementCreate:
+      type: object
+      required: [title, content]
+      properties:
+        title: { type: string, minLength: 3, maxLength: 120 }
+        content: { type: string, minLength: 3, maxLength: 3000 }
+        mediaType:
+          type: ["string", "null"]
+          enum: [image, video, null]
+        mediaUrl: { type: ["string", "null"], maxLength: 500000 }
+    AnnouncementLike:
+      type: object
+      required: [liked, likeCount]
+      properties:
+        liked: { type: boolean }
+        likeCount: { type: number }
+    PollOption:
+      type: object
+      required: [id, label, voteCount]
+      properties:
+        id: { type: string }
+        label: { type: string }
+        voteCount: { type: number }
+    Poll:
+      type: object
+      required: [id, question, status, createdAt, totalVotes, options]
+      properties:
+        id: { type: string }
+        question: { type: string }
+        status:
+          type: string
+          enum: [open, closed]
+        createdAt: { type: string }
+        totalVotes: { type: number }
+        selectedOptionId: { type: ["string", "null"] }
+        options:
+          type: array
+          items:
+            $ref: "#/components/schemas/PollOption"
+    PollCreate:
+      type: object
+      required: [question, options]
+      properties:
+        question: { type: string, minLength: 3, maxLength: 240 }
+        options:
+          type: array
+          minItems: 2
+          maxItems: 6
+          items: { type: string, minLength: 1, maxLength: 120 }
+    PollStatusUpdate:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [open, closed]
+    PollVote:
+      type: object
+      required: [optionId]
+      properties:
+        optionId: { type: string }

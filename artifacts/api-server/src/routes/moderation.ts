@@ -2,18 +2,23 @@ import { Router, type IRouter } from "express";
 import { eq } from "drizzle-orm";
 import { db } from "@workspace/db";
 import {
+  announcementLikesTable,
   deletedProfilesTable,
+  pollVotesTable,
   membershipRequestsTable,
   profilesTable,
 } from "@workspace/db/schema";
 import {
   DeleteModerationProfileParams,
+  GenerateMemberCodeParams,
+  GenerateMemberCodeResponse,
   ListModerationRequestsResponse,
   ReviewModerationRequestParams,
   ReviewModerationRequestBody,
   ReviewModerationRequestResponse,
 } from "@workspace/api-zod";
 import { requireAdmin } from "../lib/admin-auth";
+import { generateMemberCode, hashMemberCode } from "../lib/member-auth";
 
 const router: IRouter = Router();
 
@@ -116,6 +121,12 @@ router.delete("/moderation/profiles/:id", async (req, res) => {
       .insert(deletedProfilesTable)
       .values({ id: profile.id })
       .onConflictDoNothing({ target: deletedProfilesTable.id });
+    await tx
+      .delete(announcementLikesTable)
+      .where(eq(announcementLikesTable.profileId, profile.id));
+    await tx
+      .delete(pollVotesTable)
+      .where(eq(pollVotesTable.profileId, profile.id));
     await tx.delete(profilesTable).where(eq(profilesTable.id, profile.id));
     return true;
   });
@@ -126,6 +137,32 @@ router.delete("/moderation/profiles/:id", async (req, res) => {
   }
 
   res.status(204).send();
+});
+
+router.post("/moderation/profiles/:id/member-code", async (req, res) => {
+  const params = GenerateMemberCodeParams.parse(req.params);
+  const code = generateMemberCode();
+  const createdAt = new Date();
+  const [updated] = await db
+    .update(profilesTable)
+    .set({
+      memberCodeHash: hashMemberCode(code),
+      memberCodeCreatedAt: createdAt,
+    })
+    .where(eq(profilesTable.id, params.id))
+    .returning({ id: profilesTable.id });
+
+  if (!updated) {
+    res.status(404).json({ error: "Profil introuvable." });
+    return;
+  }
+
+  res.json(
+    GenerateMemberCodeResponse.parse({
+      code,
+      createdAt: createdAt.toISOString(),
+    }),
+  );
 });
 
 export default router;

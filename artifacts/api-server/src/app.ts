@@ -64,9 +64,21 @@ app.use(
     const isAdminRequest = req.path.startsWith("/moderation");
     const isPublicWrite =
       req.method === "POST" &&
-      ["/admin/login", "/membership-requests"].includes(req.path);
+      ["/admin/login", "/member/login", "/membership-requests"].includes(
+        req.path,
+      );
+    const isMemberWrite =
+      req.method === "POST" &&
+      (/^\/announcements\/[^/]+\/like$/.test(req.path) ||
+        /^\/polls\/[^/]+\/vote$/.test(req.path));
 
-    if (publicReadOnly && !isReadRequest && !isAdminRequest && !isPublicWrite) {
+    if (
+      publicReadOnly &&
+      !isReadRequest &&
+      !isAdminRequest &&
+      !isPublicWrite &&
+      !isMemberWrite
+    ) {
       res
         .status(403)
         .json({ error: "Cette version publique est en lecture seule." });

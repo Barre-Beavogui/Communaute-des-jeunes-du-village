@@ -8,7 +8,12 @@ import "./index.css";
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL?.trim();
 setBaseUrl(apiBaseUrl || null);
-setAuthTokenGetter(() => sessionStorage.getItem("zoboroma_admin_token"));
+setAuthTokenGetter(() => {
+  const isAdminPage = /\/admin(?:\/|$)/.test(window.location.pathname);
+  return sessionStorage.getItem(
+    isAdminPage ? "zoboroma_admin_token" : "zoboroma_member_token",
+  );
+});
 
 createRoot(document.getElementById("root")!, {
   // Keeps caught errors off reportError(), which would raise the dev overlay.

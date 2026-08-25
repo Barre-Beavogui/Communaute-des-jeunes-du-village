@@ -63,3 +63,42 @@ export async function prepareProfilePhoto(file: File) {
 
   throw new Error("Cette photo reste trop volumineuse après compression.");
 }
+
+export async function prepareAnnouncementPhoto(file: File) {
+  if (!SUPPORTED_TYPES.has(file.type)) {
+    throw new Error("Choisissez une image JPG, PNG ou WebP.");
+  }
+  if (file.size > MAX_SOURCE_SIZE) {
+    throw new Error("La photo doit peser moins de 8 Mo.");
+  }
+
+  const image = await loadImage(file);
+  const maxWidth = 1200;
+  const maxHeight = 800;
+  const scale = Math.min(
+    1,
+    maxWidth / image.naturalWidth,
+    maxHeight / image.naturalHeight,
+  );
+  const width = Math.max(1, Math.round(image.naturalWidth * scale));
+  const height = Math.max(1, Math.round(image.naturalHeight * scale));
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+
+  const context = canvas.getContext("2d");
+  if (!context) {
+    throw new Error("La photo ne peut pas être préparée sur cet appareil.");
+  }
+
+  context.fillStyle = "#f4efe6";
+  context.fillRect(0, 0, width, height);
+  context.drawImage(image, 0, 0, width, height);
+
+  for (const quality of [0.82, 0.72, 0.62, 0.52, 0.42]) {
+    const dataUrl = canvas.toDataURL("image/jpeg", quality);
+    if (dataUrl.length <= MAX_DATA_URL_LENGTH) return dataUrl;
+  }
+
+  throw new Error("Cette photo reste trop volumineuse après compression.");
+}

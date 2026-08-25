@@ -3,6 +3,7 @@ import {
   Compass,
   LockKeyhole,
   MapPinned,
+  Newspaper,
   ShieldCheck,
   Sparkles,
   UserPlus,
@@ -15,10 +16,13 @@ import { useHealthCheck } from "@workspace/api-client-react";
 const navItems = [
   { href: "/", label: "Accueil", icon: Compass },
   { href: "/membres", label: "Membres", icon: UsersRound },
+  { href: "/actualites", label: "Actualités", icon: Newspaper },
   { href: "/zoboroma", label: "Zoboroma", icon: MapPinned },
   { href: "/inscription", label: "Inscription", icon: UserPlus },
   { href: "/admin", label: "Administration", icon: ShieldCheck },
 ];
+
+const mobileNavItems = navItems.filter((item) => item.href !== "/zoboroma");
 
 export function VillageShell({ children }: { children: ReactNode }) {
   const [location] = useLocation();
@@ -150,6 +154,8 @@ export function VillageShell({ children }: { children: ReactNode }) {
               <div className="mt-4 grid gap-3 text-sm font-bold">
                 {[
                   ["/membres", "Les membres"],
+                  ["/actualites", "Actualités et sondages"],
+                  ["/connexion-membre", "Connexion membre"],
                   ["/zoboroma", "Le village"],
                   ["/inscription", "Rejoindre l’annuaire"],
                   ["/admin", "Administration"],
@@ -192,7 +198,7 @@ export function VillageShell({ children }: { children: ReactNode }) {
         className="fixed bottom-0 left-0 right-0 z-40 grid grid-cols-5 border-t border-border/80 bg-background/95 px-2 py-2 backdrop-blur-xl md:hidden"
         aria-label="Navigation mobile"
       >
-        {navItems.map((item) => {
+        {mobileNavItems.map((item) => {
           const Icon = item.icon;
           const isActive =
             item.href === "/"

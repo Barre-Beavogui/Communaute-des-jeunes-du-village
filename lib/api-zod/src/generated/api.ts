@@ -134,6 +134,104 @@ export const AdminLoginResponse = zod.object({
 
 
 /**
+ * @summary Open a member session with a personal code
+ */
+export const memberLoginBodyCodeMin = 8;
+export const memberLoginBodyCodeMax = 32;
+
+
+
+export const MemberLoginBody = zod.object({
+  "code": zod.string().min(memberLoginBodyCodeMin).max(memberLoginBodyCodeMax)
+})
+
+export const MemberLoginResponse = zod.object({
+  "token": zod.string(),
+  "expiresAt": zod.string(),
+  "profile": zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "initials": zod.string(),
+  "avatarUrl": zod.string().nullish()
+})
+})
+
+
+/**
+ * @summary List community announcements
+ */
+export const ListAnnouncementsResponseItem = zod.object({
+  "id": zod.string(),
+  "title": zod.string(),
+  "content": zod.string(),
+  "mediaType": zod.union([zod.literal('image'),zod.literal('video'),zod.literal(null)]).nullish(),
+  "mediaUrl": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "likeCount": zod.number(),
+  "likedByMember": zod.boolean()
+})
+export const ListAnnouncementsResponse = zod.array(ListAnnouncementsResponseItem)
+
+
+/**
+ * @summary Like or unlike an announcement as a member
+ */
+export const ToggleAnnouncementLikeParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const ToggleAnnouncementLikeResponse = zod.object({
+  "liked": zod.boolean(),
+  "likeCount": zod.number()
+})
+
+
+/**
+ * @summary List community polls
+ */
+export const ListPollsResponseItem = zod.object({
+  "id": zod.string(),
+  "question": zod.string(),
+  "status": zod.enum(['open', 'closed']),
+  "createdAt": zod.string(),
+  "totalVotes": zod.number(),
+  "selectedOptionId": zod.string().nullish(),
+  "options": zod.array(zod.object({
+  "id": zod.string(),
+  "label": zod.string(),
+  "voteCount": zod.number()
+}))
+})
+export const ListPollsResponse = zod.array(ListPollsResponseItem)
+
+
+/**
+ * @summary Vote in a poll as a member
+ */
+export const VotePollParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const VotePollBody = zod.object({
+  "optionId": zod.string()
+})
+
+export const VotePollResponse = zod.object({
+  "id": zod.string(),
+  "question": zod.string(),
+  "status": zod.enum(['open', 'closed']),
+  "createdAt": zod.string(),
+  "totalVotes": zod.number(),
+  "selectedOptionId": zod.string().nullish(),
+  "options": zod.array(zod.object({
+  "id": zod.string(),
+  "label": zod.string(),
+  "voteCount": zod.number()
+}))
+})
+
+
+/**
  * @summary List pending membership requests
  */
 export const listModerationRequestsResponseAvatarUrlMax = 500000;
@@ -194,5 +292,129 @@ export const DeleteModerationProfileParams = zod.object({
 })
 
 export const DeleteModerationProfileResponse = zod.void()
+
+
+/**
+ * @summary Create or replace a member personal code
+ */
+export const GenerateMemberCodeParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const GenerateMemberCodeResponse = zod.object({
+  "code": zod.string(),
+  "createdAt": zod.string()
+})
+
+
+/**
+ * @summary Publish an announcement
+ */
+export const createAnnouncementBodyTitleMin = 3;
+export const createAnnouncementBodyTitleMax = 120;
+
+export const createAnnouncementBodyContentMin = 3;
+export const createAnnouncementBodyContentMax = 3000;
+
+export const createAnnouncementBodyMediaUrlMax = 500000;
+
+
+
+export const CreateAnnouncementBody = zod.object({
+  "title": zod.string().min(createAnnouncementBodyTitleMin).max(createAnnouncementBodyTitleMax),
+  "content": zod.string().min(createAnnouncementBodyContentMin).max(createAnnouncementBodyContentMax),
+  "mediaType": zod.union([zod.literal('image'),zod.literal('video'),zod.literal(null)]).nullish(),
+  "mediaUrl": zod.string().max(createAnnouncementBodyMediaUrlMax).nullish()
+})
+
+export const CreateAnnouncementResponse = zod.object({
+  "id": zod.string(),
+  "title": zod.string(),
+  "content": zod.string(),
+  "mediaType": zod.union([zod.literal('image'),zod.literal('video'),zod.literal(null)]).nullish(),
+  "mediaUrl": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "likeCount": zod.number(),
+  "likedByMember": zod.boolean()
+})
+
+
+/**
+ * @summary Delete an announcement
+ */
+export const DeleteAnnouncementParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const DeleteAnnouncementResponse = zod.void()
+
+
+/**
+ * @summary Create a poll
+ */
+export const createPollBodyQuestionMin = 3;
+export const createPollBodyQuestionMax = 240;
+
+export const createPollBodyOptionsItemMax = 120;
+
+export const createPollBodyOptionsMin = 2;
+export const createPollBodyOptionsMax = 6;
+
+
+
+export const CreatePollBody = zod.object({
+  "question": zod.string().min(createPollBodyQuestionMin).max(createPollBodyQuestionMax),
+  "options": zod.array(zod.string().min(1).max(createPollBodyOptionsItemMax)).min(createPollBodyOptionsMin).max(createPollBodyOptionsMax)
+})
+
+export const CreatePollResponse = zod.object({
+  "id": zod.string(),
+  "question": zod.string(),
+  "status": zod.enum(['open', 'closed']),
+  "createdAt": zod.string(),
+  "totalVotes": zod.number(),
+  "selectedOptionId": zod.string().nullish(),
+  "options": zod.array(zod.object({
+  "id": zod.string(),
+  "label": zod.string(),
+  "voteCount": zod.number()
+}))
+})
+
+
+/**
+ * @summary Open or close a poll
+ */
+export const UpdatePollStatusParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const UpdatePollStatusBody = zod.object({
+  "status": zod.enum(['open', 'closed'])
+})
+
+export const UpdatePollStatusResponse = zod.object({
+  "id": zod.string(),
+  "question": zod.string(),
+  "status": zod.enum(['open', 'closed']),
+  "createdAt": zod.string(),
+  "totalVotes": zod.number(),
+  "selectedOptionId": zod.string().nullish(),
+  "options": zod.array(zod.object({
+  "id": zod.string(),
+  "label": zod.string(),
+  "voteCount": zod.number()
+}))
+})
+
+
+/**
+ * @summary Delete a poll
+ */
+export const DeletePollParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const DeletePollResponse = zod.void()
 
 

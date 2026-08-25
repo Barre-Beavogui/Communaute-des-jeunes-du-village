@@ -18,6 +18,8 @@ export const profilesTable = pgTable("profiles", {
   instagram: text("instagram"),
   privacy: text("privacy").notNull().default("community"),
   status: text("status").notNull().default("approved"),
+  memberCodeHash: text("member_code_hash"),
+  memberCodeCreatedAt: timestamp("member_code_created_at"),
 });
 
 export const membershipRequestsTable = pgTable("membership_requests", {

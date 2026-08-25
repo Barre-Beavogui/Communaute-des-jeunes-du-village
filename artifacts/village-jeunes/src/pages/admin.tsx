@@ -2,6 +2,7 @@ import {
   BriefcaseBusiness,
   Check,
   Clock3,
+  Copy,
   KeyRound,
   LogOut,
   Mail,
@@ -17,14 +18,18 @@ import { type FormEvent, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   getGetMembersSummaryQueryKey,
+  getListAnnouncementsQueryKey,
   getListModerationRequestsQueryKey,
+  getListPollsQueryKey,
   getListProfilesQueryKey,
   useAdminLogin,
   useDeleteModerationProfile,
+  useGenerateMemberCode,
   useListModerationRequests,
   useListProfiles,
   useReviewModerationRequest,
 } from "@workspace/api-client-react";
+import { AdminCommunity } from "@/components/admin-community";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -49,6 +54,12 @@ export default function AdminPage() {
   const [reviewingId, setReviewingId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState("");
+  const [generatingCodeId, setGeneratingCodeId] = useState<string | null>(null);
+  const [codeError, setCodeError] = useState("");
+  const [generatedCode, setGeneratedCode] = useState<{
+    memberName: string;
+    code: string;
+  } | null>(null);
   const login = useAdminLogin();
   const requestsQuery = useListModerationRequests({
     query: {
@@ -66,6 +77,7 @@ export default function AdminPage() {
   });
   const reviewRequest = useReviewModerationRequest();
   const deleteProfile = useDeleteModerationProfile();
+  const generateCode = useGenerateMemberCode();
   const requests = requestsQuery.data ?? [];
   const members = membersQuery.data ?? [];
 
@@ -101,6 +113,25 @@ export default function AdminPage() {
       queryKey: getListModerationRequestsQueryKey(),
     });
     queryClient.removeQueries({ queryKey: getListProfilesQueryKey() });
+    queryClient.removeQueries({ queryKey: getListAnnouncementsQueryKey() });
+    queryClient.removeQueries({ queryKey: getListPollsQueryKey() });
+  };
+
+  const createMemberCode = (id: string, memberName: string) => {
+    setGeneratingCodeId(id);
+    setCodeError("");
+    generateCode.mutate(
+      { id },
+      {
+        onSuccess: (result) =>
+          setGeneratedCode({ memberName, code: result.code }),
+        onError: () =>
+          setCodeError(
+            "Le code n’a pas pu être créé. Reconnectez-vous puis réessayez.",
+          ),
+        onSettled: () => setGeneratingCodeId(null),
+      },
+    );
   };
 
   const review = (id: string, status: "approved" | "rejected") => {
@@ -230,11 +261,11 @@ export default function AdminPage() {
             Administration Zoboroma
           </p>
           <h1 className="vj-display mt-2 text-5xl leading-[.9] sm:text-6xl">
-            Inscriptions et membres.
+            Contenus, inscriptions et membres.
           </h1>
           <p className="mt-4 max-w-lg text-sm leading-6 text-muted-foreground">
-            Validez les nouvelles inscriptions et gérez les profils déjà
-            visibles dans l’annuaire.
+            Publiez les informations, organisez les votes, validez les nouvelles
+            inscriptions et gérez les profils.
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -260,6 +291,8 @@ export default function AdminPage() {
         L’email et le téléphone restent privés. Après validation, seuls le nom,
         le lieu, la présentation et les activités apparaissent publiquement.
       </div>
+
+      <AdminCommunity />
 
       {requestsQuery.isLoading ? (
         <div className="space-y-3">
@@ -425,6 +458,40 @@ export default function AdminPage() {
           </p>
         )}
 
+        {codeError && (
+          <p className="border-b border-destructive/20 bg-destructive/5 px-5 py-3 text-xs font-semibold text-destructive sm:px-6">
+            {codeError}
+          </p>
+        )}
+
+        {generatedCode && (
+          <div className="border-b border-secondary/20 bg-secondary/8 px-5 py-5 sm:px-6">
+            <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+              <div>
+                <p className="text-xs font-extrabold text-secondary">
+                  Code personnel de {generatedCode.memberName}
+                </p>
+                <p className="mt-2 font-mono text-xl font-bold tracking-[.12em]">
+                  {generatedCode.code}
+                </p>
+                <p className="mt-2 text-[10px] leading-4 text-muted-foreground">
+                  Transmettez-le en privé. Pour des raisons de sécurité, ce code
+                  complet ne sera affiché qu’ici.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() =>
+                  navigator.clipboard.writeText(generatedCode.code)
+                }
+                className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full bg-secondary px-4 py-2.5 text-xs font-bold text-secondary-foreground"
+              >
+                <Copy className="h-4 w-4" /> Copier le code
+              </button>
+            </div>
+          </div>
+        )}
+
         {membersQuery.isLoading ? (
           <div className="space-y-3 p-5 sm:p-6">
             {[1, 2, 3].map((item) => (
@@ -474,37 +541,83 @@ export default function AdminPage() {
                   </div>
                 </div>
 
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <button
-                      type="button"
-                      disabled={deletingId === member.id}
-                      className="inline-flex items-center justify-center gap-2 rounded-full border border-destructive/30 px-4 py-2.5 text-xs font-bold text-destructive hover:bg-destructive hover:text-destructive-foreground disabled:opacity-50"
-                      data-testid={`button-delete-member-${member.id}`}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                      {deletingId === member.id ? "Suppression…" : "Supprimer"}
-                    </button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Supprimer ce membre ?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        Le profil de {member.name} disparaîtra immédiatement de
-                        l’annuaire. Cette action est définitive.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Annuler</AlertDialogCancel>
-                      <AlertDialogAction
-                        onClick={() => removeMember(member.id)}
-                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                <div className="flex flex-wrap gap-2">
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <button
+                        type="button"
+                        disabled={generatingCodeId === member.id}
+                        className="inline-flex items-center justify-center gap-2 rounded-full border border-secondary/30 px-4 py-2.5 text-xs font-bold text-secondary hover:bg-secondary hover:text-secondary-foreground disabled:opacity-50"
+                        data-testid={`button-member-code-${member.id}`}
                       >
-                        Supprimer définitivement
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
+                        <KeyRound className="h-4 w-4" />
+                        {generatingCodeId === member.id
+                          ? "Création…"
+                          : "Code membre"}
+                      </button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>
+                          Créer un code pour {member.name} ?
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Un nouveau code personnel sera créé. Si ce membre en
+                          avait déjà un, l’ancien code cessera immédiatement de
+                          fonctionner.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Annuler</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() =>
+                            createMemberCode(member.id, member.name)
+                          }
+                          className="bg-secondary text-secondary-foreground hover:bg-secondary/90"
+                        >
+                          Créer le code
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <button
+                        type="button"
+                        disabled={deletingId === member.id}
+                        className="inline-flex items-center justify-center gap-2 rounded-full border border-destructive/30 px-4 py-2.5 text-xs font-bold text-destructive hover:bg-destructive hover:text-destructive-foreground disabled:opacity-50"
+                        data-testid={`button-delete-member-${member.id}`}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        {deletingId === member.id
+                          ? "Suppression…"
+                          : "Supprimer"}
+                      </button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>
+                          Supprimer ce membre ?
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Le profil de {member.name} disparaîtra immédiatement
+                          de l’annuaire. Ses réactions et ses votes seront
+                          également supprimés. Cette action est définitive.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Annuler</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() => removeMember(member.id)}
+                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                          Supprimer définitivement
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
               </article>
             ))}
           </div>

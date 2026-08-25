@@ -162,3 +162,146 @@ export interface ModerationReview {
   status: ModerationReviewStatus;
 }
 
+export interface MemberLogin {
+  /**
+     * @minLength 8
+     * @maxLength 32
+     */
+  code: string;
+}
+
+export interface MemberIdentity {
+  id: string;
+  name: string;
+  initials: string;
+  /** @nullable */
+  avatarUrl?: string | null;
+}
+
+export interface MemberSession {
+  token: string;
+  expiresAt: string;
+  profile: MemberIdentity;
+}
+
+export interface MemberCode {
+  code: string;
+  createdAt: string;
+}
+
+/**
+ * @nullable
+ */
+export type AnnouncementMediaType = typeof AnnouncementMediaType[keyof typeof AnnouncementMediaType] | null;
+
+
+export const AnnouncementMediaType = {
+  image: 'image',
+  video: 'video',
+} as const;
+
+export interface Announcement {
+  id: string;
+  title: string;
+  content: string;
+  /** @nullable */
+  mediaType?: AnnouncementMediaType;
+  /** @nullable */
+  mediaUrl?: string | null;
+  createdAt: string;
+  likeCount: number;
+  likedByMember: boolean;
+}
+
+/**
+ * @nullable
+ */
+export type AnnouncementCreateMediaType = typeof AnnouncementCreateMediaType[keyof typeof AnnouncementCreateMediaType] | null;
+
+
+export const AnnouncementCreateMediaType = {
+  image: 'image',
+  video: 'video',
+} as const;
+
+export interface AnnouncementCreate {
+  /**
+     * @minLength 3
+     * @maxLength 120
+     */
+  title: string;
+  /**
+     * @minLength 3
+     * @maxLength 3000
+     */
+  content: string;
+  /** @nullable */
+  mediaType?: AnnouncementCreateMediaType;
+  /**
+     * @maxLength 500000
+     * @nullable
+     */
+  mediaUrl?: string | null;
+}
+
+export interface AnnouncementLike {
+  liked: boolean;
+  likeCount: number;
+}
+
+export interface PollOption {
+  id: string;
+  label: string;
+  voteCount: number;
+}
+
+export type PollStatus = typeof PollStatus[keyof typeof PollStatus];
+
+
+export const PollStatus = {
+  open: 'open',
+  closed: 'closed',
+} as const;
+
+export interface Poll {
+  id: string;
+  question: string;
+  status: PollStatus;
+  createdAt: string;
+  totalVotes: number;
+  /** @nullable */
+  selectedOptionId?: string | null;
+  options: PollOption[];
+}
+
+export interface PollCreate {
+  /**
+     * @minLength 3
+     * @maxLength 240
+     */
+  question: string;
+  /**
+     * @minItems 2
+     * @maxItems 6
+     * @items.minLength 1
+     * @items.maxLength 120
+     */
+  options: string[];
+}
+
+export type PollStatusUpdateStatus = typeof PollStatusUpdateStatus[keyof typeof PollStatusUpdateStatus];
+
+
+export const PollStatusUpdateStatus = {
+  open: 'open',
+  closed: 'closed',
+} as const;
+
+export interface PollStatusUpdate {
+  status: PollStatusUpdateStatus;
+}
+
+export interface PollVote {
+  optionId: string;
+}
+
