@@ -83,6 +83,8 @@ export const createMembershipRequestBodyEmailMax = 254;
 
 export const createMembershipRequestBodyPhoneMax = 40;
 
+export const createMembershipRequestBodyAvatarUrlMax = 500000;
+
 export const createMembershipRequestBodyNeighborhoodMin = 2;
 export const createMembershipRequestBodyNeighborhoodMax = 120;
 
@@ -100,6 +102,7 @@ export const CreateMembershipRequestBody = zod.object({
   "name": zod.string().min(createMembershipRequestBodyNameMin).max(createMembershipRequestBodyNameMax),
   "email": zod.string().max(createMembershipRequestBodyEmailMax),
   "phone": zod.string().max(createMembershipRequestBodyPhoneMax).nullish(),
+  "avatarUrl": zod.string().max(createMembershipRequestBodyAvatarUrlMax).nullish(),
   "neighborhood": zod.string().min(createMembershipRequestBodyNeighborhoodMin).max(createMembershipRequestBodyNeighborhoodMax),
   "profession": zod.string().min(createMembershipRequestBodyProfessionMin).max(createMembershipRequestBodyProfessionMax),
   "bio": zod.string().min(createMembershipRequestBodyBioMin).max(createMembershipRequestBodyBioMax),
@@ -133,11 +136,16 @@ export const AdminLoginResponse = zod.object({
 /**
  * @summary List pending membership requests
  */
+export const listModerationRequestsResponseAvatarUrlMax = 500000;
+
+
+
 export const ListModerationRequestsResponseItem = zod.object({
   "id": zod.string(),
   "name": zod.string(),
   "email": zod.string(),
   "phone": zod.string().nullish(),
+  "avatarUrl": zod.string().max(listModerationRequestsResponseAvatarUrlMax).nullish(),
   "neighborhood": zod.string(),
   "profession": zod.string(),
   "bio": zod.string(),
@@ -159,11 +167,16 @@ export const ReviewModerationRequestBody = zod.object({
   "status": zod.enum(['approved', 'rejected'])
 })
 
+export const reviewModerationRequestResponseAvatarUrlMax = 500000;
+
+
+
 export const ReviewModerationRequestResponse = zod.object({
   "id": zod.string(),
   "name": zod.string(),
   "email": zod.string(),
   "phone": zod.string().nullish(),
+  "avatarUrl": zod.string().max(reviewModerationRequestResponseAvatarUrlMax).nullish(),
   "neighborhood": zod.string(),
   "profession": zod.string(),
   "bio": zod.string(),

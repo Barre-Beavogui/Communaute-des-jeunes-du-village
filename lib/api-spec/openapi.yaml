@@ -225,6 +225,7 @@ components:
         name: { type: string }
         email: { type: string }
         phone: { type: ["string", "null"] }
+        avatarUrl: { type: ["string", "null"], maxLength: 500000 }
         neighborhood: { type: string }
         profession: { type: string }
         bio: { type: string }
@@ -240,6 +241,7 @@ components:
         name: { type: string, minLength: 2, maxLength: 120 }
         email: { type: string, maxLength: 254 }
         phone: { type: ["string", "null"], maxLength: 40 }
+        avatarUrl: { type: ["string", "null"], maxLength: 500000 }
         neighborhood: { type: string, minLength: 2, maxLength: 120 }
         profession: { type: string, minLength: 2, maxLength: 80 }
         bio: { type: string, minLength: 10, maxLength: 500 }

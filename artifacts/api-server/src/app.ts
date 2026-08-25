@@ -54,8 +54,8 @@ app.use(
     },
   }),
 );
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: "1mb" }));
+app.use(express.urlencoded({ extended: true, limit: "1mb" }));
 
 app.use(
   "/api",
@@ -79,6 +79,16 @@ app.use(
 );
 
 const errorHandler: ErrorRequestHandler = (error, _req, res, _next) => {
+  if (
+    typeof error === "object" &&
+    error !== null &&
+    "status" in error &&
+    error.status === 413
+  ) {
+    res.status(413).json({ error: "La photo envoyée est trop volumineuse." });
+    return;
+  }
+
   if (
     error instanceof SyntaxError ||
     (typeof error === "object" &&

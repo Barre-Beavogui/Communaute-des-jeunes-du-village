@@ -12,6 +12,7 @@ const router: IRouter = Router();
 const submissions = new Map<string, { count: number; resetAt: number }>();
 const SUBMISSION_LIMIT = 5;
 const SUBMISSION_WINDOW_MS = 60 * 60 * 1000;
+const PROFILE_PHOTO_PATTERN = /^data:image\/jpeg;base64,[A-Za-z0-9+/]+={0,2}$/;
 
 router.post("/membership-requests", async (req, res) => {
   const key = req.ip || "unknown";
@@ -32,6 +33,10 @@ router.post("/membership-requests", async (req, res) => {
   const data = CreateMembershipRequestBody.parse(req.body);
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
     res.status(400).json({ error: "Adresse email invalide." });
+    return;
+  }
+  if (data.avatarUrl && !PROFILE_PHOTO_PATTERN.test(data.avatarUrl)) {
+    res.status(400).json({ error: "La photo de profil est invalide." });
     return;
   }
   const normalizedEmail = data.email.trim().toLowerCase();
@@ -59,6 +64,7 @@ router.post("/membership-requests", async (req, res) => {
       name: data.name.trim(),
       email: normalizedEmail,
       phone: data.phone?.trim() || null,
+      avatarUrl: data.avatarUrl || null,
       neighborhood: data.neighborhood.trim(),
       profession: data.profession.trim(),
       bio: data.bio.trim(),

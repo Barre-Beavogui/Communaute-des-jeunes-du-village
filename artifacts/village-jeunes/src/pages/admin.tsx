@@ -293,13 +293,22 @@ export default function AdminPage() {
             >
               <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-start">
                 <div className="flex min-w-0 items-start gap-4">
-                  <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-muted text-sm font-extrabold text-secondary">
-                    {request.name
-                      .split(" ")
-                      .map((part) => part[0])
-                      .join("")
-                      .slice(0, 2)}
-                  </div>
+                  {request.avatarUrl ? (
+                    <img
+                      src={request.avatarUrl}
+                      alt={`Photo proposée par ${request.name}`}
+                      className="h-12 w-12 shrink-0 rounded-2xl object-cover ring-2 ring-background"
+                      data-testid={`img-request-avatar-${request.id}`}
+                    />
+                  ) : (
+                    <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-muted text-sm font-extrabold text-secondary">
+                      {request.name
+                        .split(" ")
+                        .map((part) => part[0])
+                        .join("")
+                        .slice(0, 2)}
+                    </div>
+                  )}
                   <div className="min-w-0">
                     <h2 className="text-lg font-extrabold tracking-[-.03em]">
                       {request.name}
@@ -438,9 +447,17 @@ export default function AdminPage() {
                 data-testid={`row-member-admin-${member.id}`}
               >
                 <div className="flex min-w-0 items-center gap-3">
-                  <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-muted text-xs font-extrabold text-secondary">
-                    {member.initials}
-                  </span>
+                  {member.avatarUrl ? (
+                    <img
+                      src={member.avatarUrl}
+                      alt={`Photo de ${member.name}`}
+                      className="h-11 w-11 shrink-0 rounded-2xl object-cover"
+                    />
+                  ) : (
+                    <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-muted text-xs font-extrabold text-secondary">
+                      {member.initials}
+                    </span>
+                  )}
                   <div className="min-w-0">
                     <h3 className="truncate text-sm font-extrabold">
                       {member.name}

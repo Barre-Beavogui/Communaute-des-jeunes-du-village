@@ -25,6 +25,7 @@ export const membershipRequestsTable = pgTable("membership_requests", {
   name: text("name").notNull(),
   email: text("email").notNull(),
   phone: text("phone"),
+  avatarUrl: text("avatar_url"),
   neighborhood: text("neighborhood").notNull(),
   profession: text("profession").notNull().default("Autre"),
   bio: text("bio").notNull().default(""),

@@ -74,6 +74,7 @@ router.patch("/moderation/requests/:id", async (req, res) => {
           id: profileId,
           name: request.name,
           initials,
+          avatarUrl: request.avatarUrl,
           neighborhood: request.neighborhood,
           bio: request.bio || `Profession ou statut : ${request.profession}.`,
           activities: [request.profession],

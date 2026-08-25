@@ -70,6 +70,11 @@ export interface MembershipRequest {
   email: string;
   /** @nullable */
   phone?: string | null;
+  /**
+     * @maxLength 500000
+     * @nullable
+     */
+  avatarUrl?: string | null;
   neighborhood: string;
   profession: string;
   bio: string;
@@ -92,6 +97,11 @@ export interface MembershipRequestCreate {
      * @nullable
      */
   phone?: string | null;
+  /**
+     * @maxLength 500000
+     * @nullable
+     */
+  avatarUrl?: string | null;
   /**
      * @minLength 2
      * @maxLength 120

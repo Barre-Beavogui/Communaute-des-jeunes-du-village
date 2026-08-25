@@ -28,6 +28,7 @@ export async function syncZoboromaMembers() {
       name text NOT NULL,
       email text NOT NULL,
       phone text,
+      avatar_url text,
       neighborhood text NOT NULL,
       profession text NOT NULL DEFAULT 'Autre',
       bio text NOT NULL DEFAULT '',
@@ -46,6 +47,9 @@ export async function syncZoboromaMembers() {
 
   await db.execute(
     sql`ALTER TABLE membership_requests ADD COLUMN IF NOT EXISTS phone text`,
+  );
+  await db.execute(
+    sql`ALTER TABLE membership_requests ADD COLUMN IF NOT EXISTS avatar_url text`,
   );
   await db.execute(
     sql`ALTER TABLE membership_requests ADD COLUMN IF NOT EXISTS profession text NOT NULL DEFAULT 'Autre'`,

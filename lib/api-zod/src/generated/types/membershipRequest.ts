@@ -13,6 +13,11 @@ export interface MembershipRequest {
   email: string;
   /** @nullable */
   phone?: string | null;
+  /**
+     * @maxLength 500000
+     * @nullable
+     */
+  avatarUrl?: string | null;
   neighborhood: string;
   profession: string;
   bio: string;

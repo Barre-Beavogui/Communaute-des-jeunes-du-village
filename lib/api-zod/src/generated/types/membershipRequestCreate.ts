@@ -20,6 +20,11 @@ export interface MembershipRequestCreate {
      */
   phone?: string | null;
   /**
+     * @maxLength 500000
+     * @nullable
+     */
+  avatarUrl?: string | null;
+  /**
      * @minLength 2
      * @maxLength 120
      */

@@ -1,6 +1,7 @@
 import {
   ArrowLeft,
   BriefcaseBusiness,
+  Camera,
   Check,
   HeartHandshake,
   LockKeyhole,
@@ -8,11 +9,13 @@ import {
   MapPin,
   Phone,
   Send,
+  Trash2,
   UserRound,
 } from "lucide-react";
-import { type FormEvent, useState } from "react";
+import { type ChangeEvent, type FormEvent, useState } from "react";
 import { Link } from "wouter";
 import { useCreateMembershipRequest } from "@workspace/api-client-react";
+import { prepareProfilePhoto } from "@/lib/profile-photo";
 
 const professions = [
   "Élève / Lycéen",
@@ -29,10 +32,13 @@ export default function JoinPage() {
   const createRequest = useCreateMembershipRequest();
   const [submitted, setSubmitted] = useState(false);
   const [consent, setConsent] = useState(false);
+  const [photoError, setPhotoError] = useState("");
+  const [processingPhoto, setProcessingPhoto] = useState(false);
   const [form, setForm] = useState({
     name: "",
     email: "",
     phone: "",
+    avatarUrl: "",
     neighborhood: "",
     profession: "",
     bio: "",
@@ -40,6 +46,26 @@ export default function JoinPage() {
   });
   const setField = (field: keyof typeof form, value: string) =>
     setForm((current) => ({ ...current, [field]: value }));
+
+  const selectPhoto = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+
+    setPhotoError("");
+    setProcessingPhoto(true);
+    try {
+      setField("avatarUrl", await prepareProfilePhoto(file));
+    } catch (error) {
+      setPhotoError(
+        error instanceof Error
+          ? error.message
+          : "La photo n’a pas pu être préparée.",
+      );
+    } finally {
+      setProcessingPhoto(false);
+    }
+  };
 
   const submit = (event: FormEvent) => {
     event.preventDefault();
@@ -50,6 +76,7 @@ export default function JoinPage() {
           name: form.name,
           email: form.email,
           phone: form.phone || null,
+          avatarUrl: form.avatarUrl || null,
           neighborhood: form.neighborhood,
           profession: form.profession,
           bio: form.bio,
@@ -142,6 +169,62 @@ export default function JoinPage() {
         </div>
 
         <div className="grid gap-5 sm:grid-cols-2">
+          <div className="rounded-2xl border border-border bg-background p-4 sm:col-span-2">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+              <div className="grid h-24 w-24 shrink-0 place-items-center overflow-hidden rounded-[28%] bg-muted text-primary ring-4 ring-card">
+                {form.avatarUrl ? (
+                  <img
+                    src={form.avatarUrl}
+                    alt="Aperçu de votre photo"
+                    className="h-full w-full object-cover"
+                    data-testid="img-join-photo-preview"
+                  />
+                ) : (
+                  <Camera className="h-8 w-8" />
+                )}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-extrabold">Photo de profil</p>
+                <p className="mt-1 text-[11px] leading-5 text-muted-foreground">
+                  Facultative · JPG, PNG ou WebP · recadrée automatiquement au
+                  format carré.
+                </p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <label className="inline-flex cursor-pointer items-center gap-2 rounded-full bg-foreground px-4 py-2.5 text-xs font-bold text-background hover:-translate-y-0.5">
+                    <Camera className="h-4 w-4" />
+                    {processingPhoto
+                      ? "Préparation…"
+                      : form.avatarUrl
+                        ? "Changer la photo"
+                        : "Choisir une photo"}
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      disabled={processingPhoto}
+                      onChange={selectPhoto}
+                      className="sr-only"
+                      data-testid="input-join-photo"
+                    />
+                  </label>
+                  {form.avatarUrl && (
+                    <button
+                      type="button"
+                      onClick={() => setField("avatarUrl", "")}
+                      className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2.5 text-xs font-bold text-muted-foreground hover:border-destructive hover:text-destructive"
+                    >
+                      <Trash2 className="h-4 w-4" /> Retirer
+                    </button>
+                  )}
+                </div>
+                {photoError && (
+                  <p className="mt-2 text-xs font-semibold text-destructive">
+                    {photoError}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+
           <label className="block space-y-2 text-xs font-bold sm:col-span-2">
             <span className="flex items-center gap-2">
               <UserRound className="h-3.5 w-3.5 text-primary" />
@@ -273,7 +356,8 @@ export default function JoinPage() {
               J’accepte que l’équipe de Zoboroma examine ces informations.
             </strong>{" "}
             L’email et le téléphone servent uniquement à la gestion de
-            l’inscription et ne seront pas publiés.
+            l’inscription et ne seront pas publiés. Si j’ajoute une photo, elle
+            sera visible sur mon profil après validation.
           </span>
         </label>
 
@@ -286,7 +370,7 @@ export default function JoinPage() {
 
         <button
           type="submit"
-          disabled={createRequest.isPending || !consent}
+          disabled={createRequest.isPending || processingPhoto || !consent}
           className="mt-7 flex w-full items-center justify-center gap-2 rounded-full bg-primary px-5 py-3.5 text-xs font-extrabold text-primary-foreground hover:-translate-y-0.5 hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-50"
           data-testid="button-submit-join"
         >
