@@ -21,7 +21,18 @@ const allowAnyOrigin =
   configuredOrigins.length === 0 && process.env["NODE_ENV"] !== "production";
 const publicReadOnly = process.env["PUBLIC_READ_ONLY"] === "true";
 
+app.disable("x-powered-by");
 app.set("trust proxy", 1);
+
+app.use((_req, res, next) => {
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("Referrer-Policy", "same-origin");
+  res.setHeader(
+    "Permissions-Policy",
+    "camera=(), microphone=(), geolocation=()",
+  );
+  next();
+});
 
 app.use(
   pinoHttp({
@@ -69,13 +80,15 @@ app.use(
         "/member/activate",
         "/member/login",
         "/member/set-password",
+        "/member/password-reset-requests",
         "/membership-requests",
       ].includes(req.path);
     const isMemberWrite =
-      req.method === "POST" &&
-      (/^\/announcements\/[^/]+\/like$/.test(req.path) ||
-        /^\/announcements\/[^/]+\/dislike$/.test(req.path) ||
-        /^\/polls\/[^/]+\/vote$/.test(req.path));
+      (req.method === "POST" &&
+        (/^\/announcements\/[^/]+\/like$/.test(req.path) ||
+          /^\/announcements\/[^/]+\/dislike$/.test(req.path) ||
+          /^\/polls\/[^/]+\/vote$/.test(req.path))) ||
+      (req.method === "PATCH" && req.path === "/member/profile");
 
     if (
       publicReadOnly &&

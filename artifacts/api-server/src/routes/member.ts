@@ -1,14 +1,23 @@
+import { randomUUID } from "node:crypto";
 import { Router, type IRouter, type Request } from "express";
-import { and, eq, isNull } from "drizzle-orm";
+import { and, eq, isNull, ne } from "drizzle-orm";
 import { db } from "@workspace/db";
-import { profilesTable } from "@workspace/db/schema";
 import {
+  passwordResetRequestsTable,
+  profilesTable,
+} from "@workspace/db/schema";
+import {
+  GetMemberProfileSettingsResponse,
   MemberActivateBody,
   MemberActivateResponse,
   MemberLoginBody,
   MemberLoginResponse,
+  RequestMemberPasswordResetBody,
+  RequestMemberPasswordResetResponse,
   SetMemberPasswordBody,
   SetMemberPasswordResponse,
+  UpdateMemberProfileBody,
+  UpdateMemberProfileResponse,
 } from "@workspace/api-zod";
 import {
   createMemberSetupSession,
@@ -18,6 +27,7 @@ import {
   memberAuthIsConfigured,
   normalizeLoginEmail,
   normalizeLoginPhone,
+  requireMember,
   requireMemberSetup,
   verifyMemberPassword,
 } from "../lib/member-auth";
@@ -26,6 +36,10 @@ const router: IRouter = Router();
 const attempts = new Map<string, { count: number; resetAt: number }>();
 const MAX_ATTEMPTS = 8;
 const WINDOW_MS = 15 * 60 * 1000;
+const resetRequests = new Map<string, { count: number; resetAt: number }>();
+const MAX_RESET_REQUESTS = 5;
+const RESET_WINDOW_MS = 60 * 60 * 1000;
+const PROFILE_PHOTO_PATTERN = /^data:image\/jpeg;base64,[A-Za-z0-9+/]+={0,2}$/;
 
 function attemptEntry(req: Request) {
   const key = req.ip || "unknown";
@@ -36,6 +50,23 @@ function attemptEntry(req: Request) {
       ? { count: 0, resetAt: now + WINDOW_MS }
       : current;
   return { key, entry };
+}
+
+function profileSettings(row: typeof profilesTable.$inferSelect) {
+  return {
+    id: row.id,
+    name: row.name,
+    initials: row.initials,
+    avatarUrl: row.avatarUrl,
+    neighborhood: row.neighborhood,
+    bio: row.bio,
+    profession: row.activities?.[0] ?? "Autre",
+    project: row.project,
+    email: row.loginEmail,
+    phone: row.loginPhone ?? row.contact,
+    showEmail: row.showEmail,
+    showPhone: row.showPhone,
+  };
 }
 
 router.post("/member/activate", async (req, res) => {
@@ -171,6 +202,179 @@ router.post("/member/login", async (req, res) => {
       },
     }),
   );
+});
+
+router.post("/member/password-reset-requests", async (req, res) => {
+  const key = req.ip || "unknown";
+  const now = Date.now();
+  const current = resetRequests.get(key);
+  const entry =
+    !current || current.resetAt <= now
+      ? { count: 0, resetAt: now + RESET_WINDOW_MS }
+      : current;
+
+  if (entry.count >= MAX_RESET_REQUESTS) {
+    res.status(429).json({ error: "Trop de demandes. Réessayez plus tard." });
+    return;
+  }
+
+  resetRequests.set(key, { ...entry, count: entry.count + 1 });
+  const body = RequestMemberPasswordResetBody.parse(req.body);
+  const identifier = body.identifier.trim();
+  const isEmail = identifier.includes("@");
+  const normalizedIdentifier = isEmail
+    ? normalizeLoginEmail(identifier)
+    : normalizeLoginPhone(identifier);
+  const rows = await db
+    .select({ id: profilesTable.id })
+    .from(profilesTable)
+    .where(
+      and(
+        isEmail
+          ? eq(profilesTable.loginEmailNormalized, normalizedIdentifier)
+          : eq(profilesTable.loginPhoneNormalized, normalizedIdentifier),
+        eq(profilesTable.status, "approved"),
+      ),
+    );
+
+  if (rows.length === 1) {
+    await db.transaction(async (tx) => {
+      await tx
+        .delete(passwordResetRequestsTable)
+        .where(
+          and(
+            eq(passwordResetRequestsTable.profileId, rows[0]!.id),
+            eq(passwordResetRequestsTable.status, "pending"),
+          ),
+        );
+      await tx.insert(passwordResetRequestsTable).values({
+        id: randomUUID(),
+        profileId: rows[0]!.id,
+      });
+    });
+  }
+
+  res
+    .status(202)
+    .json(RequestMemberPasswordResetResponse.parse({ success: true }));
+});
+
+router.get("/member/profile", requireMember, async (_req, res) => {
+  const profileId = res.locals["memberProfileId"] as string;
+  const [profile] = await db
+    .select()
+    .from(profilesTable)
+    .where(
+      and(
+        eq(profilesTable.id, profileId),
+        eq(profilesTable.status, "approved"),
+      ),
+    );
+
+  if (!profile) {
+    res.status(404).json({ error: "Profil introuvable." });
+    return;
+  }
+  res.json(GetMemberProfileSettingsResponse.parse(profileSettings(profile)));
+});
+
+router.patch("/member/profile", requireMember, async (req, res) => {
+  const profileId = res.locals["memberProfileId"] as string;
+  const body = UpdateMemberProfileBody.parse(req.body);
+  const email = body.email?.trim() || null;
+  const phone = body.phone?.trim() || null;
+  const normalizedEmail = email ? normalizeLoginEmail(email) : null;
+  const normalizedPhone = phone ? normalizeLoginPhone(phone) : null;
+
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    res.status(400).json({ error: "Adresse email invalide." });
+    return;
+  }
+  if (phone && (!normalizedPhone || normalizedPhone.length < 6)) {
+    res.status(400).json({ error: "Numéro de téléphone invalide." });
+    return;
+  }
+  if (!normalizedEmail && !normalizedPhone) {
+    res.status(400).json({
+      error: "Conservez au moins un email ou un téléphone de connexion.",
+    });
+    return;
+  }
+  if (body.avatarUrl && !PROFILE_PHOTO_PATTERN.test(body.avatarUrl)) {
+    res.status(400).json({ error: "La photo de profil est invalide." });
+    return;
+  }
+
+  const [emailConflict, phoneConflict] = await Promise.all([
+    normalizedEmail
+      ? db
+          .select({ id: profilesTable.id })
+          .from(profilesTable)
+          .where(
+            and(
+              ne(profilesTable.id, profileId),
+              eq(profilesTable.loginEmailNormalized, normalizedEmail),
+            ),
+          )
+      : Promise.resolve([]),
+    normalizedPhone
+      ? db
+          .select({ id: profilesTable.id })
+          .from(profilesTable)
+          .where(
+            and(
+              ne(profilesTable.id, profileId),
+              eq(profilesTable.loginPhoneNormalized, normalizedPhone),
+            ),
+          )
+      : Promise.resolve([]),
+  ]);
+  if (emailConflict.length || phoneConflict.length) {
+    res.status(409).json({
+      error: "Cet email ou ce téléphone est déjà utilisé par un autre compte.",
+    });
+    return;
+  }
+
+  const name = body.name.trim();
+  const initials = name
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((part) => part[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+  const [updated] = await db
+    .update(profilesTable)
+    .set({
+      name,
+      initials,
+      avatarUrl: body.avatarUrl || null,
+      neighborhood: body.neighborhood.trim(),
+      bio: body.bio.trim(),
+      activities: [body.profession.trim()],
+      project: body.project?.trim() || null,
+      contact: phone,
+      loginEmail: email,
+      loginEmailNormalized: normalizedEmail,
+      loginPhone: phone,
+      loginPhoneNormalized: normalizedPhone,
+      showEmail: Boolean(email && body.showEmail),
+      showPhone: Boolean(phone && body.showPhone),
+    })
+    .where(
+      and(
+        eq(profilesTable.id, profileId),
+        eq(profilesTable.status, "approved"),
+      ),
+    )
+    .returning();
+
+  if (!updated) {
+    res.status(404).json({ error: "Profil introuvable." });
+    return;
+  }
+  res.json(UpdateMemberProfileResponse.parse(profileSettings(updated)));
 });
 
 router.post("/member/set-password", requireMemberSetup, async (req, res) => {

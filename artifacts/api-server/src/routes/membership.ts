@@ -7,6 +7,7 @@ import {
   CreateMembershipRequestBody,
   CreateMembershipRequestResponse,
 } from "@workspace/api-zod";
+import { normalizeLoginPhone } from "../lib/member-auth";
 
 const router: IRouter = Router();
 const submissions = new Map<string, { count: number; resetAt: number }>();
@@ -33,6 +34,11 @@ router.post("/membership-requests", async (req, res) => {
   const data = CreateMembershipRequestBody.parse(req.body);
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
     res.status(400).json({ error: "Adresse email invalide." });
+    return;
+  }
+  const normalizedPhone = data.phone ? normalizeLoginPhone(data.phone) : null;
+  if (data.phone && (!normalizedPhone || normalizedPhone.length < 6)) {
+    res.status(400).json({ error: "Numéro de téléphone invalide." });
     return;
   }
   if (data.avatarUrl && !PROFILE_PHOTO_PATTERN.test(data.avatarUrl)) {

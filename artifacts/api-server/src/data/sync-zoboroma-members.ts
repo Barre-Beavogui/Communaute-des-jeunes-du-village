@@ -69,6 +69,12 @@ export async function syncZoboromaMembers() {
   await db.execute(
     sql`ALTER TABLE profiles ADD COLUMN IF NOT EXISTS login_phone_normalized text`,
   );
+  await db.execute(
+    sql`ALTER TABLE profiles ADD COLUMN IF NOT EXISTS show_email boolean NOT NULL DEFAULT true`,
+  );
+  await db.execute(
+    sql`ALTER TABLE profiles ADD COLUMN IF NOT EXISTS show_phone boolean NOT NULL DEFAULT true`,
+  );
   await db.execute(sql`
     CREATE UNIQUE INDEX IF NOT EXISTS profiles_member_code_hash_unique
     ON profiles (member_code_hash)
@@ -137,6 +143,21 @@ export async function syncZoboromaMembers() {
       key text PRIMARY KEY,
       applied_at timestamp NOT NULL DEFAULT now()
     )
+  `);
+
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS password_reset_requests (
+      id text PRIMARY KEY,
+      profile_id text NOT NULL,
+      requested_at timestamp NOT NULL DEFAULT now(),
+      status text NOT NULL DEFAULT 'pending'
+    )
+  `);
+
+  await db.execute(sql`
+    CREATE UNIQUE INDEX IF NOT EXISTS password_reset_requests_pending_profile
+    ON password_reset_requests (profile_id)
+    WHERE status = 'pending'
   `);
 
   await db.execute(sql`

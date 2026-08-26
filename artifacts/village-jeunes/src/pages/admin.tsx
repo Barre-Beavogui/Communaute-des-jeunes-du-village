@@ -21,12 +21,15 @@ import {
   getGetMembersSummaryQueryKey,
   getListAnnouncementsQueryKey,
   getListModerationRequestsQueryKey,
+  getListPasswordResetRequestsQueryKey,
   getListPollsQueryKey,
   getListProfilesQueryKey,
   useAdminLogin,
+  useCreatePasswordResetCode,
   useDeleteModerationProfile,
   useGenerateMemberCode,
   useListModerationRequests,
+  useListPasswordResetRequests,
   useListProfiles,
   useReviewModerationRequest,
 } from "@workspace/api-client-react";
@@ -57,6 +60,9 @@ export default function AdminPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState("");
   const [generatingCodeId, setGeneratingCodeId] = useState<string | null>(null);
+  const [resettingRequestId, setResettingRequestId] = useState<string | null>(
+    null,
+  );
   const [codeError, setCodeError] = useState("");
   const [manualEmail, setManualEmail] = useState("");
   const [manualPhone, setManualPhone] = useState("");
@@ -81,11 +87,20 @@ export default function AdminPage() {
       queryKey: getListProfilesQueryKey(),
     },
   });
+  const passwordResetRequestsQuery = useListPasswordResetRequests({
+    query: {
+      enabled: authenticated,
+      retry: false,
+      queryKey: getListPasswordResetRequestsQueryKey(),
+    },
+  });
   const reviewRequest = useReviewModerationRequest();
   const deleteProfile = useDeleteModerationProfile();
   const generateCode = useGenerateMemberCode();
+  const createResetCode = useCreatePasswordResetCode();
   const requests = requestsQuery.data ?? [];
   const members = membersQuery.data ?? [];
+  const passwordResetRequests = passwordResetRequestsQuery.data ?? [];
   const invitation = generatedCode
     ? buildMemberInvitation(generatedCode)
     : null;
@@ -106,6 +121,9 @@ export default function AdminPage() {
           await queryClient.invalidateQueries({
             queryKey: getListProfilesQueryKey(),
           });
+          await queryClient.invalidateQueries({
+            queryKey: getListPasswordResetRequestsQueryKey(),
+          });
         },
         onError: () =>
           setLoginError(
@@ -122,6 +140,9 @@ export default function AdminPage() {
       queryKey: getListModerationRequestsQueryKey(),
     });
     queryClient.removeQueries({ queryKey: getListProfilesQueryKey() });
+    queryClient.removeQueries({
+      queryKey: getListPasswordResetRequestsQueryKey(),
+    });
     queryClient.removeQueries({ queryKey: getListAnnouncementsQueryKey() });
     queryClient.removeQueries({ queryKey: getListPollsQueryKey() });
   };
@@ -181,6 +202,32 @@ export default function AdminPage() {
           ]);
         },
         onSettled: () => setReviewingId(null),
+      },
+    );
+  };
+
+  const preparePasswordReset = (id: string) => {
+    setResettingRequestId(id);
+    setCodeError("");
+    createResetCode.mutate(
+      { id },
+      {
+        onSuccess: async (result) => {
+          setGeneratedCode({
+            memberName: result.memberName,
+            code: result.code,
+            email: result.email ?? "",
+            phone: result.phone ?? "",
+          });
+          await queryClient.invalidateQueries({
+            queryKey: getListPasswordResetRequestsQueryKey(),
+          });
+        },
+        onError: () =>
+          setCodeError(
+            "Le nouveau code n’a pas pu être créé. Reconnectez-vous puis réessayez.",
+          ),
+        onSettled: () => setResettingRequestId(null),
       },
     );
   };
@@ -319,12 +366,74 @@ export default function AdminPage() {
 
       <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4 text-xs leading-5 text-muted-foreground">
         <ShieldCheck className="mr-2 inline h-4 w-4 text-primary" />
-        L’email et le téléphone restent privés. À chaque approbation, un code de
-        première connexion est créé automatiquement et s’affiche pour que vous
-        puissiez le transmettre au membre.
+        Chaque membre choisit si son email et son téléphone sont visibles. À
+        chaque approbation, un code de première connexion est créé
+        automatiquement pour que vous puissiez le transmettre.
       </div>
 
       <AdminCommunity />
+
+      <section className="vj-enter overflow-hidden rounded-[28px] border border-border bg-card shadow-sm">
+        <div className="flex flex-col justify-between gap-3 border-b border-border p-5 sm:flex-row sm:items-center sm:p-6">
+          <div className="flex items-center gap-3">
+            <span className="grid h-11 w-11 place-items-center rounded-2xl bg-accent/50 text-primary">
+              <KeyRound className="h-5 w-5" />
+            </span>
+            <div>
+              <h2 className="text-lg font-extrabold tracking-[-.03em]">
+                Mots de passe oubliés
+              </h2>
+              <p className="text-xs text-muted-foreground">
+                {passwordResetRequests.length} demande
+                {passwordResetRequests.length > 1 ? "s" : ""} en attente
+              </p>
+            </div>
+          </div>
+          <p className="max-w-sm text-xs leading-5 text-muted-foreground">
+            Créez un nouveau code, puis utilisez le message préparé pour
+            l’envoyer par email ou WhatsApp.
+          </p>
+        </div>
+        {passwordResetRequestsQuery.isLoading ? (
+          <div className="h-24 animate-pulse bg-muted" />
+        ) : passwordResetRequests.length ? (
+          <div className="divide-y divide-border">
+            {passwordResetRequests.map((resetRequest) => (
+              <article
+                key={resetRequest.id}
+                className="flex flex-col justify-between gap-4 p-5 sm:flex-row sm:items-center sm:px-6"
+              >
+                <div>
+                  <p className="text-sm font-extrabold">
+                    {resetRequest.memberName}
+                  </p>
+                  <p className="mt-1 text-[11px] text-muted-foreground">
+                    {resetRequest.email || resetRequest.phone} · demandée le{" "}
+                    {new Date(resetRequest.requestedAt).toLocaleDateString(
+                      "fr-FR",
+                    )}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  disabled={resettingRequestId === resetRequest.id}
+                  onClick={() => preparePasswordReset(resetRequest.id)}
+                  className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-4 py-2.5 text-xs font-bold text-primary-foreground disabled:opacity-50"
+                >
+                  <KeyRound className="h-4 w-4" />
+                  {resettingRequestId === resetRequest.id
+                    ? "Création…"
+                    : "Créer le nouveau code"}
+                </button>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <p className="px-6 py-8 text-center text-xs text-muted-foreground">
+            Aucune demande de réinitialisation.
+          </p>
+        )}
+      </section>
 
       {requestsQuery.isLoading ? (
         <div className="space-y-3">

@@ -1,4 +1,4 @@
-import { type ReactNode } from "react";
+import { type ReactNode, useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { Toaster } from "@/components/ui/toaster";
@@ -12,6 +12,7 @@ import MemberLoginPage from "@/pages/member-login";
 import MembersPage from "@/pages/members";
 import NewsPage from "@/pages/news";
 import NotFound from "@/pages/not-found";
+import PrivacyPage from "@/pages/privacy";
 import ZoboromaPage from "@/pages/zoboroma";
 import { hasMemberSession } from "@/lib/member-session";
 import { Route, Switch, useLocation, Router as WouterRouter } from "wouter";
@@ -52,6 +53,7 @@ function Router() {
           </MemberOnly>
         </Route>
         <Route path="/inscription" component={JoinPage} />
+        <Route path="/confidentialite" component={PrivacyPage} />
         <Route path="/admin" component={AdminPage} />
         <Route>{hasMemberSession() ? <NotFound /> : <JoinPage />}</Route>
       </Switch>
@@ -60,7 +62,17 @@ function Router() {
 }
 
 function MemberOnly({ children }: { children: ReactNode }) {
-  return hasMemberSession() ? children : <JoinPage />;
+  const [location, navigate] = useLocation();
+  const memberActive = hasMemberSession();
+
+  useEffect(() => {
+    if (!memberActive) {
+      const returnPath = encodeURIComponent(location);
+      navigate(`/connexion-membre?retour=${returnPath}`, { replace: true });
+    }
+  }, [location, memberActive, navigate]);
+
+  return memberActive ? children : null;
 }
 
 function RoutedErrorBoundary({ children }: { children: ReactNode }) {

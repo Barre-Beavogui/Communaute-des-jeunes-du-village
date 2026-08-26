@@ -197,6 +197,13 @@ export function VillageShell({ children }: { children: ReactNode }) {
                     <ArrowUpRight className="h-3.5 w-3.5 opacity-0 transition-opacity group-hover:opacity-100" />
                   </Link>
                 ))}
+                <Link
+                  href="/confidentialite"
+                  className="group flex w-fit items-center gap-2 text-background/68 hover:text-background"
+                >
+                  Confidentialité
+                  <ArrowUpRight className="h-3.5 w-3.5 opacity-0 transition-opacity group-hover:opacity-100" />
+                </Link>
               </div>
             </nav>
           </div>

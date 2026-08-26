@@ -209,6 +209,104 @@ export const SetMemberPasswordResponse = zod.object({
 
 
 /**
+ * @summary Request help resetting a forgotten member password
+ */
+export const requestMemberPasswordResetBodyIdentifierMin = 5;
+export const requestMemberPasswordResetBodyIdentifierMax = 254;
+
+
+
+export const RequestMemberPasswordResetBody = zod.object({
+  "identifier": zod.string().min(requestMemberPasswordResetBodyIdentifierMin).max(requestMemberPasswordResetBodyIdentifierMax)
+})
+
+export const RequestMemberPasswordResetResponse = zod.object({
+  "success": zod.literal(true)
+})
+
+
+/**
+ * @summary Get the connected member profile settings
+ */
+export const getMemberProfileSettingsResponseAvatarUrlMax = 500000;
+
+
+
+export const GetMemberProfileSettingsResponse = zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "initials": zod.string(),
+  "avatarUrl": zod.string().max(getMemberProfileSettingsResponseAvatarUrlMax).nullish(),
+  "neighborhood": zod.string(),
+  "bio": zod.string(),
+  "profession": zod.string(),
+  "project": zod.string().nullish(),
+  "email": zod.string().nullish(),
+  "phone": zod.string().nullish(),
+  "showEmail": zod.boolean(),
+  "showPhone": zod.boolean()
+})
+
+
+/**
+ * @summary Update the connected member profile and contact visibility
+ */
+export const updateMemberProfileBodyNameMin = 2;
+export const updateMemberProfileBodyNameMax = 120;
+
+export const updateMemberProfileBodyAvatarUrlMax = 500000;
+
+export const updateMemberProfileBodyNeighborhoodMin = 2;
+export const updateMemberProfileBodyNeighborhoodMax = 120;
+
+export const updateMemberProfileBodyBioMin = 10;
+export const updateMemberProfileBodyBioMax = 500;
+
+export const updateMemberProfileBodyProfessionMin = 2;
+export const updateMemberProfileBodyProfessionMax = 80;
+
+export const updateMemberProfileBodyProjectMax = 500;
+
+export const updateMemberProfileBodyEmailMax = 254;
+
+export const updateMemberProfileBodyPhoneMax = 40;
+
+
+
+export const UpdateMemberProfileBody = zod.object({
+  "name": zod.string().min(updateMemberProfileBodyNameMin).max(updateMemberProfileBodyNameMax),
+  "avatarUrl": zod.string().max(updateMemberProfileBodyAvatarUrlMax).nullish(),
+  "neighborhood": zod.string().min(updateMemberProfileBodyNeighborhoodMin).max(updateMemberProfileBodyNeighborhoodMax),
+  "bio": zod.string().min(updateMemberProfileBodyBioMin).max(updateMemberProfileBodyBioMax),
+  "profession": zod.string().min(updateMemberProfileBodyProfessionMin).max(updateMemberProfileBodyProfessionMax),
+  "project": zod.string().max(updateMemberProfileBodyProjectMax).nullish(),
+  "email": zod.string().max(updateMemberProfileBodyEmailMax).nullish(),
+  "phone": zod.string().max(updateMemberProfileBodyPhoneMax).nullish(),
+  "showEmail": zod.boolean(),
+  "showPhone": zod.boolean()
+})
+
+export const updateMemberProfileResponseAvatarUrlMax = 500000;
+
+
+
+export const UpdateMemberProfileResponse = zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "initials": zod.string(),
+  "avatarUrl": zod.string().max(updateMemberProfileResponseAvatarUrlMax).nullish(),
+  "neighborhood": zod.string(),
+  "bio": zod.string(),
+  "profession": zod.string(),
+  "project": zod.string().nullish(),
+  "email": zod.string().nullish(),
+  "phone": zod.string().nullish(),
+  "showEmail": zod.boolean(),
+  "showPhone": zod.boolean()
+})
+
+
+/**
  * @summary List community announcements
  */
 export const ListAnnouncementsResponseItem = zod.object({
@@ -353,6 +451,36 @@ export const ReviewModerationRequestResponse = zod.object({
   "submittedAt": zod.string(),
   "status": zod.enum(['pending', 'approved', 'rejected']),
   "memberCode": zod.string().nullish()
+})
+
+
+/**
+ * @summary List pending member password reset requests
+ */
+export const ListPasswordResetRequestsResponseItem = zod.object({
+  "id": zod.string(),
+  "profileId": zod.string(),
+  "memberName": zod.string(),
+  "email": zod.string().nullish(),
+  "phone": zod.string().nullish(),
+  "requestedAt": zod.string()
+})
+export const ListPasswordResetRequestsResponse = zod.array(ListPasswordResetRequestsResponseItem)
+
+
+/**
+ * @summary Generate a new activation code for a password reset request
+ */
+export const CreatePasswordResetCodeParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const CreatePasswordResetCodeResponse = zod.object({
+  "code": zod.string(),
+  "createdAt": zod.string(),
+  "memberName": zod.string(),
+  "email": zod.string().nullish(),
+  "phone": zod.string().nullish()
 })
 
 

@@ -30,8 +30,14 @@ import type {
   MemberCode,
   MemberContactUpdate,
   MemberLogin,
+  MemberPasswordResetCode,
+  MemberPasswordResetRequest,
+  MemberPasswordResetRequestCreate,
+  MemberPasswordResetRequestReceipt,
   MemberPasswordSetup,
   MemberPasswordSetupReceipt,
+  MemberProfileSettings,
+  MemberProfileUpdate,
   MemberSession,
   MembersSummary,
   MembershipRequest,
@@ -736,6 +742,225 @@ export const useSetMemberPassword = <TError = ErrorType<void>,
       return useMutation(getSetMemberPasswordMutationOptions(options));
     }
 
+export const getRequestMemberPasswordResetUrl = () => {
+
+
+
+
+  return `/api/member/password-reset-requests`
+}
+
+/**
+ * @summary Request help resetting a forgotten member password
+ */
+export const requestMemberPasswordReset = async (memberPasswordResetRequestCreate: MemberPasswordResetRequestCreate, options?: Parameters<typeof customFetch>[1]): Promise<MemberPasswordResetRequestReceipt> => {
+
+  return customFetch<MemberPasswordResetRequestReceipt>(getRequestMemberPasswordResetUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(memberPasswordResetRequestCreate)
+  }
+);}
+
+
+
+
+
+export const getRequestMemberPasswordResetMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof requestMemberPasswordReset>>, TError,{data: BodyType<MemberPasswordResetRequestCreate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof requestMemberPasswordReset>>, TError,{data: BodyType<MemberPasswordResetRequestCreate>}, TContext> => {
+
+const mutationKey = ['requestMemberPasswordReset'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof requestMemberPasswordReset>>, {data: BodyType<MemberPasswordResetRequestCreate>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  requestMemberPasswordReset(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RequestMemberPasswordResetMutationResult = NonNullable<Awaited<ReturnType<typeof requestMemberPasswordReset>>>
+    export type RequestMemberPasswordResetMutationBody = BodyType<MemberPasswordResetRequestCreate>
+    export type RequestMemberPasswordResetMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Request help resetting a forgotten member password
+ */
+export const useRequestMemberPasswordReset = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof requestMemberPasswordReset>>, TError,{data: BodyType<MemberPasswordResetRequestCreate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof requestMemberPasswordReset>>,
+        TError,
+        {data: BodyType<MemberPasswordResetRequestCreate>},
+        TContext
+      > => {
+      return useMutation(getRequestMemberPasswordResetMutationOptions(options));
+    }
+
+export const getGetMemberProfileSettingsUrl = () => {
+
+
+
+
+  return `/api/member/profile`
+}
+
+/**
+ * @summary Get the connected member profile settings
+ */
+export const getMemberProfileSettings = async ( options?: Parameters<typeof customFetch>[1]): Promise<MemberProfileSettings> => {
+
+  return customFetch<MemberProfileSettings>(getGetMemberProfileSettingsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetMemberProfileSettingsQueryKey = () => {
+    return [
+    `/api/member/profile`
+    ] as const;
+    }
+
+
+export const getGetMemberProfileSettingsQueryOptions = <TData = Awaited<ReturnType<typeof getMemberProfileSettings>>, TError = ErrorType<void>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMemberProfileSettings>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetMemberProfileSettingsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getMemberProfileSettings>>> = ({ signal }) => getMemberProfileSettings({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getMemberProfileSettings>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetMemberProfileSettingsQueryResult = NonNullable<Awaited<ReturnType<typeof getMemberProfileSettings>>>
+export type GetMemberProfileSettingsQueryError = ErrorType<void>
+
+
+/**
+ * @summary Get the connected member profile settings
+ */
+
+export function useGetMemberProfileSettings<TData = Awaited<ReturnType<typeof getMemberProfileSettings>>, TError = ErrorType<void>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMemberProfileSettings>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetMemberProfileSettingsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getUpdateMemberProfileUrl = () => {
+
+
+
+
+  return `/api/member/profile`
+}
+
+/**
+ * @summary Update the connected member profile and contact visibility
+ */
+export const updateMemberProfile = async (memberProfileUpdate: MemberProfileUpdate, options?: Parameters<typeof customFetch>[1]): Promise<MemberProfileSettings> => {
+
+  return customFetch<MemberProfileSettings>(getUpdateMemberProfileUrl(),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(memberProfileUpdate)
+  }
+);}
+
+
+
+
+
+export const getUpdateMemberProfileMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateMemberProfile>>, TError,{data: BodyType<MemberProfileUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateMemberProfile>>, TError,{data: BodyType<MemberProfileUpdate>}, TContext> => {
+
+const mutationKey = ['updateMemberProfile'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateMemberProfile>>, {data: BodyType<MemberProfileUpdate>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  updateMemberProfile(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateMemberProfileMutationResult = NonNullable<Awaited<ReturnType<typeof updateMemberProfile>>>
+    export type UpdateMemberProfileMutationBody = BodyType<MemberProfileUpdate>
+    export type UpdateMemberProfileMutationError = ErrorType<void>
+
+    /**
+ * @summary Update the connected member profile and contact visibility
+ */
+export const useUpdateMemberProfile = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateMemberProfile>>, TError,{data: BodyType<MemberProfileUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateMemberProfile>>,
+        TError,
+        {data: BodyType<MemberProfileUpdate>},
+        TContext
+      > => {
+      return useMutation(getUpdateMemberProfileMutationOptions(options));
+    }
+
 export const getListAnnouncementsUrl = () => {
 
 
@@ -1251,6 +1476,154 @@ export const useReviewModerationRequest = <TError = ErrorType<unknown>,
         TContext
       > => {
       return useMutation(getReviewModerationRequestMutationOptions(options));
+    }
+
+export const getListPasswordResetRequestsUrl = () => {
+
+
+
+
+  return `/api/moderation/password-reset-requests`
+}
+
+/**
+ * @summary List pending member password reset requests
+ */
+export const listPasswordResetRequests = async ( options?: Parameters<typeof customFetch>[1]): Promise<MemberPasswordResetRequest[]> => {
+
+  return customFetch<MemberPasswordResetRequest[]>(getListPasswordResetRequestsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListPasswordResetRequestsQueryKey = () => {
+    return [
+    `/api/moderation/password-reset-requests`
+    ] as const;
+    }
+
+
+export const getListPasswordResetRequestsQueryOptions = <TData = Awaited<ReturnType<typeof listPasswordResetRequests>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listPasswordResetRequests>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListPasswordResetRequestsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listPasswordResetRequests>>> = ({ signal }) => listPasswordResetRequests({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listPasswordResetRequests>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListPasswordResetRequestsQueryResult = NonNullable<Awaited<ReturnType<typeof listPasswordResetRequests>>>
+export type ListPasswordResetRequestsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List pending member password reset requests
+ */
+
+export function useListPasswordResetRequests<TData = Awaited<ReturnType<typeof listPasswordResetRequests>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listPasswordResetRequests>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListPasswordResetRequestsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getCreatePasswordResetCodeUrl = (id: string,) => {
+
+
+
+
+  return `/api/moderation/password-reset-requests/${id}/code`
+}
+
+/**
+ * @summary Generate a new activation code for a password reset request
+ */
+export const createPasswordResetCode = async (id: string, options?: Parameters<typeof customFetch>[1]): Promise<MemberPasswordResetCode> => {
+
+  return customFetch<MemberPasswordResetCode>(getCreatePasswordResetCodeUrl(id),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getCreatePasswordResetCodeMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPasswordResetCode>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createPasswordResetCode>>, TError,{id: string}, TContext> => {
+
+const mutationKey = ['createPasswordResetCode'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createPasswordResetCode>>, {id: string}> = (props) => {
+          const {id} = props ?? {};
+
+          return  createPasswordResetCode(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreatePasswordResetCodeMutationResult = NonNullable<Awaited<ReturnType<typeof createPasswordResetCode>>>
+
+    export type CreatePasswordResetCodeMutationError = ErrorType<void>
+
+    /**
+ * @summary Generate a new activation code for a password reset request
+ */
+export const useCreatePasswordResetCode = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPasswordResetCode>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createPasswordResetCode>>,
+        TError,
+        {id: string},
+        TContext
+      > => {
+      return useMutation(getCreatePasswordResetCodeMutationOptions(options));
     }
 
 export const getDeleteModerationProfileUrl = (id: string,) => {

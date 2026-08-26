@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { eq } from "drizzle-orm";
+import { and, desc, eq, or } from "drizzle-orm";
 import { db } from "@workspace/db";
 import {
   announcementDislikesTable,
@@ -7,14 +7,18 @@ import {
   deletedProfilesTable,
   pollVotesTable,
   membershipRequestsTable,
+  passwordResetRequestsTable,
   profilesTable,
 } from "@workspace/db/schema";
 import {
+  CreatePasswordResetCodeParams,
+  CreatePasswordResetCodeResponse,
   DeleteModerationProfileParams,
   GenerateMemberCodeBody,
   GenerateMemberCodeParams,
   GenerateMemberCodeResponse,
   ListModerationRequestsResponse,
+  ListPasswordResetRequestsResponse,
   ReviewModerationRequestParams,
   ReviewModerationRequestBody,
   ReviewModerationRequestResponse,
@@ -59,6 +63,94 @@ router.get("/moderation/requests", async (_req, res) => {
   res.json(ListModerationRequestsResponse.parse(rows.map(toRequest)));
 });
 
+router.get("/moderation/password-reset-requests", async (_req, res) => {
+  const rows = await db
+    .select({
+      id: passwordResetRequestsTable.id,
+      profileId: passwordResetRequestsTable.profileId,
+      memberName: profilesTable.name,
+      email: profilesTable.loginEmail,
+      phone: profilesTable.loginPhone,
+      requestedAt: passwordResetRequestsTable.requestedAt,
+    })
+    .from(passwordResetRequestsTable)
+    .innerJoin(
+      profilesTable,
+      eq(passwordResetRequestsTable.profileId, profilesTable.id),
+    )
+    .where(eq(passwordResetRequestsTable.status, "pending"))
+    .orderBy(desc(passwordResetRequestsTable.requestedAt));
+
+  res.json(
+    ListPasswordResetRequestsResponse.parse(
+      rows.map((row) => ({
+        ...row,
+        requestedAt: row.requestedAt.toISOString(),
+      })),
+    ),
+  );
+});
+
+router.post(
+  "/moderation/password-reset-requests/:id/code",
+  async (req, res) => {
+    const params = CreatePasswordResetCodeParams.parse(req.params);
+    const result = await db.transaction(async (tx) => {
+      const [resetRequest] = await tx
+        .select()
+        .from(passwordResetRequestsTable)
+        .where(
+          and(
+            eq(passwordResetRequestsTable.id, params.id),
+            eq(passwordResetRequestsTable.status, "pending"),
+          ),
+        );
+      if (!resetRequest) return null;
+
+      const [profile] = await tx
+        .select()
+        .from(profilesTable)
+        .where(
+          and(
+            eq(profilesTable.id, resetRequest.profileId),
+            eq(profilesTable.status, "approved"),
+          ),
+        );
+      if (!profile) return null;
+
+      const code = generateMemberCode();
+      const createdAt = new Date();
+      await tx
+        .update(profilesTable)
+        .set({
+          memberCodeHash: hashMemberCode(code),
+          memberCodeCreatedAt: createdAt,
+          memberPasswordHash: null,
+          memberPasswordSetAt: null,
+        })
+        .where(eq(profilesTable.id, profile.id));
+      await tx
+        .update(passwordResetRequestsTable)
+        .set({ status: "completed" })
+        .where(eq(passwordResetRequestsTable.id, resetRequest.id));
+
+      return {
+        code,
+        createdAt: createdAt.toISOString(),
+        memberName: profile.name,
+        email: profile.loginEmail,
+        phone: profile.loginPhone,
+      };
+    });
+
+    if (!result) {
+      res.status(404).json({ error: "Demande introuvable." });
+      return;
+    }
+    res.json(CreatePasswordResetCodeResponse.parse(result));
+  },
+);
+
 router.patch("/moderation/requests/:id", async (req, res) => {
   const params = ReviewModerationRequestParams.parse(req.params);
   const body = ReviewModerationRequestBody.parse(req.body);
@@ -72,6 +164,27 @@ router.patch("/moderation/requests/:id", async (req, res) => {
 
     let memberCode: string | null = null;
     if (body.status === "approved") {
+      const normalizedEmail = normalizeLoginEmail(request.email);
+      const normalizedPhone = request.phone
+        ? normalizeLoginPhone(request.phone)
+        : null;
+      const identifierConditions = [
+        eq(profilesTable.loginEmailNormalized, normalizedEmail),
+      ];
+      if (normalizedPhone) {
+        identifierConditions.push(
+          eq(profilesTable.loginPhoneNormalized, normalizedPhone),
+        );
+      }
+      const [conflictingProfile] = await tx
+        .select({ id: profilesTable.id })
+        .from(profilesTable)
+        .where(or(...identifierConditions))
+        .limit(1);
+      if (conflictingProfile) {
+        return { conflict: true as const };
+      }
+
       const profileId = `${slugify(request.name)}-${request.id.slice(0, 8)}`;
       memberCode = generateMemberCode();
       const codeCreatedAt = new Date();
@@ -103,11 +216,9 @@ router.patch("/moderation/requests/:id", async (req, res) => {
           memberPasswordHash: null,
           memberPasswordSetAt: null,
           loginEmail: request.email,
-          loginEmailNormalized: normalizeLoginEmail(request.email),
+          loginEmailNormalized: normalizedEmail,
           loginPhone: request.phone,
-          loginPhoneNormalized: request.phone
-            ? normalizeLoginPhone(request.phone)
-            : null,
+          loginPhoneNormalized: normalizedPhone,
         })
         .onConflictDoNothing({ target: profilesTable.id });
     }
@@ -117,11 +228,17 @@ router.patch("/moderation/requests/:id", async (req, res) => {
       .set({ status: body.status })
       .where(eq(membershipRequestsTable.id, params.id))
       .returning();
-    return { request: updated, memberCode };
+    return { conflict: false as const, request: updated, memberCode };
   });
 
   if (!result) {
     res.status(404).json({ error: "Demande introuvable" });
+    return;
+  }
+  if (result.conflict) {
+    res.status(409).json({
+      error: "Cet email ou ce téléphone appartient déjà à un autre membre.",
+    });
     return;
   }
   res.json(
@@ -155,6 +272,9 @@ router.delete("/moderation/profiles/:id", async (req, res) => {
     await tx
       .delete(pollVotesTable)
       .where(eq(pollVotesTable.profileId, profile.id));
+    await tx
+      .delete(passwordResetRequestsTable)
+      .where(eq(passwordResetRequestsTable.profileId, profile.id));
     await tx.delete(profilesTable).where(eq(profilesTable.id, profile.id));
     return true;
   });

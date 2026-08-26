@@ -216,6 +216,106 @@ export interface MemberPasswordSetupReceipt {
   success: true;
 }
 
+export interface MemberPasswordResetRequestCreate {
+  /**
+     * @minLength 5
+     * @maxLength 254
+     */
+  identifier: string;
+}
+
+export interface MemberPasswordResetRequestReceipt {
+  success: true;
+}
+
+export interface MemberPasswordResetRequest {
+  id: string;
+  profileId: string;
+  memberName: string;
+  /** @nullable */
+  email?: string | null;
+  /** @nullable */
+  phone?: string | null;
+  requestedAt: string;
+}
+
+export interface MemberPasswordResetCode {
+  code: string;
+  createdAt: string;
+  memberName: string;
+  /** @nullable */
+  email?: string | null;
+  /** @nullable */
+  phone?: string | null;
+}
+
+export interface MemberProfileSettings {
+  id: string;
+  name: string;
+  initials: string;
+  /**
+     * @maxLength 500000
+     * @nullable
+     */
+  avatarUrl?: string | null;
+  neighborhood: string;
+  bio: string;
+  profession: string;
+  /** @nullable */
+  project?: string | null;
+  /** @nullable */
+  email?: string | null;
+  /** @nullable */
+  phone?: string | null;
+  showEmail: boolean;
+  showPhone: boolean;
+}
+
+export interface MemberProfileUpdate {
+  /**
+     * @minLength 2
+     * @maxLength 120
+     */
+  name: string;
+  /**
+     * @maxLength 500000
+     * @nullable
+     */
+  avatarUrl?: string | null;
+  /**
+     * @minLength 2
+     * @maxLength 120
+     */
+  neighborhood: string;
+  /**
+     * @minLength 10
+     * @maxLength 500
+     */
+  bio: string;
+  /**
+     * @minLength 2
+     * @maxLength 80
+     */
+  profession: string;
+  /**
+     * @maxLength 500
+     * @nullable
+     */
+  project?: string | null;
+  /**
+     * @maxLength 254
+     * @nullable
+     */
+  email?: string | null;
+  /**
+     * @maxLength 40
+     * @nullable
+     */
+  phone?: string | null;
+  showEmail: boolean;
+  showPhone: boolean;
+}
+
 export interface MemberCode {
   code: string;
   createdAt: string;

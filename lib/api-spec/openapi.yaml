@@ -180,6 +180,59 @@ paths:
                 $ref: "#/components/schemas/MemberPasswordSetupReceipt"
         "401":
           description: First-login session required
+  /member/password-reset-requests:
+    post:
+      operationId: requestMemberPasswordReset
+      tags: [member]
+      summary: Request help resetting a forgotten member password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MemberPasswordResetRequestCreate"
+      responses:
+        "202":
+          description: Request accepted without revealing whether the account exists
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MemberPasswordResetRequestReceipt"
+  /member/profile:
+    get:
+      operationId: getMemberProfileSettings
+      tags: [member]
+      summary: Get the connected member profile settings
+      responses:
+        "200":
+          description: Member profile settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MemberProfileSettings"
+        "401":
+          description: Member session required
+    patch:
+      operationId: updateMemberProfile
+      tags: [member]
+      summary: Update the connected member profile and contact visibility
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MemberProfileUpdate"
+      responses:
+        "200":
+          description: Updated member profile settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MemberProfileSettings"
+        "401":
+          description: Member session required
+        "409":
+          description: Email or phone already used
   /announcements:
     get:
       operationId: listAnnouncements
@@ -309,6 +362,39 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/MembershipRequest"
+  /moderation/password-reset-requests:
+    get:
+      operationId: listPasswordResetRequests
+      tags: [moderation]
+      summary: List pending member password reset requests
+      responses:
+        "200":
+          description: Pending password reset requests
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MemberPasswordResetRequest"
+  /moderation/password-reset-requests/{id}/code:
+    post:
+      operationId: createPasswordResetCode
+      tags: [moderation]
+      summary: Generate a new activation code for a password reset request
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Password reset invitation details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MemberPasswordResetCode"
+        "404":
+          description: Request not found
   /moderation/profiles/{id}:
     delete:
       operationId: deleteModerationProfile
@@ -582,6 +668,75 @@ components:
       required: [success]
       properties:
         success: { type: boolean, enum: [true] }
+    MemberPasswordResetRequestCreate:
+      type: object
+      required: [identifier]
+      properties:
+        identifier: { type: string, minLength: 5, maxLength: 254 }
+    MemberPasswordResetRequestReceipt:
+      type: object
+      required: [success]
+      properties:
+        success: { type: boolean, enum: [true] }
+    MemberPasswordResetRequest:
+      type: object
+      required: [id, profileId, memberName, requestedAt]
+      properties:
+        id: { type: string }
+        profileId: { type: string }
+        memberName: { type: string }
+        email: { type: ["string", "null"] }
+        phone: { type: ["string", "null"] }
+        requestedAt: { type: string }
+    MemberPasswordResetCode:
+      type: object
+      required: [code, createdAt, memberName]
+      properties:
+        code: { type: string }
+        createdAt: { type: string }
+        memberName: { type: string }
+        email: { type: ["string", "null"] }
+        phone: { type: ["string", "null"] }
+    MemberProfileSettings:
+      type: object
+      required:
+        [
+          id,
+          name,
+          initials,
+          neighborhood,
+          bio,
+          profession,
+          showEmail,
+          showPhone,
+        ]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        initials: { type: string }
+        avatarUrl: { type: ["string", "null"], maxLength: 500000 }
+        neighborhood: { type: string }
+        bio: { type: string }
+        profession: { type: string }
+        project: { type: ["string", "null"] }
+        email: { type: ["string", "null"] }
+        phone: { type: ["string", "null"] }
+        showEmail: { type: boolean }
+        showPhone: { type: boolean }
+    MemberProfileUpdate:
+      type: object
+      required: [name, neighborhood, bio, profession, showEmail, showPhone]
+      properties:
+        name: { type: string, minLength: 2, maxLength: 120 }
+        avatarUrl: { type: ["string", "null"], maxLength: 500000 }
+        neighborhood: { type: string, minLength: 2, maxLength: 120 }
+        bio: { type: string, minLength: 10, maxLength: 500 }
+        profession: { type: string, minLength: 2, maxLength: 80 }
+        project: { type: ["string", "null"], maxLength: 500 }
+        email: { type: ["string", "null"], maxLength: 254 }
+        phone: { type: ["string", "null"], maxLength: 40 }
+        showEmail: { type: boolean }
+        showPhone: { type: boolean }
     MemberCode:
       type: object
       required: [code, createdAt]

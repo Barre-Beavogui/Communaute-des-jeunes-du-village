@@ -31,6 +31,11 @@ export function saveMemberSession(session: {
   window.dispatchEvent(new Event("zoboroma-member-session"));
 }
 
+export function updateMemberIdentity(profile: MemberIdentity) {
+  sessionStorage.setItem(MEMBER_PROFILE_KEY, JSON.stringify(profile));
+  window.dispatchEvent(new Event("zoboroma-member-session"));
+}
+
 export function clearMemberSession() {
   sessionStorage.removeItem(MEMBER_TOKEN_KEY);
   sessionStorage.removeItem(MEMBER_EXPIRES_KEY);

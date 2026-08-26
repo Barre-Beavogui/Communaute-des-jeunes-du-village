@@ -132,8 +132,8 @@ export default function JoinPage() {
         </h1>
         <p className="mt-6 max-w-sm text-sm leading-7 text-muted-foreground">
           Présentez-vous en quelques lignes. Aucun âge n’est demandé. Après
-          validation, votre email et votre téléphone seront visibles dans
-          l’annuaire.
+          validation, vous pourrez choisir si votre email et votre téléphone
+          restent visibles dans l’annuaire.
         </p>
         <div className="mt-8 space-y-3 text-xs font-semibold text-foreground/75">
           <p className="flex items-start gap-3">

@@ -1,5 +1,11 @@
 import { createInsertSchema } from "drizzle-zod";
-import { pgTable, text, timestamp, integer } from "drizzle-orm/pg-core";
+import {
+  boolean,
+  pgTable,
+  text,
+  timestamp,
+  integer,
+} from "drizzle-orm/pg-core";
 import { z } from "zod/v4";
 
 export const profilesTable = pgTable("profiles", {
@@ -26,6 +32,8 @@ export const profilesTable = pgTable("profiles", {
   loginEmailNormalized: text("login_email_normalized"),
   loginPhone: text("login_phone"),
   loginPhoneNormalized: text("login_phone_normalized"),
+  showEmail: boolean("show_email").notNull().default(true),
+  showPhone: boolean("show_phone").notNull().default(true),
 });
 
 export const membershipRequestsTable = pgTable("membership_requests", {
@@ -47,6 +55,13 @@ export const deletedProfilesTable = pgTable("deleted_profiles", {
   deletedAt: timestamp("deleted_at").notNull().defaultNow(),
 });
 
+export const passwordResetRequestsTable = pgTable("password_reset_requests", {
+  id: text("id").primaryKey(),
+  profileId: text("profile_id").notNull(),
+  requestedAt: timestamp("requested_at").notNull().defaultNow(),
+  status: text("status").notNull().default("pending"),
+});
+
 export const insertProfileSchema = createInsertSchema(profilesTable);
 export const insertMembershipRequestSchema = createInsertSchema(
   membershipRequestsTable,
@@ -54,3 +69,5 @@ export const insertMembershipRequestSchema = createInsertSchema(
 export type Profile = typeof profilesTable.$inferSelect;
 export type MembershipRequest = typeof membershipRequestsTable.$inferSelect;
 export type DeletedProfile = typeof deletedProfilesTable.$inferSelect;
+export type PasswordResetRequest =
+  typeof passwordResetRequestsTable.$inferSelect;
