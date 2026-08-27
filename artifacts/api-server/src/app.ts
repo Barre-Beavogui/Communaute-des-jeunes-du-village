@@ -89,13 +89,17 @@ app.use(
           /^\/announcements\/[^/]+\/dislike$/.test(req.path) ||
           /^\/polls\/[^/]+\/vote$/.test(req.path))) ||
       (req.method === "PATCH" && req.path === "/member/profile");
+    const isChatWrite =
+      req.method === "POST" &&
+      ["/chat/messages", "/chat/presence"].includes(req.path);
 
     if (
       publicReadOnly &&
       !isReadRequest &&
       !isAdminRequest &&
       !isPublicWrite &&
-      !isMemberWrite
+      !isMemberWrite &&
+      !isChatWrite
     ) {
       res
         .status(403)

@@ -6,9 +6,11 @@ import { Avatar } from "@/components/village-shell";
 export function MemberCard({
   profile,
   featured = false,
+  presenceActivity,
 }: {
   profile: Profile;
   featured?: boolean;
+  presenceActivity?: "online" | "typing" | "recording";
 }) {
   return (
     <Link
@@ -18,8 +20,27 @@ export function MemberCard({
     >
       <div className="absolute -right-12 -top-12 h-32 w-32 rounded-full bg-accent/20 transition-transform duration-500 group-hover:scale-125" />
       <div className="relative flex items-start justify-between">
-        <Avatar profile={profile} size={featured ? "lg" : "md"} />
-        <ArrowUpRight className="h-5 w-5 text-muted-foreground transition-transform group-hover:-translate-y-1 group-hover:translate-x-1 group-hover:text-primary" />
+        <div className="relative">
+          <Avatar profile={profile} size={featured ? "lg" : "md"} />
+          {presenceActivity && (
+            <span
+              className="absolute -bottom-1 -right-1 h-4 w-4 rounded-full border-[3px] border-card bg-emerald-500"
+              aria-label="En ligne"
+            />
+          )}
+        </div>
+        <div className="flex flex-col items-end gap-2">
+          <ArrowUpRight className="h-5 w-5 text-muted-foreground transition-transform group-hover:-translate-y-1 group-hover:translate-x-1 group-hover:text-primary" />
+          {presenceActivity && (
+            <span className="rounded-full bg-emerald-500/10 px-2 py-1 text-[9px] font-extrabold text-emerald-700">
+              {presenceActivity === "typing"
+                ? "écrit…"
+                : presenceActivity === "recording"
+                  ? "enregistre…"
+                  : "En ligne"}
+            </span>
+          )}
+        </div>
       </div>
       <div className="relative mt-5 flex flex-1 flex-col">
         <h3

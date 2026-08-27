@@ -22,6 +22,8 @@ tags:
     description: Announcements, likes, polls, and member voting
   - name: member
     description: Community member authentication
+  - name: chat
+    description: Member group messages, voice notes, and live presence
 paths:
   /healthz:
     get:
@@ -233,6 +235,80 @@ paths:
           description: Member session required
         "409":
           description: Email or phone already used
+  /chat/messages:
+    get:
+      operationId: listChatMessages
+      tags: [chat]
+      summary: List the latest member group messages
+      responses:
+        "200":
+          description: Latest group messages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ChatMessage"
+        "401":
+          description: Member session required
+    post:
+      operationId: sendChatMessage
+      tags: [chat]
+      summary: Send a text message or a short voice note
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChatMessageCreate"
+      responses:
+        "201":
+          description: Message sent
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChatMessage"
+        "400":
+          description: Invalid or unsupported message
+        "401":
+          description: Member session required
+        "429":
+          description: Too many messages
+  /chat/presence:
+    get:
+      operationId: listChatPresence
+      tags: [chat]
+      summary: List members who are currently online or active
+      responses:
+        "200":
+          description: Current member presence
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ChatPresence"
+        "401":
+          description: Member session required
+    post:
+      operationId: updateChatPresence
+      tags: [chat]
+      summary: Update the connected member activity
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChatPresenceUpdate"
+      responses:
+        "200":
+          description: Presence updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChatPresenceReceipt"
+        "401":
+          description: Member session required
   /announcements:
     get:
       operationId: listAnnouncements
@@ -737,6 +813,57 @@ components:
         phone: { type: ["string", "null"], maxLength: 40 }
         showEmail: { type: boolean }
         showPhone: { type: boolean }
+    ChatMessage:
+      type: object
+      required: [id, profileId, memberName, initials, type, createdAt]
+      properties:
+        id: { type: string }
+        profileId: { type: string }
+        memberName: { type: string }
+        initials: { type: string }
+        avatarUrl: { type: ["string", "null"] }
+        type:
+          type: string
+          enum: [text, audio]
+        content: { type: ["string", "null"] }
+        audioData: { type: ["string", "null"] }
+        audioMimeType: { type: ["string", "null"] }
+        durationSeconds: { type: ["number", "null"] }
+        createdAt: { type: string }
+    ChatMessageCreate:
+      type: object
+      required: [type]
+      properties:
+        type:
+          type: string
+          enum: [text, audio]
+        content: { type: ["string", "null"], maxLength: 1000 }
+        audioData: { type: ["string", "null"], maxLength: 900000 }
+        audioMimeType: { type: ["string", "null"], maxLength: 40 }
+        durationSeconds: { type: ["number", "null"], minimum: 1, maximum: 45 }
+    ChatPresence:
+      type: object
+      required: [profileId, memberName, initials, activity]
+      properties:
+        profileId: { type: string }
+        memberName: { type: string }
+        initials: { type: string }
+        avatarUrl: { type: ["string", "null"] }
+        activity:
+          type: string
+          enum: [online, typing, recording]
+    ChatPresenceUpdate:
+      type: object
+      required: [activity]
+      properties:
+        activity:
+          type: string
+          enum: [online, typing, recording]
+    ChatPresenceReceipt:
+      type: object
+      required: [success]
+      properties:
+        success: { type: boolean, enum: [true] }
     MemberCode:
       type: object
       required: [code, createdAt]

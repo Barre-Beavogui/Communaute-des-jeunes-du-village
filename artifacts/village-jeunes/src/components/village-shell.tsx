@@ -3,19 +3,24 @@ import {
   Compass,
   KeyRound,
   MapPinned,
+  MessageCircleMore,
   Newspaper,
   UserRound,
   UsersRound,
 } from "lucide-react";
 import { type ReactNode, useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
-import { useHealthCheck } from "@workspace/api-client-react";
+import {
+  updateChatPresence,
+  useHealthCheck,
+} from "@workspace/api-client-react";
 import { hasMemberSession } from "@/lib/member-session";
 
 const navItems = [
   { href: "/accueil", label: "Accueil", icon: Compass },
   { href: "/membres", label: "Membres", icon: UsersRound },
   { href: "/actualites", label: "Actualités", icon: Newspaper },
+  { href: "/groupe", label: "Groupe", icon: MessageCircleMore },
   { href: "/zoboroma", label: "Zoboroma", icon: MapPinned },
 ];
 
@@ -39,6 +44,16 @@ export function VillageShell({ children }: { children: ReactNode }) {
       window.removeEventListener("zoboroma-member-session", refreshSession);
   }, []);
 
+  useEffect(() => {
+    if (!showPrivateNavigation || location.startsWith("/groupe")) return;
+    const heartbeat = () => {
+      void updateChatPresence({ activity: "online" }).catch(() => undefined);
+    };
+    heartbeat();
+    const timer = window.setInterval(heartbeat, 15_000);
+    return () => window.clearInterval(timer);
+  }, [location, showPrivateNavigation]);
+
   return (
     <div className="vj-noise min-h-[100dvh] bg-background text-foreground">
       <header className="sticky top-0 z-40 border-b border-border/70 bg-background/90 backdrop-blur-xl">
@@ -51,7 +66,7 @@ export function VillageShell({ children }: { children: ReactNode }) {
             <span className="grid h-11 w-11 rotate-[-5deg] place-items-center rounded-[13px] bg-primary text-sm font-extrabold tracking-[-0.08em] text-primary-foreground shadow-[4px_4px_0_hsl(var(--accent))] transition-transform group-hover:rotate-0">
               ZJ
             </span>
-            <span className="hidden text-[15px] font-extrabold tracking-[-0.04em] sm:block">
+            <span className="hidden text-[15px] font-extrabold tracking-[-0.04em] lg:block">
               Zoboroma <span className="text-primary">Jeunes</span>
             </span>
           </Link>
@@ -69,7 +84,7 @@ export function VillageShell({ children }: { children: ReactNode }) {
                     key={item.href}
                     href={item.href}
                     data-testid={`link-nav-${item.label.toLowerCase().replaceAll(" ", "-")}`}
-                    className={`flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold ${isActive ? "bg-card text-primary shadow-sm ring-1 ring-border" : "text-muted-foreground hover:bg-card/70 hover:text-foreground"}`}
+                    className={`flex items-center gap-1.5 rounded-full px-3 py-2.5 text-xs font-semibold lg:gap-2 lg:px-4 lg:text-sm ${isActive ? "bg-card text-primary shadow-sm ring-1 ring-border" : "text-muted-foreground hover:bg-card/70 hover:text-foreground"}`}
                   >
                     <Icon className="h-4 w-4" strokeWidth={2.2} />
                     {item.label}
@@ -180,6 +195,7 @@ export function VillageShell({ children }: { children: ReactNode }) {
                       ["/accueil", "Accueil"],
                       ["/membres", "Les membres"],
                       ["/actualites", "Actualités et sondages"],
+                      ["/groupe", "Groupe de communication"],
                       ["/zoboroma", "Le village"],
                       ["/connexion-membre", "Mon espace membre"],
                     ]
@@ -217,7 +233,7 @@ export function VillageShell({ children }: { children: ReactNode }) {
 
       {showPrivateNavigation && (
         <nav
-          className="fixed bottom-0 left-0 right-0 z-40 grid grid-cols-4 border-t border-border/80 bg-background/95 px-2 py-2 backdrop-blur-xl md:hidden"
+          className="fixed bottom-0 left-0 right-0 z-40 grid grid-cols-5 border-t border-border/80 bg-background/95 px-2 py-2 backdrop-blur-xl md:hidden"
           aria-label="Navigation mobile"
         >
           {navItems.map((item) => {

@@ -316,6 +316,101 @@ export interface MemberProfileUpdate {
   showPhone: boolean;
 }
 
+export type ChatMessageType = typeof ChatMessageType[keyof typeof ChatMessageType];
+
+
+export const ChatMessageType = {
+  text: 'text',
+  audio: 'audio',
+} as const;
+
+export interface ChatMessage {
+  id: string;
+  profileId: string;
+  memberName: string;
+  initials: string;
+  /** @nullable */
+  avatarUrl?: string | null;
+  type: ChatMessageType;
+  /** @nullable */
+  content?: string | null;
+  /** @nullable */
+  audioData?: string | null;
+  /** @nullable */
+  audioMimeType?: string | null;
+  /** @nullable */
+  durationSeconds?: number | null;
+  createdAt: string;
+}
+
+export type ChatMessageCreateType = typeof ChatMessageCreateType[keyof typeof ChatMessageCreateType];
+
+
+export const ChatMessageCreateType = {
+  text: 'text',
+  audio: 'audio',
+} as const;
+
+export interface ChatMessageCreate {
+  type: ChatMessageCreateType;
+  /**
+     * @maxLength 1000
+     * @nullable
+     */
+  content?: string | null;
+  /**
+     * @maxLength 900000
+     * @nullable
+     */
+  audioData?: string | null;
+  /**
+     * @maxLength 40
+     * @nullable
+     */
+  audioMimeType?: string | null;
+  /**
+     * @minimum 1
+     * @maximum 45
+     * @nullable
+     */
+  durationSeconds?: number | null;
+}
+
+export type ChatPresenceActivity = typeof ChatPresenceActivity[keyof typeof ChatPresenceActivity];
+
+
+export const ChatPresenceActivity = {
+  online: 'online',
+  typing: 'typing',
+  recording: 'recording',
+} as const;
+
+export interface ChatPresence {
+  profileId: string;
+  memberName: string;
+  initials: string;
+  /** @nullable */
+  avatarUrl?: string | null;
+  activity: ChatPresenceActivity;
+}
+
+export type ChatPresenceUpdateActivity = typeof ChatPresenceUpdateActivity[keyof typeof ChatPresenceUpdateActivity];
+
+
+export const ChatPresenceUpdateActivity = {
+  online: 'online',
+  typing: 'typing',
+  recording: 'recording',
+} as const;
+
+export interface ChatPresenceUpdate {
+  activity: ChatPresenceUpdateActivity;
+}
+
+export interface ChatPresenceReceipt {
+  success: true;
+}
+
 export interface MemberCode {
   code: string;
   createdAt: string;

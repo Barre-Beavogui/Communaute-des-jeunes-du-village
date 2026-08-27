@@ -307,6 +307,86 @@ export const UpdateMemberProfileResponse = zod.object({
 
 
 /**
+ * @summary List the latest member group messages
+ */
+export const ListChatMessagesResponseItem = zod.object({
+  "id": zod.string(),
+  "profileId": zod.string(),
+  "memberName": zod.string(),
+  "initials": zod.string(),
+  "avatarUrl": zod.string().nullish(),
+  "type": zod.enum(['text', 'audio']),
+  "content": zod.string().nullish(),
+  "audioData": zod.string().nullish(),
+  "audioMimeType": zod.string().nullish(),
+  "durationSeconds": zod.number().nullish(),
+  "createdAt": zod.string()
+})
+export const ListChatMessagesResponse = zod.array(ListChatMessagesResponseItem)
+
+
+/**
+ * @summary Send a text message or a short voice note
+ */
+export const sendChatMessageBodyContentMax = 1000;
+
+export const sendChatMessageBodyAudioDataMax = 900000;
+
+export const sendChatMessageBodyAudioMimeTypeMax = 40;
+
+export const sendChatMessageBodyDurationSecondsMax = 45;
+
+
+
+export const SendChatMessageBody = zod.object({
+  "type": zod.enum(['text', 'audio']),
+  "content": zod.string().max(sendChatMessageBodyContentMax).nullish(),
+  "audioData": zod.string().max(sendChatMessageBodyAudioDataMax).nullish(),
+  "audioMimeType": zod.string().max(sendChatMessageBodyAudioMimeTypeMax).nullish(),
+  "durationSeconds": zod.number().min(1).max(sendChatMessageBodyDurationSecondsMax).nullish()
+})
+
+export const SendChatMessageResponse = zod.object({
+  "id": zod.string(),
+  "profileId": zod.string(),
+  "memberName": zod.string(),
+  "initials": zod.string(),
+  "avatarUrl": zod.string().nullish(),
+  "type": zod.enum(['text', 'audio']),
+  "content": zod.string().nullish(),
+  "audioData": zod.string().nullish(),
+  "audioMimeType": zod.string().nullish(),
+  "durationSeconds": zod.number().nullish(),
+  "createdAt": zod.string()
+})
+
+
+/**
+ * @summary List members who are currently online or active
+ */
+export const ListChatPresenceResponseItem = zod.object({
+  "profileId": zod.string(),
+  "memberName": zod.string(),
+  "initials": zod.string(),
+  "avatarUrl": zod.string().nullish(),
+  "activity": zod.enum(['online', 'typing', 'recording'])
+})
+export const ListChatPresenceResponse = zod.array(ListChatPresenceResponseItem)
+
+
+/**
+ * @summary Update the connected member activity
+ */
+export const UpdateChatPresenceBody = zod.object({
+  "activity": zod.enum(['online', 'typing', 'recording'])
+})
+
+export const UpdateChatPresenceResponse = zod.object({
+  "success": zod.literal(true)
+})
+
+
+/**
  * @summary List community announcements
  */
 export const ListAnnouncementsResponseItem = zod.object({

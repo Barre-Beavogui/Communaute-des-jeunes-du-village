@@ -62,6 +62,17 @@ export const passwordResetRequestsTable = pgTable("password_reset_requests", {
   status: text("status").notNull().default("pending"),
 });
 
+export const chatMessagesTable = pgTable("chat_messages", {
+  id: text("id").primaryKey(),
+  profileId: text("profile_id").notNull(),
+  type: text("type").notNull(),
+  content: text("content"),
+  audioData: text("audio_data"),
+  audioMimeType: text("audio_mime_type"),
+  durationSeconds: integer("duration_seconds"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 export const insertProfileSchema = createInsertSchema(profilesTable);
 export const insertMembershipRequestSchema = createInsertSchema(
   membershipRequestsTable,
@@ -71,3 +82,4 @@ export type MembershipRequest = typeof membershipRequestsTable.$inferSelect;
 export type DeletedProfile = typeof deletedProfilesTable.$inferSelect;
 export type PasswordResetRequest =
   typeof passwordResetRequestsTable.$inferSelect;
+export type ChatMessage = typeof chatMessagesTable.$inferSelect;

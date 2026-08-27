@@ -9,7 +9,9 @@ import {
 import { useMemo, useState } from "react";
 import { Link } from "wouter";
 import {
+  getListChatPresenceQueryKey,
   getListProfilesQueryKey,
+  useListChatPresence,
   useListProfiles,
 } from "@workspace/api-client-react";
 import { MemberCard } from "@/components/member-card";
@@ -26,6 +28,12 @@ export default function MembersPage() {
   const profilesQuery = useListProfiles({
     query: { queryKey: getListProfilesQueryKey() },
   });
+  const presenceQuery = useListChatPresence({
+    query: {
+      queryKey: getListChatPresenceQueryKey(),
+      refetchInterval: 5_000,
+    },
+  });
   const profiles = Array.isArray(profilesQuery.data)
     ? profilesQuery.data
     : demoProfiles;
@@ -33,6 +41,16 @@ export default function MembersPage() {
   const [activity, setActivity] = useState("Toutes");
   const [location, setLocation] = useState("Tous les lieux");
   const [sort, setSort] = useState<"name" | "location">("name");
+  const presenceByProfile = useMemo(
+    () =>
+      new Map(
+        (presenceQuery.data ?? []).map((presence) => [
+          presence.profileId,
+          presence.activity,
+        ]),
+      ),
+    [presenceQuery.data],
+  );
 
   const activities = useMemo(
     () =>
@@ -210,7 +228,11 @@ export default function MembersPage() {
       ) : filteredProfiles.length ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filteredProfiles.map((profile) => (
-            <MemberCard key={profile.id} profile={profile} />
+            <MemberCard
+              key={profile.id}
+              profile={profile}
+              presenceActivity={presenceByProfile.get(profile.id)}
+            />
           ))}
         </div>
       ) : (

@@ -7,6 +7,7 @@ import membershipRouter from "./membership";
 import memberRouter from "./member";
 import communityRouter from "./community";
 import communityModerationRouter from "./community-moderation";
+import chatRouter from "./chat";
 
 const router: IRouter = Router();
 
@@ -14,6 +15,7 @@ router.use(healthRouter);
 router.use(adminRouter);
 router.use(membershipRouter);
 router.use(memberRouter);
+router.use(chatRouter);
 router.use(profilesRouter);
 router.use(communityRouter);
 router.use(moderationRouter);

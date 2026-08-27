@@ -25,6 +25,11 @@ import type {
   Announcement,
   AnnouncementCreate,
   AnnouncementReaction,
+  ChatMessage,
+  ChatMessageCreate,
+  ChatPresence,
+  ChatPresenceReceipt,
+  ChatPresenceUpdate,
   HealthStatus,
   MemberActivation,
   MemberCode,
@@ -959,6 +964,302 @@ export const useUpdateMemberProfile = <TError = ErrorType<void>,
         TContext
       > => {
       return useMutation(getUpdateMemberProfileMutationOptions(options));
+    }
+
+export const getListChatMessagesUrl = () => {
+
+
+
+
+  return `/api/chat/messages`
+}
+
+/**
+ * @summary List the latest member group messages
+ */
+export const listChatMessages = async ( options?: Parameters<typeof customFetch>[1]): Promise<ChatMessage[]> => {
+
+  return customFetch<ChatMessage[]>(getListChatMessagesUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListChatMessagesQueryKey = () => {
+    return [
+    `/api/chat/messages`
+    ] as const;
+    }
+
+
+export const getListChatMessagesQueryOptions = <TData = Awaited<ReturnType<typeof listChatMessages>>, TError = ErrorType<void>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listChatMessages>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListChatMessagesQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listChatMessages>>> = ({ signal }) => listChatMessages({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listChatMessages>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListChatMessagesQueryResult = NonNullable<Awaited<ReturnType<typeof listChatMessages>>>
+export type ListChatMessagesQueryError = ErrorType<void>
+
+
+/**
+ * @summary List the latest member group messages
+ */
+
+export function useListChatMessages<TData = Awaited<ReturnType<typeof listChatMessages>>, TError = ErrorType<void>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listChatMessages>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListChatMessagesQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getSendChatMessageUrl = () => {
+
+
+
+
+  return `/api/chat/messages`
+}
+
+/**
+ * @summary Send a text message or a short voice note
+ */
+export const sendChatMessage = async (chatMessageCreate: ChatMessageCreate, options?: Parameters<typeof customFetch>[1]): Promise<ChatMessage> => {
+
+  return customFetch<ChatMessage>(getSendChatMessageUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(chatMessageCreate)
+  }
+);}
+
+
+
+
+
+export const getSendChatMessageMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof sendChatMessage>>, TError,{data: BodyType<ChatMessageCreate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof sendChatMessage>>, TError,{data: BodyType<ChatMessageCreate>}, TContext> => {
+
+const mutationKey = ['sendChatMessage'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof sendChatMessage>>, {data: BodyType<ChatMessageCreate>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  sendChatMessage(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SendChatMessageMutationResult = NonNullable<Awaited<ReturnType<typeof sendChatMessage>>>
+    export type SendChatMessageMutationBody = BodyType<ChatMessageCreate>
+    export type SendChatMessageMutationError = ErrorType<void>
+
+    /**
+ * @summary Send a text message or a short voice note
+ */
+export const useSendChatMessage = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof sendChatMessage>>, TError,{data: BodyType<ChatMessageCreate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof sendChatMessage>>,
+        TError,
+        {data: BodyType<ChatMessageCreate>},
+        TContext
+      > => {
+      return useMutation(getSendChatMessageMutationOptions(options));
+    }
+
+export const getListChatPresenceUrl = () => {
+
+
+
+
+  return `/api/chat/presence`
+}
+
+/**
+ * @summary List members who are currently online or active
+ */
+export const listChatPresence = async ( options?: Parameters<typeof customFetch>[1]): Promise<ChatPresence[]> => {
+
+  return customFetch<ChatPresence[]>(getListChatPresenceUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListChatPresenceQueryKey = () => {
+    return [
+    `/api/chat/presence`
+    ] as const;
+    }
+
+
+export const getListChatPresenceQueryOptions = <TData = Awaited<ReturnType<typeof listChatPresence>>, TError = ErrorType<void>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listChatPresence>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListChatPresenceQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listChatPresence>>> = ({ signal }) => listChatPresence({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listChatPresence>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListChatPresenceQueryResult = NonNullable<Awaited<ReturnType<typeof listChatPresence>>>
+export type ListChatPresenceQueryError = ErrorType<void>
+
+
+/**
+ * @summary List members who are currently online or active
+ */
+
+export function useListChatPresence<TData = Awaited<ReturnType<typeof listChatPresence>>, TError = ErrorType<void>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listChatPresence>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListChatPresenceQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getUpdateChatPresenceUrl = () => {
+
+
+
+
+  return `/api/chat/presence`
+}
+
+/**
+ * @summary Update the connected member activity
+ */
+export const updateChatPresence = async (chatPresenceUpdate: ChatPresenceUpdate, options?: Parameters<typeof customFetch>[1]): Promise<ChatPresenceReceipt> => {
+
+  return customFetch<ChatPresenceReceipt>(getUpdateChatPresenceUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(chatPresenceUpdate)
+  }
+);}
+
+
+
+
+
+export const getUpdateChatPresenceMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateChatPresence>>, TError,{data: BodyType<ChatPresenceUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateChatPresence>>, TError,{data: BodyType<ChatPresenceUpdate>}, TContext> => {
+
+const mutationKey = ['updateChatPresence'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateChatPresence>>, {data: BodyType<ChatPresenceUpdate>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  updateChatPresence(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateChatPresenceMutationResult = NonNullable<Awaited<ReturnType<typeof updateChatPresence>>>
+    export type UpdateChatPresenceMutationBody = BodyType<ChatPresenceUpdate>
+    export type UpdateChatPresenceMutationError = ErrorType<void>
+
+    /**
+ * @summary Update the connected member activity
+ */
+export const useUpdateChatPresence = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateChatPresence>>, TError,{data: BodyType<ChatPresenceUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateChatPresence>>,
+        TError,
+        {data: BodyType<ChatPresenceUpdate>},
+        TContext
+      > => {
+      return useMutation(getUpdateChatPresenceMutationOptions(options));
     }
 
 export const getListAnnouncementsUrl = () => {

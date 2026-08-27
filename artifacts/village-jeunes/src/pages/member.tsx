@@ -3,8 +3,10 @@ import { useMemo } from "react";
 import { Link, useParams } from "wouter";
 import {
   getGetProfileQueryKey,
+  getListChatPresenceQueryKey,
   getListProfilesQueryKey,
   useGetProfile,
+  useListChatPresence,
   useListProfiles,
 } from "@workspace/api-client-react";
 import { MemberCard } from "@/components/member-card";
@@ -20,6 +22,12 @@ export default function MemberPage() {
   const profilesQuery = useListProfiles({
     query: { queryKey: getListProfilesQueryKey() },
   });
+  const presenceQuery = useListChatPresence({
+    query: {
+      queryKey: getListChatPresenceQueryKey(),
+      refetchInterval: 5_000,
+    },
+  });
   const fallback = useMemo(
     () => demoProfiles.find((profile) => profile.id === id) ?? demoProfiles[0],
     [id],
@@ -31,6 +39,17 @@ export default function MemberPage() {
   const profiles = Array.isArray(profilesQuery.data)
     ? profilesQuery.data
     : demoProfiles;
+  const presenceByProfile = useMemo(
+    () =>
+      new Map(
+        (presenceQuery.data ?? []).map((presence) => [
+          presence.profileId,
+          presence.activity,
+        ]),
+      ),
+    [presenceQuery.data],
+  );
+  const profileActivity = presenceByProfile.get(profile.id);
   const relatedProfiles = useMemo(
     () =>
       profiles
@@ -73,8 +92,21 @@ export default function MemberPage() {
               <Avatar profile={profile} size="xl" />
             </div>
             <span className="absolute right-6 top-6 flex items-center gap-1.5 rounded-full bg-background/10 px-3 py-2 text-[10px] font-bold text-background backdrop-blur-sm">
-              <ShieldCheck className="h-3.5 w-3.5 text-accent" /> Membre
-              approuvé
+              {profileActivity ? (
+                <>
+                  <span className="h-2.5 w-2.5 rounded-full bg-emerald-400" />
+                  {profileActivity === "typing"
+                    ? "Écrit…"
+                    : profileActivity === "recording"
+                      ? "Enregistre un vocal…"
+                      : "En ligne"}
+                </>
+              ) : (
+                <>
+                  <ShieldCheck className="h-3.5 w-3.5 text-accent" /> Membre
+                  approuvé
+                </>
+              )}
             </span>
           </div>
           <div className="px-6 pb-8 pt-20 sm:px-10 sm:pb-12">
@@ -202,7 +234,11 @@ export default function MemberPage() {
           </div>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {relatedProfiles.map((item) => (
-              <MemberCard key={item.id} profile={item} />
+              <MemberCard
+                key={item.id}
+                profile={item}
+                presenceActivity={presenceByProfile.get(item.id)}
+              />
             ))}
           </div>
         </section>

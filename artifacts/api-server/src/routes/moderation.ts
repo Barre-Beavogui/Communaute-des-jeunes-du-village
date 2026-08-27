@@ -4,6 +4,7 @@ import { db } from "@workspace/db";
 import {
   announcementDislikesTable,
   announcementLikesTable,
+  chatMessagesTable,
   deletedProfilesTable,
   pollVotesTable,
   membershipRequestsTable,
@@ -275,6 +276,9 @@ router.delete("/moderation/profiles/:id", async (req, res) => {
     await tx
       .delete(passwordResetRequestsTable)
       .where(eq(passwordResetRequestsTable.profileId, profile.id));
+    await tx
+      .delete(chatMessagesTable)
+      .where(eq(chatMessagesTable.profileId, profile.id));
     await tx.delete(profilesTable).where(eq(profilesTable.id, profile.id));
     return true;
   });

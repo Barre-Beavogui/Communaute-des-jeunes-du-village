@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { VillageShell } from "@/components/village-shell";
 import AdminPage from "@/pages/admin";
+import ChatPage from "@/pages/chat";
 import HomePage from "@/pages/home";
 import JoinPage from "@/pages/join";
 import MemberPage from "@/pages/member";
@@ -44,6 +45,11 @@ function Router() {
         <Route path="/actualites">
           <MemberOnly>
             <NewsPage />
+          </MemberOnly>
+        </Route>
+        <Route path="/groupe">
+          <MemberOnly>
+            <ChatPage />
           </MemberOnly>
         </Route>
         <Route path="/connexion-membre" component={MemberLoginPage} />
