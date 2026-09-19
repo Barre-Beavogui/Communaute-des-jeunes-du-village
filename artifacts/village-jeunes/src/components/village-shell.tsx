@@ -1,9 +1,11 @@
 import {
   ArrowUpRight,
   Compass,
+  Download,
   KeyRound,
   MapPinned,
   MessageCircleMore,
+  MoreHorizontal,
   Newspaper,
   UserRound,
   UsersRound,
@@ -23,10 +25,22 @@ const navItems = [
   { href: "/groupe", label: "Groupe", icon: MessageCircleMore },
   { href: "/zoboroma", label: "Zoboroma", icon: MapPinned },
 ];
+const mobileNavItems = navItems.filter((item) =>
+  ["/accueil", "/membres", "/groupe"].includes(item.href),
+);
+
+type InstallPromptEvent = Event & {
+  prompt: () => Promise<void>;
+  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
+};
 
 export function VillageShell({ children }: { children: ReactNode }) {
   const [location] = useLocation();
   const [memberActive, setMemberActive] = useState(() => hasMemberSession());
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [installPrompt, setInstallPrompt] = useState<InstallPromptEvent | null>(
+    null,
+  );
   const health = useHealthCheck();
   const currentYear = new Date().getFullYear();
   const isAdminPage = location.startsWith("/admin");
@@ -53,6 +67,27 @@ export function VillageShell({ children }: { children: ReactNode }) {
     const timer = window.setInterval(heartbeat, 15_000);
     return () => window.clearInterval(timer);
   }, [location, showPrivateNavigation]);
+
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [location]);
+
+  useEffect(() => {
+    const captureInstallPrompt = (event: Event) => {
+      event.preventDefault();
+      setInstallPrompt(event as InstallPromptEvent);
+    };
+    window.addEventListener("beforeinstallprompt", captureInstallPrompt);
+    return () =>
+      window.removeEventListener("beforeinstallprompt", captureInstallPrompt);
+  }, []);
+
+  const installApplication = async () => {
+    if (!installPrompt) return;
+    await installPrompt.prompt();
+    const choice = await installPrompt.userChoice;
+    if (choice.outcome === "accepted") setInstallPrompt(null);
+  };
 
   return (
     <div className="vj-noise min-h-[100dvh] bg-background text-foreground">
@@ -232,26 +267,88 @@ export function VillageShell({ children }: { children: ReactNode }) {
       </footer>
 
       {showPrivateNavigation && (
-        <nav
-          className="fixed bottom-0 left-0 right-0 z-40 grid grid-cols-5 border-t border-border/80 bg-background/95 px-2 py-2 backdrop-blur-xl md:hidden"
-          aria-label="Navigation mobile"
-        >
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = location.startsWith(item.href);
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`flex flex-col items-center gap-1 py-1.5 text-[10px] font-bold ${isActive ? "text-primary" : "text-muted-foreground"}`}
-                data-testid={`link-mobile-${item.label.toLowerCase().replaceAll(" ", "-")}`}
-              >
-                <Icon className="h-5 w-5" />
-                {item.label}
-              </Link>
-            );
-          })}
-        </nav>
+        <>
+          {mobileMenuOpen && (
+            <>
+              <button
+                type="button"
+                className="fixed inset-0 z-40 bg-foreground/35 backdrop-blur-[2px] md:hidden"
+                onClick={() => setMobileMenuOpen(false)}
+                aria-label="Fermer le menu"
+              />
+              <div className="fixed bottom-[78px] left-4 right-4 z-50 rounded-[24px] border border-border bg-card p-3 shadow-2xl md:hidden">
+                <p className="px-3 pb-2 pt-1 font-mono text-[9px] font-bold uppercase tracking-[.18em] text-primary">
+                  Plus de pages
+                </p>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    ["/actualites", "Actualités", Newspaper],
+                    ["/zoboroma", "Zoboroma", MapPinned],
+                    ["/connexion-membre", "Mon espace", UserRound],
+                    ["/confidentialite", "Confidentialité", KeyRound],
+                  ].map(([href, label, Icon]) => {
+                    const MenuIcon = Icon as typeof Newspaper;
+                    return (
+                      <Link
+                        key={href as string}
+                        href={href as string}
+                        className="flex items-center gap-3 rounded-2xl bg-muted/60 p-3 text-xs font-extrabold"
+                      >
+                        <MenuIcon className="h-4 w-4 text-primary" />
+                        {label as string}
+                      </Link>
+                    );
+                  })}
+                </div>
+                {installPrompt && (
+                  <button
+                    type="button"
+                    onClick={installApplication}
+                    className="mt-2 flex w-full items-center justify-center gap-2 rounded-2xl bg-primary px-4 py-3 text-xs font-extrabold text-primary-foreground"
+                  >
+                    <Download className="h-4 w-4" /> Installer l’application
+                  </button>
+                )}
+              </div>
+            </>
+          )}
+          <nav
+            className="fixed bottom-0 left-0 right-0 z-[60] grid grid-cols-4 border-t border-border/80 bg-background/95 px-2 pb-[max(.5rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur-xl md:hidden"
+            aria-label="Navigation mobile"
+          >
+            {mobileNavItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = location.startsWith(item.href);
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`flex min-h-12 flex-col items-center justify-center gap-1 text-[10px] font-bold ${isActive ? "text-primary" : "text-muted-foreground"}`}
+                  data-testid={`link-mobile-${item.label.toLowerCase().replaceAll(" ", "-")}`}
+                >
+                  <Icon className="h-5 w-5" />
+                  {item.label}
+                </Link>
+              );
+            })}
+            <button
+              type="button"
+              onClick={() => setMobileMenuOpen((open) => !open)}
+              className={`flex min-h-12 flex-col items-center justify-center gap-1 text-[10px] font-bold ${
+                mobileMenuOpen ||
+                location.startsWith("/actualites") ||
+                location.startsWith("/zoboroma")
+                  ? "text-primary"
+                  : "text-muted-foreground"
+              }`}
+              aria-expanded={mobileMenuOpen}
+              aria-label="Plus de pages"
+            >
+              <MoreHorizontal className="h-5 w-5" />
+              Plus
+            </button>
+          </nav>
+        </>
       )}
     </div>
   );

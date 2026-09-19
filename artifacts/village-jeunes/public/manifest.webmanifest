@@ -1,0 +1,46 @@
+{
+  "name": "Zoboroma Jeunes",
+  "short_name": "Zoboroma",
+  "description": "L’espace communautaire des jeunes de Zoboroma.",
+  "lang": "fr",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#f8f4ec",
+  "theme_color": "#cc6f42",
+  "icons": [
+    {
+      "src": "/app-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Groupe de communication",
+      "short_name": "Groupe",
+      "url": "/groupe",
+      "icons": [
+        {
+          "src": "/app-icon.svg",
+          "sizes": "any",
+          "type": "image/svg+xml"
+        }
+      ]
+    },
+    {
+      "name": "Annuaire des membres",
+      "short_name": "Membres",
+      "url": "/membres",
+      "icons": [
+        {
+          "src": "/app-icon.svg",
+          "sizes": "any",
+          "type": "image/svg+xml"
+        }
+      ]
+    }
+  ]
+}

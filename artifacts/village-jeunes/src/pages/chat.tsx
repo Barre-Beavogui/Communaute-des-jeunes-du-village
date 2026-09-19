@@ -102,11 +102,13 @@ export default function ChatPage() {
   const recorderRef = useRef<MediaRecorder | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const chunksRef = useRef<Blob[]>([]);
+  const discardRecordingRef = useRef(false);
   const durationRef = useRef(0);
   const activityRef = useRef<"online" | "typing" | "recording">("online");
   const lastTypingPingRef = useRef(0);
   const typingResetRef = useRef<number | null>(null);
   const bottomRef = useRef<HTMLDivElement | null>(null);
+  const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
   const messages = messagesQuery.data ?? [];
   const presences = presenceQuery.data ?? [];
 
@@ -191,6 +193,7 @@ export default function ChatPage() {
       {
         onSuccess: async () => {
           setText("");
+          if (textAreaRef.current) textAreaRef.current.style.height = "48px";
           pingActivity("online");
           await refreshChat();
         },
@@ -202,6 +205,8 @@ export default function ChatPage() {
 
   const onTextChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
     setText(event.target.value);
+    event.target.style.height = "0px";
+    event.target.style.height = `${Math.min(event.target.scrollHeight, 120)}px`;
     if (typingResetRef.current) {
       window.clearTimeout(typingResetRef.current);
     }
@@ -250,6 +255,7 @@ export default function ChatPage() {
       });
       recorderRef.current = recorder;
       chunksRef.current = [];
+      discardRecordingRef.current = false;
       durationRef.current = 0;
       setRecordingSeconds(0);
       recorder.ondataavailable = (event) => {
@@ -260,6 +266,11 @@ export default function ChatPage() {
         streamRef.current = null;
         setIsRecording(false);
         pingActivity("online");
+        if (discardRecordingRef.current) {
+          chunksRef.current = [];
+          setRecordingSeconds(0);
+          return;
+        }
         const durationSeconds = Math.max(1, durationRef.current);
         const blob = new Blob(chunksRef.current, {
           type: recorder.mimeType || mimeType || "audio/webm",
@@ -298,6 +309,11 @@ export default function ChatPage() {
     }
   };
 
+  const cancelRecording = () => {
+    discardRecordingRef.current = true;
+    stopRecording();
+  };
+
   const sendRecordedAudio = () => {
     if (!recordedAudio || sendMessage.isPending) return;
     setError("");
@@ -323,7 +339,7 @@ export default function ChatPage() {
 
   return (
     <div className="vj-enter mx-auto max-w-6xl">
-      <section className="mb-5 flex flex-col justify-between gap-4 rounded-[26px] bg-foreground px-6 py-7 text-background sm:flex-row sm:items-end sm:px-8">
+      <section className="mb-5 hidden flex-col justify-between gap-4 rounded-[26px] bg-foreground px-6 py-7 text-background sm:flex-row sm:items-end sm:px-8 lg:flex">
         <div>
           <p className="font-mono text-[10px] font-bold uppercase tracking-[.2em] text-accent">
             Groupe de communication
@@ -343,14 +359,17 @@ export default function ChatPage() {
       </section>
 
       <div className="grid gap-5 lg:grid-cols-[1fr_280px]">
-        <section className="overflow-hidden rounded-[26px] border border-border bg-card shadow-sm">
+        <section className="flex h-[calc(100dvh-170px)] min-h-[520px] flex-col overflow-hidden rounded-[26px] border border-border bg-card shadow-sm lg:h-auto">
           <div className="flex items-center justify-between border-b border-border px-5 py-4 sm:px-6">
             <div className="flex items-center gap-3">
               <span className="grid h-10 w-10 place-items-center rounded-2xl bg-primary/10 text-primary">
                 <MessageCircleMore className="h-5 w-5" />
               </span>
               <div>
-                <h2 className="text-sm font-extrabold">Discussion générale</h2>
+                <h2 className="text-sm font-extrabold">
+                  <span className="lg:hidden">La famille Zoboroma</span>
+                  <span className="hidden lg:inline">Discussion générale</span>
+                </h2>
                 <p
                   className="mt-0.5 text-[11px] font-semibold text-emerald-600"
                   aria-live="polite"
@@ -362,7 +381,38 @@ export default function ChatPage() {
             <Radio className="h-5 w-5 text-secondary" />
           </div>
 
-          <div className="h-[52vh] min-h-[390px] space-y-4 overflow-y-auto bg-muted/25 px-4 py-6 sm:px-6">
+          <div className="flex shrink-0 gap-2 overflow-x-auto border-b border-border px-3 py-2.5 lg:hidden">
+            {presences.map((presence) => (
+              <div
+                key={presence.profileId}
+                className="flex shrink-0 items-center gap-2 rounded-full bg-muted/65 py-1.5 pl-1.5 pr-3"
+              >
+                <div className="relative">
+                  <Avatar
+                    profile={{ ...presence, name: presence.memberName }}
+                    size="sm"
+                  />
+                  <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-card bg-emerald-500" />
+                </div>
+                <div className="max-w-28">
+                  <p className="truncate text-[10px] font-extrabold">
+                    {presence.profileId === member?.id
+                      ? "Vous"
+                      : presence.memberName}
+                  </p>
+                  <p className="truncate text-[9px] font-semibold text-emerald-600">
+                    {presence.activity === "typing"
+                      ? "écrit…"
+                      : presence.activity === "recording"
+                        ? "enregistre…"
+                        : "En ligne"}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="min-h-0 flex-1 space-y-4 overflow-y-auto bg-muted/25 px-4 py-5 sm:px-6 lg:h-[52vh] lg:min-h-[390px] lg:flex-none lg:py-6">
             {messagesQuery.isLoading ? (
               <div className="space-y-4">
                 {[1, 2, 3].map((item) => (
@@ -451,7 +501,7 @@ export default function ChatPage() {
             <div ref={bottomRef} />
           </div>
 
-          <div className="border-t border-border p-4 sm:p-5">
+          <div className="shrink-0 border-t border-border bg-card p-3 sm:p-5">
             {recordedAudio ? (
               <div className="flex flex-col gap-3 rounded-2xl bg-accent/25 p-4 sm:flex-row sm:items-center">
                 <audio
@@ -493,24 +543,34 @@ export default function ChatPage() {
                     </p>
                   </div>
                 </div>
-                <button
-                  type="button"
-                  onClick={stopRecording}
-                  className="flex items-center gap-2 rounded-full bg-destructive px-4 py-2.5 text-xs font-bold text-destructive-foreground"
-                >
-                  <CircleStop className="h-4 w-4" /> Arrêter
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={cancelRecording}
+                    className="rounded-full border border-border bg-card px-3 py-2.5 text-xs font-bold text-muted-foreground"
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    type="button"
+                    onClick={stopRecording}
+                    className="flex items-center gap-2 rounded-full bg-destructive px-4 py-2.5 text-xs font-bold text-destructive-foreground"
+                  >
+                    <CircleStop className="h-4 w-4" /> Arrêter
+                  </button>
+                </div>
               </div>
             ) : (
               <form onSubmit={submitText} className="flex items-end gap-2">
                 <textarea
+                  ref={textAreaRef}
                   rows={1}
                   maxLength={1000}
                   value={text}
                   onChange={onTextChange}
                   onKeyDown={onTextKeyDown}
                   placeholder="Écrivez à la famille…"
-                  className="field min-h-12 flex-1 resize-none py-3.5"
+                  className="field max-h-[120px] min-h-12 flex-1 resize-none overflow-y-auto py-3.5 text-base sm:text-sm"
                   aria-label="Votre message"
                 />
                 <button
@@ -543,7 +603,7 @@ export default function ChatPage() {
           </div>
         </section>
 
-        <aside className="h-fit overflow-hidden rounded-[26px] border border-border bg-card shadow-sm lg:sticky lg:top-28">
+        <aside className="hidden h-fit overflow-hidden rounded-[26px] border border-border bg-card shadow-sm lg:sticky lg:top-28 lg:block">
           <div className="flex items-center gap-3 border-b border-border p-5">
             <UsersRound className="h-5 w-5 text-primary" />
             <div>

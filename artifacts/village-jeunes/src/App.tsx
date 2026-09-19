@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { VillageShell } from "@/components/village-shell";
 import AdminPage from "@/pages/admin";
 import ChatPage from "@/pages/chat";
+import GeneralAssemblyReportPage from "@/pages/general-assembly-report";
 import HomePage from "@/pages/home";
 import JoinPage from "@/pages/join";
 import MemberPage from "@/pages/member";
@@ -45,6 +46,11 @@ function Router() {
         <Route path="/actualites">
           <MemberOnly>
             <NewsPage />
+          </MemberOnly>
+        </Route>
+        <Route path="/actualites/assemblee-generale-13-septembre-2026">
+          <MemberOnly>
+            <GeneralAssemblyReportPage />
           </MemberOnly>
         </Route>
         <Route path="/groupe">

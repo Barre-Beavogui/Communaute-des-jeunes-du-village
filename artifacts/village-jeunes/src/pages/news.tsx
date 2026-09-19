@@ -12,6 +12,9 @@ import {
 import {
   BarChart3,
   CheckCircle2,
+  ArrowRight,
+  CalendarDays,
+  FileText,
   KeyRound,
   Megaphone,
   Newspaper,
@@ -157,6 +160,39 @@ export default function NewsPage() {
           {actionError}
         </p>
       )}
+
+      <section className="vj-enter vj-enter-delay-1 relative overflow-hidden rounded-[30px] border border-primary/15 bg-card shadow-sm">
+        <div className="vj-drift absolute -right-16 -top-20 h-48 w-48 rounded-full bg-primary/15 blur-3xl" />
+        <div className="relative grid gap-6 p-6 sm:p-8 lg:grid-cols-[1fr_auto] lg:items-end">
+          <div>
+            <span className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-2 font-mono text-[9px] font-bold uppercase tracking-[.18em] text-primary">
+              <FileText className="h-3.5 w-3.5" /> Nouveau compte rendu
+            </span>
+            <div className="mt-5 flex flex-wrap items-center gap-3 text-[10px] font-bold text-muted-foreground">
+              <span className="inline-flex items-center gap-2">
+                <CalendarDays className="h-3.5 w-3.5 text-primary" /> 13
+                septembre 2026
+              </span>
+              <span>•</span>
+              <span>Assemblée générale</span>
+            </div>
+            <h2 className="mt-3 max-w-3xl text-3xl font-extrabold tracking-[-.045em] sm:text-4xl">
+              Le Comité provisoire validé par l’Assemblée générale
+            </h2>
+            <p className="mt-4 max-w-2xl text-sm leading-7 text-foreground/70">
+              Découvrez la synthèse de la réunion, les 15 membres présentés, les
+              décisions prises et les prochaines étapes jusqu’au congrès de
+              septembre 2027.
+            </p>
+          </div>
+          <Link
+            href="/actualites/assemblee-generale-13-septembre-2026"
+            className="inline-flex min-h-11 w-fit items-center gap-2 rounded-full bg-foreground px-5 py-3 text-xs font-extrabold text-background transition hover:-translate-y-0.5"
+          >
+            Lire le compte rendu <ArrowRight className="h-4 w-4" />
+          </Link>
+        </div>
+      </section>
 
       <div className="grid items-start gap-7 lg:grid-cols-[1fr_380px]">
         <section className="space-y-5" aria-labelledby="announcements-title">
