@@ -9,10 +9,16 @@ import {
   GetMembersSummaryResponse,
 } from "@workspace/api-zod";
 import { requireCommunityAccess } from "../lib/community-access";
+import { isValidAdminToken } from "../lib/admin-auth";
+import { authorizationToken } from "../lib/member-auth";
 
 const router: IRouter = Router();
 
-function toProfile(row: typeof profilesTable.$inferSelect) {
+function toProfile(
+  row: typeof profilesTable.$inferSelect,
+  includePrivateContacts = false,
+) {
+  const phone = row.loginPhone ?? row.contact;
   return {
     id: row.id,
     name: row.name,
@@ -22,24 +28,36 @@ function toProfile(row: typeof profilesTable.$inferSelect) {
     bio: row.bio,
     activities: row.activities ?? [],
     project: row.project,
-    contact: row.showPhone ? (row.loginPhone ?? row.contact) : null,
-    email: row.showEmail ? row.loginEmail : null,
-    phone: row.showPhone ? (row.loginPhone ?? row.contact) : null,
+    contact: includePrivateContacts || row.showPhone ? phone : null,
+    email: includePrivateContacts || row.showEmail ? row.loginEmail : null,
+    phone: includePrivateContacts || row.showPhone ? phone : null,
     instagram: null,
     privacy: row.privacy as "community" | "private",
     status: row.status as "approved" | "pending",
   };
 }
 
-router.get("/profiles", requireCommunityAccess, async (_req, res) => {
+router.get("/profiles", requireCommunityAccess, async (req, res) => {
+  const includePrivateContacts = isValidAdminToken(authorizationToken(req));
+  if (includePrivateContacts) {
+    res.setHeader("Cache-Control", "private, no-store");
+  }
   const rows = await db
     .select()
     .from(profilesTable)
     .where(eq(profilesTable.status, "approved"));
-  res.json(ListProfilesResponse.parse(rows.map(toProfile)));
+  res.json(
+    ListProfilesResponse.parse(
+      rows.map((row) => toProfile(row, includePrivateContacts)),
+    ),
+  );
 });
 
 router.get("/profiles/:id", requireCommunityAccess, async (req, res) => {
+  const includePrivateContacts = isValidAdminToken(authorizationToken(req));
+  if (includePrivateContacts) {
+    res.setHeader("Cache-Control", "private, no-store");
+  }
   const params = GetProfileParams.parse(req.params);
   const [row] = await db
     .select()
@@ -49,7 +67,7 @@ router.get("/profiles/:id", requireCommunityAccess, async (req, res) => {
     res.status(404).json({ error: "Profil introuvable" });
     return;
   }
-  res.json(GetProfileResponse.parse(toProfile(row)));
+  res.json(GetProfileResponse.parse(toProfile(row, includePrivateContacts)));
 });
 
 router.get("/members/summary", requireCommunityAccess, async (_req, res) => {

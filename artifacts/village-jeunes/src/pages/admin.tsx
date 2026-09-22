@@ -3,19 +3,23 @@ import {
   Check,
   Clock3,
   Copy,
+  Download,
+  FileSpreadsheet,
   KeyRound,
   LogOut,
   Mail,
   MapPin,
   MessageCircle,
   Phone,
+  RotateCcw,
+  Search,
   ShieldCheck,
   Trash2,
   UserRound,
   UsersRound,
   X,
 } from "lucide-react";
-import { type FormEvent, useState } from "react";
+import { type FormEvent, useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   getGetMembersSummaryQueryKey,
@@ -49,6 +53,14 @@ import {
 
 const TOKEN_KEY = "zoboroma_admin_token";
 
+function normalizeSearchValue(value: string | null | undefined) {
+  return (value ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+}
+
 export default function AdminPage() {
   const queryClient = useQueryClient();
   const [password, setPassword] = useState("");
@@ -72,6 +84,14 @@ export default function AdminPage() {
     email: string;
     phone: string;
   } | null>(null);
+  const [memberSearch, setMemberSearch] = useState("");
+  const [memberNeighborhood, setMemberNeighborhood] = useState("all");
+  const [memberActivity, setMemberActivity] = useState("all");
+  const [memberProject, setMemberProject] = useState<
+    "all" | "with" | "without"
+  >("all");
+  const [exportingMembers, setExportingMembers] = useState(false);
+  const [exportError, setExportError] = useState("");
   const login = useAdminLogin();
   const requestsQuery = useListModerationRequests({
     query: {
@@ -104,6 +124,67 @@ export default function AdminPage() {
   const invitation = generatedCode
     ? buildMemberInvitation(generatedCode)
     : null;
+  const neighborhoodOptions = useMemo(
+    () =>
+      [
+        ...new Set(
+          members.map((member) => member.neighborhood).filter(Boolean),
+        ),
+      ].sort((first, second) => first.localeCompare(second, "fr")),
+    [members],
+  );
+  const activityOptions = useMemo(
+    () =>
+      [...new Set(members.flatMap((member) => member.activities))].sort(
+        (first, second) => first.localeCompare(second, "fr"),
+      ),
+    [members],
+  );
+  const filteredMembers = useMemo(() => {
+    const search = normalizeSearchValue(memberSearch);
+    return members.filter((member) => {
+      const matchesSearch =
+        !search ||
+        [
+          member.name,
+          member.email,
+          member.phone,
+          member.contact,
+          member.neighborhood,
+          member.activities.join(" "),
+          member.bio,
+          member.project,
+        ].some((value) => normalizeSearchValue(value).includes(search));
+      const matchesNeighborhood =
+        memberNeighborhood === "all" ||
+        member.neighborhood === memberNeighborhood;
+      const matchesActivity =
+        memberActivity === "all" || member.activities.includes(memberActivity);
+      const matchesProject =
+        memberProject === "all" ||
+        (memberProject === "with"
+          ? Boolean(member.project?.trim())
+          : !member.project?.trim());
+      return (
+        matchesSearch &&
+        matchesNeighborhood &&
+        matchesActivity &&
+        matchesProject
+      );
+    });
+  }, [
+    memberActivity,
+    memberNeighborhood,
+    memberProject,
+    memberSearch,
+    members,
+  ]);
+  const filtersAreActive = Boolean(
+    memberSearch.trim() ||
+    memberNeighborhood !== "all" ||
+    memberActivity !== "all" ||
+    memberProject !== "all",
+  );
 
   const openSession = (event: FormEvent) => {
     event.preventDefault();
@@ -255,6 +336,168 @@ export default function AdminPage() {
         onSettled: () => setDeletingId(null),
       },
     );
+  };
+
+  const resetMemberFilters = () => {
+    setMemberSearch("");
+    setMemberNeighborhood("all");
+    setMemberActivity("all");
+    setMemberProject("all");
+  };
+
+  const exportMembersToExcel = async () => {
+    if (!filteredMembers.length || exportingMembers) return;
+    setExportError("");
+    setExportingMembers(true);
+    try {
+      const { Workbook } = await import("exceljs");
+      const workbook = new Workbook();
+      workbook.creator = "Zoboroma Jeunes";
+      workbook.created = new Date();
+      workbook.modified = new Date();
+      workbook.subject = "Base de données des membres de Zoboroma";
+
+      const worksheet = workbook.addWorksheet("Membres", {
+        properties: { defaultRowHeight: 20 },
+        views: [{ state: "frozen", ySplit: 5 }],
+      });
+      worksheet.pageSetup = {
+        orientation: "landscape",
+        fitToPage: true,
+        fitToWidth: 1,
+        fitToHeight: 0,
+        paperSize: 9,
+      };
+
+      worksheet.mergeCells("A1:K1");
+      worksheet.getCell("A1").value = "Base de données des membres de Zoboroma";
+      worksheet.getCell("A1").font = {
+        name: "Arial",
+        size: 16,
+        bold: true,
+        color: { argb: "FF3B253B" },
+      };
+      worksheet.getCell("A1").alignment = { vertical: "middle" };
+      worksheet.getRow(1).height = 30;
+
+      worksheet.mergeCells("A2:K2");
+      worksheet.getCell("A2").value =
+        `${filteredMembers.length} membre${filteredMembers.length > 1 ? "s" : ""} exporté${filteredMembers.length > 1 ? "s" : ""} le ${new Date().toLocaleDateString("fr-FR")}`;
+      worksheet.getCell("A2").font = {
+        name: "Arial",
+        size: 10,
+        italic: true,
+        color: { argb: "FF756A75" },
+      };
+
+      const appliedFilters = [
+        memberSearch.trim() ? `Recherche : ${memberSearch.trim()}` : null,
+        memberNeighborhood !== "all" ? `Zone : ${memberNeighborhood}` : null,
+        memberActivity !== "all" ? `Activité : ${memberActivity}` : null,
+        memberProject === "with"
+          ? "Projet : renseigné"
+          : memberProject === "without"
+            ? "Projet : non renseigné"
+            : null,
+      ].filter(Boolean);
+      worksheet.mergeCells("A3:K3");
+      worksheet.getCell("A3").value = appliedFilters.length
+        ? `Filtres appliqués : ${appliedFilters.join(" · ")}`
+        : "Filtres appliqués : aucun";
+      worksheet.getCell("A3").font = {
+        name: "Arial",
+        size: 10,
+        color: { argb: "FF756A75" },
+      };
+
+      worksheet.addTable({
+        name: "MembresZoboroma",
+        ref: "A5",
+        headerRow: true,
+        totalsRow: false,
+        style: {
+          theme: "TableStyleMedium4",
+          showRowStripes: true,
+          showFirstColumn: false,
+          showLastColumn: false,
+        },
+        columns: [
+          { name: "Identifiant", filterButton: true },
+          { name: "Nom complet", filterButton: true },
+          { name: "Email", filterButton: true },
+          { name: "Téléphone / WhatsApp", filterButton: true },
+          { name: "Zone / Quartier", filterButton: true },
+          { name: "Situation / Activités", filterButton: true },
+          { name: "Présentation", filterButton: true },
+          { name: "Projet / Envie", filterButton: true },
+          { name: "Photo (URL)", filterButton: true },
+          { name: "Visibilité du profil", filterButton: true },
+          { name: "Statut", filterButton: true },
+        ],
+        rows: filteredMembers.map((member) => [
+          member.id,
+          member.name,
+          member.email ?? "",
+          member.phone ?? member.contact ?? "",
+          member.neighborhood,
+          member.activities.join(", "),
+          member.bio,
+          member.project ?? "",
+          member.avatarUrl ?? "",
+          member.privacy === "community" ? "Communauté" : "Privé",
+          "Approuvé",
+        ]),
+      });
+
+      const columnWidths = [24, 28, 32, 24, 22, 32, 48, 44, 42, 20, 14];
+      columnWidths.forEach((width, index) => {
+        worksheet.getColumn(index + 1).width = width;
+      });
+      worksheet.getRow(5).height = 28;
+      worksheet.getRow(5).font = {
+        name: "Arial",
+        size: 10,
+        bold: true,
+        color: { argb: "FFFFFFFF" },
+      };
+      worksheet.getRow(5).alignment = {
+        horizontal: "center",
+        vertical: "middle",
+      };
+      filteredMembers.forEach((member, index) => {
+        const rowNumber = index + 6;
+        const row = worksheet.getRow(rowNumber);
+        row.font = { name: "Arial", size: 10 };
+        row.alignment = { vertical: "top", wrapText: true };
+        const estimatedLines = Math.max(
+          1,
+          Math.ceil(member.bio.length / 48),
+          Math.ceil((member.project?.length ?? 0) / 44),
+          Math.ceil((member.avatarUrl?.length ?? 0) / 42),
+        );
+        row.height = Math.min(90, Math.max(24, estimatedLines * 15));
+      });
+
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer as BlobPart], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `base-donnees-membres-zoboroma-${new Date().toISOString().slice(0, 10)}.xlsx`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(url), 1_000);
+    } catch (error) {
+      console.error(error);
+      setExportError(
+        "Le fichier Excel n’a pas pu être créé. Actualisez la page puis réessayez.",
+      );
+    } finally {
+      setExportingMembers(false);
+    }
   };
 
   if (!authenticated) {
@@ -582,15 +825,28 @@ export default function AdminPage() {
                 Membres publiés
               </h2>
               <p className="text-xs text-muted-foreground">
-                {members.length} profil{members.length > 1 ? "s" : ""} dans
-                l’annuaire
+                {filteredMembers.length} sur {members.length} profil
+                {members.length === 1 ? "" : "s"} affiché
+                {filteredMembers.length === 1 ? "" : "s"}
               </p>
             </div>
           </div>
-          <p className="max-w-sm text-xs leading-5 text-muted-foreground">
-            La suppression retire définitivement le profil du site et de la base
-            de données.
-          </p>
+          <button
+            type="button"
+            onClick={exportMembersToExcel}
+            disabled={!filteredMembers.length || exportingMembers}
+            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-secondary px-5 py-3 text-xs font-extrabold text-secondary-foreground transition hover:-translate-y-0.5 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50"
+            data-testid="button-export-members"
+          >
+            {exportingMembers ? (
+              <FileSpreadsheet className="h-4 w-4 animate-pulse" />
+            ) : (
+              <Download className="h-4 w-4" />
+            )}
+            {exportingMembers
+              ? "Création du fichier…"
+              : `Télécharger Excel (${filteredMembers.length})`}
+          </button>
         </div>
 
         {deleteError && (
@@ -604,6 +860,104 @@ export default function AdminPage() {
             {codeError}
           </p>
         )}
+
+        {exportError && (
+          <p className="border-b border-destructive/20 bg-destructive/5 px-5 py-3 text-xs font-semibold text-destructive sm:px-6">
+            {exportError}
+          </p>
+        )}
+
+        <div className="border-b border-border bg-muted/25 p-5 sm:p-6">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <label className="text-[10px] font-bold uppercase tracking-[.08em] text-muted-foreground lg:col-span-2">
+              Rechercher un membre
+              <span className="relative mt-2 block">
+                <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <input
+                  type="search"
+                  value={memberSearch}
+                  onChange={(event) => setMemberSearch(event.target.value)}
+                  placeholder="Nom, email, téléphone, activité…"
+                  className="field mt-0 pl-10"
+                  data-testid="input-member-search"
+                />
+              </span>
+            </label>
+            <label className="text-[10px] font-bold uppercase tracking-[.08em] text-muted-foreground">
+              Zone / Quartier
+              <select
+                value={memberNeighborhood}
+                onChange={(event) => setMemberNeighborhood(event.target.value)}
+                className="field mt-2"
+                data-testid="select-member-neighborhood"
+              >
+                <option value="all">Toutes les zones</option>
+                {neighborhoodOptions.map((neighborhood) => (
+                  <option key={neighborhood} value={neighborhood}>
+                    {neighborhood}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="text-[10px] font-bold uppercase tracking-[.08em] text-muted-foreground">
+              Situation / Activité
+              <select
+                value={memberActivity}
+                onChange={(event) => setMemberActivity(event.target.value)}
+                className="field mt-2"
+                data-testid="select-member-activity"
+              >
+                <option value="all">Toutes les activités</option>
+                {activityOptions.map((activity) => (
+                  <option key={activity} value={activity}>
+                    {activity}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+          <div className="mt-3 flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
+            <label className="w-full text-[10px] font-bold uppercase tracking-[.08em] text-muted-foreground sm:max-w-xs">
+              Projet renseigné
+              <select
+                value={memberProject}
+                onChange={(event) =>
+                  setMemberProject(
+                    event.target.value as "all" | "with" | "without",
+                  )
+                }
+                className="field mt-2"
+                data-testid="select-member-project"
+              >
+                <option value="all">Tous les membres</option>
+                <option value="with">Avec un projet</option>
+                <option value="without">Sans projet</option>
+              </select>
+            </label>
+            <div className="flex flex-wrap items-center gap-3">
+              <p className="text-xs font-semibold text-muted-foreground">
+                Le fichier Excel contiendra les {filteredMembers.length}{" "}
+                résultat
+                {filteredMembers.length === 1 ? "" : "s"} affiché
+                {filteredMembers.length === 1 ? "" : "s"}.
+              </p>
+              {filtersAreActive && (
+                <button
+                  type="button"
+                  onClick={resetMemberFilters}
+                  className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2.5 text-xs font-bold text-muted-foreground hover:border-primary hover:text-primary"
+                >
+                  <RotateCcw className="h-3.5 w-3.5" /> Effacer les filtres
+                </button>
+              )}
+            </div>
+          </div>
+          <p className="mt-4 flex items-start gap-2 rounded-xl border border-secondary/15 bg-secondary/5 px-4 py-3 text-[10px] font-semibold leading-5 text-muted-foreground">
+            <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-secondary" />
+            Cet export administratif contient l’email et le téléphone complets,
+            même lorsqu’un membre choisit de les masquer dans l’annuaire.
+          </p>
+        </div>
 
         {generatedCode && invitation && (
           <div className="border-b border-secondary/20 bg-secondary/8 px-5 py-5 sm:px-6">
@@ -727,9 +1081,9 @@ export default function AdminPage() {
           <div className="px-6 py-12 text-center text-sm text-muted-foreground">
             Impossible de charger les membres. Reconnectez-vous puis réessayez.
           </div>
-        ) : members.length ? (
+        ) : filteredMembers.length ? (
           <div className="divide-y divide-border">
-            {members.map((member) => (
+            {filteredMembers.map((member) => (
               <article
                 key={member.id}
                 className="flex flex-col justify-between gap-4 px-5 py-4 sm:flex-row sm:items-center sm:px-6"
@@ -760,6 +1114,21 @@ export default function AdminPage() {
                         <span>• {member.activities.join(", ")}</span>
                       )}
                     </p>
+                    {(member.email || member.phone || member.contact) && (
+                      <p className="mt-1.5 flex flex-wrap gap-x-3 gap-y-1 text-[10px] font-semibold text-muted-foreground">
+                        {member.email && (
+                          <span className="inline-flex items-center gap-1">
+                            <Mail className="h-3 w-3" /> {member.email}
+                          </span>
+                        )}
+                        {(member.phone || member.contact) && (
+                          <span className="inline-flex items-center gap-1">
+                            <Phone className="h-3 w-3" />
+                            {member.phone ?? member.contact}
+                          </span>
+                        )}
+                      </p>
+                    )}
                   </div>
                 </div>
 
@@ -879,6 +1248,17 @@ export default function AdminPage() {
                 </div>
               </article>
             ))}
+          </div>
+        ) : members.length ? (
+          <div className="px-6 py-12 text-center text-sm text-muted-foreground">
+            Aucun membre ne correspond à ces filtres.
+            <button
+              type="button"
+              onClick={resetMemberFilters}
+              className="mx-auto mt-4 flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2.5 text-xs font-bold text-primary"
+            >
+              <RotateCcw className="h-3.5 w-3.5" /> Afficher tous les membres
+            </button>
           </div>
         ) : (
           <div className="px-6 py-12 text-center text-sm text-muted-foreground">
