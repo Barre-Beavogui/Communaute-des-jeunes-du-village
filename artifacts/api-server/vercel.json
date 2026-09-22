@@ -3,7 +3,7 @@
   "framework": "express",
   "fluid": true,
   "functions": {
-    "src/app.ts": {
+    "app.mjs": {
       "maxDuration": 60
     }
   }
