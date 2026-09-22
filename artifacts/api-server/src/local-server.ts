@@ -1,4 +1,4 @@
-import app from "./app.js";
+import app from "./application.js";
 import { syncZoboromaMembers } from "./data/sync-zoboroma-members.js";
 import { logger } from "./lib/logger.js";
 
