@@ -31,7 +31,8 @@ export default function MembersPage() {
   const presenceQuery = useListChatPresence({
     query: {
       queryKey: getListChatPresenceQueryKey(),
-      refetchInterval: 5_000,
+      refetchInterval: 30_000,
+      refetchIntervalInBackground: false,
     },
   });
   const profiles = Array.isArray(profilesQuery.data)

@@ -59,12 +59,17 @@ export function VillageShell({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    if (!showPrivateNavigation || location.startsWith("/groupe")) return;
+    if (
+      !showPrivateNavigation ||
+      location.startsWith("/groupe") ||
+      location.startsWith("/membre")
+    )
+      return;
     const heartbeat = () => {
       void updateChatPresence({ activity: "online" }).catch(() => undefined);
     };
     heartbeat();
-    const timer = window.setInterval(heartbeat, 15_000);
+    const timer = window.setInterval(heartbeat, 30_000);
     return () => window.clearInterval(timer);
   }, [location, showPrivateNavigation]);
 

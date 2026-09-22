@@ -60,9 +60,17 @@ export const pollVotesTable = pgTable(
   (table) => [primaryKey({ columns: [table.pollId, table.profileId] })],
 );
 
+export const chatPresenceTable = pgTable("chat_presence", {
+  profileId: text("profile_id").primaryKey(),
+  lastSeen: timestamp("last_seen").notNull().defaultNow(),
+  activity: text("activity").notNull().default("online"),
+  activityUntil: timestamp("activity_until").notNull().defaultNow(),
+});
+
 export type Announcement = typeof announcementsTable.$inferSelect;
 export type AnnouncementLike = typeof announcementLikesTable.$inferSelect;
 export type AnnouncementDislike = typeof announcementDislikesTable.$inferSelect;
 export type Poll = typeof pollsTable.$inferSelect;
 export type PollOption = typeof pollOptionsTable.$inferSelect;
 export type PollVote = typeof pollVotesTable.$inferSelect;
+export type ChatPresence = typeof chatPresenceTable.$inferSelect;

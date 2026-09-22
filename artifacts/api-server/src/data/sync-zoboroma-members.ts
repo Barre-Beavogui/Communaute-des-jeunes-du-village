@@ -179,6 +179,20 @@ export async function syncZoboromaMembers() {
   `);
 
   await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS chat_presence (
+      profile_id text PRIMARY KEY,
+      last_seen timestamp NOT NULL DEFAULT now(),
+      activity text NOT NULL DEFAULT 'online',
+      activity_until timestamp NOT NULL DEFAULT now()
+    )
+  `);
+
+  await db.execute(sql`
+    CREATE INDEX IF NOT EXISTS chat_presence_last_seen_index
+    ON chat_presence (last_seen DESC)
+  `);
+
+  await db.execute(sql`
     WITH inserted_seed AS (
       INSERT INTO app_content_seeds (key)
       VALUES ('prochaine-reunion-2026-08')

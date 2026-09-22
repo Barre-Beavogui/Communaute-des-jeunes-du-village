@@ -3,6 +3,7 @@ import cors from "cors";
 import pinoHttp from "pino-http";
 import router from "./routes";
 import { logger } from "./lib/logger";
+import { syncZoboromaMembers } from "./data/sync-zoboroma-members";
 
 const app: Express = express();
 const configuredOrigins = (process.env["PUBLIC_WEB_ORIGINS"] ?? "")
@@ -20,6 +21,7 @@ const allowedOrigins = new Set([
 const allowAnyOrigin =
   configuredOrigins.length === 0 && process.env["NODE_ENV"] !== "production";
 const publicReadOnly = process.env["PUBLIC_READ_ONLY"] === "true";
+let databaseReady: Promise<void> | undefined;
 
 app.disable("x-powered-by");
 app.set("trust proxy", 1);
@@ -67,6 +69,22 @@ app.use(
 );
 app.use(express.json({ limit: "1mb" }));
 app.use(express.urlencoded({ extended: true, limit: "1mb" }));
+
+// Render initializes the schema before listening. Vercel has no persistent
+// startup process, so initialize it once per warm serverless instance.
+if (process.env["VERCEL"]) {
+  app.use(async (_req, res, next) => {
+    databaseReady ??= syncZoboromaMembers();
+    try {
+      await databaseReady;
+      next();
+    } catch (error) {
+      databaseReady = undefined;
+      logger.error({ err: error }, "Unable to initialize the database");
+      res.status(503).json({ error: "Service temporairement indisponible." });
+    }
+  });
+}
 
 app.use(
   "/api",

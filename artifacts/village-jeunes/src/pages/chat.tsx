@@ -80,14 +80,14 @@ export default function ChatPage() {
   const messagesQuery = useListChatMessages({
     query: {
       queryKey: getListChatMessagesQueryKey(),
-      refetchInterval: 2_500,
+      refetchInterval: 10_000,
       refetchIntervalInBackground: false,
     },
   });
   const presenceQuery = useListChatPresence({
     query: {
       queryKey: getListChatPresenceQueryKey(),
-      refetchInterval: 2_500,
+      refetchInterval: 10_000,
       refetchIntervalInBackground: false,
     },
   });
@@ -137,10 +137,6 @@ export default function ChatPage() {
 
   useEffect(() => {
     pingActivity("online");
-    const heartbeat = window.setInterval(() => {
-      pingActivity(activityRef.current);
-    }, 15_000);
-    return () => window.clearInterval(heartbeat);
   }, []);
 
   useEffect(() => {
@@ -152,7 +148,7 @@ export default function ChatPage() {
     const timer = window.setInterval(() => {
       durationRef.current += 1;
       setRecordingSeconds(durationRef.current);
-      if (durationRef.current % 3 === 0) pingActivity("recording");
+      if (durationRef.current % 8 === 0) pingActivity("recording");
       if (durationRef.current >= MAX_RECORDING_SECONDS) {
         if (recorderRef.current?.state === "recording") {
           recorderRef.current.stop();
@@ -211,7 +207,7 @@ export default function ChatPage() {
       window.clearTimeout(typingResetRef.current);
     }
     const now = Date.now();
-    if (event.target.value.trim() && now - lastTypingPingRef.current > 2_500) {
+    if (event.target.value.trim() && now - lastTypingPingRef.current > 5_000) {
       lastTypingPingRef.current = now;
       pingActivity("typing");
     }

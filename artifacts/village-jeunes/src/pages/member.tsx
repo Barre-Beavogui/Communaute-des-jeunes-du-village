@@ -25,7 +25,8 @@ export default function MemberPage() {
   const presenceQuery = useListChatPresence({
     query: {
       queryKey: getListChatPresenceQueryKey(),
-      refetchInterval: 5_000,
+      refetchInterval: 30_000,
+      refetchIntervalInBackground: false,
     },
   });
   const fallback = useMemo(

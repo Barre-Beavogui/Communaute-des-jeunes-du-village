@@ -1,0 +1,10 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "express",
+  "fluid": true,
+  "functions": {
+    "src/app.ts": {
+      "maxDuration": 60
+    }
+  }
+}

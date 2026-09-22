@@ -1,8 +1,12 @@
 import { randomUUID } from "node:crypto";
 import { Router, type IRouter } from "express";
-import { desc, eq, inArray } from "drizzle-orm";
+import { desc, eq, lt } from "drizzle-orm";
 import { db } from "@workspace/db";
-import { chatMessagesTable, profilesTable } from "@workspace/db/schema";
+import {
+  chatMessagesTable,
+  chatPresenceTable,
+  profilesTable,
+} from "@workspace/db/schema";
 import {
   ListChatMessagesResponse,
   ListChatPresenceResponse,
@@ -17,37 +21,39 @@ const router: IRouter = Router();
 const AUDIO_DATA_PATTERN =
   /^data:(audio\/(?:webm|ogg|mp4|mpeg|wav|x-m4a));base64,([A-Za-z0-9+/]+={0,2})$/;
 const MAX_AUDIO_BYTES = 650_000;
-const ONLINE_WINDOW_MS = 45_000;
-const ACTIVE_WINDOW_MS = 7_000;
+const ONLINE_WINDOW_MS = 75_000;
+const ACTIVE_WINDOW_MS = 15_000;
 const MESSAGE_LIMIT = 40;
 const MESSAGE_WINDOW_MS = 5 * 60 * 1000;
 
 type Activity = "online" | "typing" | "recording";
-type PresenceEntry = {
-  lastSeen: number;
-  activity: Activity;
-  activityUntil: number;
-};
-
-const presenceByProfile = new Map<string, PresenceEntry>();
 const messageSubmissions = new Map<
   string,
   { count: number; resetAt: number }
 >();
 
-function touchPresence(profileId: string, activity?: Activity) {
-  const now = Date.now();
-  const current = presenceByProfile.get(profileId);
-  if (!activity && current) {
-    presenceByProfile.set(profileId, { ...current, lastSeen: now });
-    return;
-  }
+async function touchPresence(profileId: string, activity?: Activity) {
+  const now = new Date();
   const nextActivity = activity ?? "online";
-  presenceByProfile.set(profileId, {
-    lastSeen: now,
-    activity: nextActivity,
-    activityUntil: nextActivity === "online" ? now : now + ACTIVE_WINDOW_MS,
-  });
+  const activityUntil = new Date(
+    now.getTime() + (nextActivity === "online" ? 0 : ACTIVE_WINDOW_MS),
+  );
+  const update = activity
+    ? { lastSeen: now, activity: nextActivity, activityUntil }
+    : { lastSeen: now };
+
+  await db
+    .insert(chatPresenceTable)
+    .values({
+      profileId,
+      lastSeen: now,
+      activity: nextActivity,
+      activityUntil,
+    })
+    .onConflictDoUpdate({
+      target: chatPresenceTable.profileId,
+      set: update,
+    });
 }
 
 function messageResponse(
@@ -74,7 +80,7 @@ function messageResponse(
 
 router.get("/chat/messages", requireMember, async (_req, res) => {
   const profileId = res.locals["memberProfileId"] as string;
-  touchPresence(profileId);
+  await touchPresence(profileId);
 
   const rows = await db
     .select({
@@ -174,7 +180,7 @@ router.post("/chat/messages", requireMember, async (req, res) => {
     .returning();
 
   messageSubmissions.set(profileId, { ...entry, count: entry.count + 1 });
-  touchPresence(profileId);
+  await touchPresence(profileId);
   res
     .status(201)
     .json(SendChatMessageResponse.parse(messageResponse(message!, profile)));
@@ -182,20 +188,12 @@ router.post("/chat/messages", requireMember, async (req, res) => {
 
 router.get("/chat/presence", requireMember, async (_req, res) => {
   const profileId = res.locals["memberProfileId"] as string;
-  touchPresence(profileId);
-  const now = Date.now();
-
-  for (const [id, presence] of presenceByProfile) {
-    if (presence.lastSeen < now - ONLINE_WINDOW_MS) {
-      presenceByProfile.delete(id);
-    }
-  }
-
-  const onlineIds = [...presenceByProfile.keys()];
-  if (!onlineIds.length) {
-    res.json([]);
-    return;
-  }
+  await touchPresence(profileId);
+  const now = new Date();
+  const onlineSince = new Date(now.getTime() - ONLINE_WINDOW_MS);
+  await db
+    .delete(chatPresenceTable)
+    .where(lt(chatPresenceTable.lastSeen, onlineSince));
 
   const profiles = await db
     .select({
@@ -203,21 +201,22 @@ router.get("/chat/presence", requireMember, async (_req, res) => {
       name: profilesTable.name,
       initials: profilesTable.initials,
       avatarUrl: profilesTable.avatarUrl,
+      activity: chatPresenceTable.activity,
+      activityUntil: chatPresenceTable.activityUntil,
     })
-    .from(profilesTable)
-    .where(inArray(profilesTable.id, onlineIds));
+    .from(chatPresenceTable)
+    .innerJoin(profilesTable, eq(chatPresenceTable.profileId, profilesTable.id));
 
   const result = profiles
     .map((profile) => {
-      const presence = presenceByProfile.get(profile.id)!;
       return {
         profileId: profile.id,
         memberName: profile.name,
         initials: profile.initials,
         avatarUrl: profile.avatarUrl,
         activity:
-          presence.activityUntil > now
-            ? presence.activity
+          profile.activityUntil.getTime() > now.getTime()
+            ? (profile.activity as Activity)
             : ("online" as const),
       };
     })
@@ -233,7 +232,7 @@ router.get("/chat/presence", requireMember, async (_req, res) => {
 router.post("/chat/presence", requireMember, async (req, res) => {
   const profileId = res.locals["memberProfileId"] as string;
   const body = UpdateChatPresenceBody.parse(req.body);
-  touchPresence(profileId, body.activity);
+  await touchPresence(profileId, body.activity);
   res.json(UpdateChatPresenceResponse.parse({ success: true }));
 });
 
