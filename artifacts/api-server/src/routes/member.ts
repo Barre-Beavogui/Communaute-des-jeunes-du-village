@@ -30,7 +30,7 @@ import {
   requireMember,
   requireMemberSetup,
   verifyMemberPassword,
-} from "../lib/member-auth";
+} from "../lib/member-auth.js";
 
 const router: IRouter = Router();
 const attempts = new Map<string, { count: number; resetAt: number }>();

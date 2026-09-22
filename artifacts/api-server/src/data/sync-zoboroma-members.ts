@@ -1,7 +1,7 @@
 import { inArray, sql } from "drizzle-orm";
 import { db } from "@workspace/db";
 import { deletedProfilesTable, profilesTable } from "@workspace/db/schema";
-import { previousDemoProfileIds, zoboromaMembers } from "./zoboroma-members";
+import { previousDemoProfileIds, zoboromaMembers } from "./zoboroma-members.js";
 
 export async function syncZoboromaMembers() {
   await db.execute(sql`

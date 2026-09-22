@@ -15,7 +15,7 @@ import {
   UpdateChatPresenceBody,
   UpdateChatPresenceResponse,
 } from "@workspace/api-zod";
-import { requireMember } from "../lib/member-auth";
+import { requireMember } from "../lib/member-auth.js";
 
 const router: IRouter = Router();
 const AUDIO_DATA_PATTERN =

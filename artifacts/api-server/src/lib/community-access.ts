@@ -2,8 +2,8 @@ import type { RequestHandler } from "express";
 import { and, eq } from "drizzle-orm";
 import { db } from "@workspace/db";
 import { profilesTable } from "@workspace/db/schema";
-import { isValidAdminToken } from "./admin-auth";
-import { authorizationToken, optionalMemberProfileId } from "./member-auth";
+import { isValidAdminToken } from "./admin-auth.js";
+import { authorizationToken, optionalMemberProfileId } from "./member-auth.js";
 
 export const requireCommunityAccess: RequestHandler = async (
   req,

@@ -21,8 +21,8 @@ import {
   UpdatePollStatusParams,
   UpdatePollStatusResponse,
 } from "@workspace/api-zod";
-import { loadPolls } from "../lib/community-data";
-import { requireAdmin } from "../lib/admin-auth";
+import { loadPolls } from "../lib/community-data.js";
+import { requireAdmin } from "../lib/admin-auth.js";
 
 const router: IRouter = Router();
 const VIDEO_HOSTS = new Set([

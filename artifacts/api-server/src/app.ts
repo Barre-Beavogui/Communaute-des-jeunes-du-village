@@ -1,9 +1,9 @@
 import express, { type ErrorRequestHandler, type Express } from "express";
 import cors from "cors";
 import { pinoHttp } from "pino-http";
-import router from "./routes";
-import { logger } from "./lib/logger";
-import { syncZoboromaMembers } from "./data/sync-zoboroma-members";
+import router from "./routes/index.js";
+import { logger } from "./lib/logger.js";
+import { syncZoboromaMembers } from "./data/sync-zoboroma-members.js";
 
 const app: Express = express();
 const configuredOrigins = (process.env["PUBLIC_WEB_ORIGINS"] ?? "")

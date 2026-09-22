@@ -8,9 +8,9 @@ import {
   ListProfilesResponse,
   GetMembersSummaryResponse,
 } from "@workspace/api-zod";
-import { requireCommunityAccess } from "../lib/community-access";
-import { isValidAdminToken } from "../lib/admin-auth";
-import { authorizationToken } from "../lib/member-auth";
+import { requireCommunityAccess } from "../lib/community-access.js";
+import { isValidAdminToken } from "../lib/admin-auth.js";
+import { authorizationToken } from "../lib/member-auth.js";
 
 const router: IRouter = Router();
 

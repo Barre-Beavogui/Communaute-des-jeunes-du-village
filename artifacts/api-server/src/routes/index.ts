@@ -1,13 +1,13 @@
 import { Router, type IRouter } from "express";
-import healthRouter from "./health";
-import profilesRouter from "./profiles";
-import moderationRouter from "./moderation";
-import adminRouter from "./admin";
-import membershipRouter from "./membership";
-import memberRouter from "./member";
-import communityRouter from "./community";
-import communityModerationRouter from "./community-moderation";
-import chatRouter from "./chat";
+import healthRouter from "./health.js";
+import profilesRouter from "./profiles.js";
+import moderationRouter from "./moderation.js";
+import adminRouter from "./admin.js";
+import membershipRouter from "./membership.js";
+import memberRouter from "./member.js";
+import communityRouter from "./community.js";
+import communityModerationRouter from "./community-moderation.js";
+import chatRouter from "./chat.js";
 
 const router: IRouter = Router();
 

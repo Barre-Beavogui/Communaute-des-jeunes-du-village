@@ -24,13 +24,13 @@ import {
   ReviewModerationRequestBody,
   ReviewModerationRequestResponse,
 } from "@workspace/api-zod";
-import { requireAdmin } from "../lib/admin-auth";
+import { requireAdmin } from "../lib/admin-auth.js";
 import {
   generateMemberCode,
   hashMemberCode,
   normalizeLoginEmail,
   normalizeLoginPhone,
-} from "../lib/member-auth";
+} from "../lib/member-auth.js";
 
 const router: IRouter = Router();
 

@@ -1,6 +1,6 @@
-import app from "./app";
-import { syncZoboromaMembers } from "./data/sync-zoboroma-members";
-import { logger } from "./lib/logger";
+import app from "./app.js";
+import { syncZoboromaMembers } from "./data/sync-zoboroma-members.js";
+import { logger } from "./lib/logger.js";
 
 const rawPort = process.env["PORT"];
 

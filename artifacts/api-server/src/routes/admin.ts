@@ -4,7 +4,7 @@ import {
   adminIsConfigured,
   createAdminSession,
   passwordMatches,
-} from "../lib/admin-auth";
+} from "../lib/admin-auth.js";
 
 const router: IRouter = Router();
 const attempts = new Map<string, { count: number; resetAt: number }>();

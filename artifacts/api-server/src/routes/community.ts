@@ -21,9 +21,9 @@ import {
   VotePollParams,
   VotePollResponse,
 } from "@workspace/api-zod";
-import { loadAnnouncements, loadPolls } from "../lib/community-data";
-import { requireCommunityAccess } from "../lib/community-access";
-import { optionalMemberProfileId, requireMember } from "../lib/member-auth";
+import { loadAnnouncements, loadPolls } from "../lib/community-data.js";
+import { requireCommunityAccess } from "../lib/community-access.js";
+import { optionalMemberProfileId, requireMember } from "../lib/member-auth.js";
 
 const router: IRouter = Router();
 

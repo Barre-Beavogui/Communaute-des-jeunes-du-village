@@ -7,7 +7,7 @@ import {
   CreateMembershipRequestBody,
   CreateMembershipRequestResponse,
 } from "@workspace/api-zod";
-import { normalizeLoginPhone } from "../lib/member-auth";
+import { normalizeLoginPhone } from "../lib/member-auth.js";
 
 const router: IRouter = Router();
 const submissions = new Map<string, { count: number; resetAt: number }>();
