@@ -6,7 +6,10 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type MembershipRequestGender = typeof MembershipRequestGender[keyof typeof MembershipRequestGender];
+/**
+ * @nullable
+ */
+export type MembershipRequestGender = typeof MembershipRequestGender[keyof typeof MembershipRequestGender] | null;
 
 
 export const MembershipRequestGender = {

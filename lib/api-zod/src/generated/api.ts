@@ -107,6 +107,7 @@ export const createMembershipRequestBodyNameMax = 120;
 
 export const createMembershipRequestBodyEmailMax = 254;
 
+export const createMembershipRequestBodyPhoneMin = 6;
 export const createMembershipRequestBodyPhoneMax = 40;
 
 export const createMembershipRequestBodyAvatarUrlMax = 500000;
@@ -141,20 +142,20 @@ export const createMembershipRequestBodyMotherFullNameMax = 120;
 export const CreateMembershipRequestBody = zod.object({
   "name": zod.string().min(createMembershipRequestBodyNameMin).max(createMembershipRequestBodyNameMax),
   "email": zod.string().max(createMembershipRequestBodyEmailMax),
-  "phone": zod.string().max(createMembershipRequestBodyPhoneMax).nullish(),
+  "phone": zod.string().min(createMembershipRequestBodyPhoneMin).max(createMembershipRequestBodyPhoneMax),
   "avatarUrl": zod.string().max(createMembershipRequestBodyAvatarUrlMax).nullish(),
   "neighborhood": zod.string().min(createMembershipRequestBodyNeighborhoodMin).max(createMembershipRequestBodyNeighborhoodMax),
   "profession": zod.string().min(createMembershipRequestBodyProfessionMin).max(createMembershipRequestBodyProfessionMax),
   "bio": zod.string().min(createMembershipRequestBodyBioMin).max(createMembershipRequestBodyBioMax),
   "project": zod.string().max(createMembershipRequestBodyProjectMax).nullish(),
-  "gender": zod.enum(['Masculin', 'Féminin']),
-  "maritalStatus": zod.enum(['Célibataire', 'Marié(e)', 'Divorcé(e)', 'Veuf / Veuve', 'Union libre', 'Pacsé(e)', 'Préfère ne pas répondre']),
-  "educationLevel": zod.enum(['Aucun', 'Primaire', 'Collège', 'Lycée', 'Baccalauréat', 'Bac +2', 'Bac +3', 'Bac +4', 'Bac +5', 'Master', 'Doctorat', 'Formation professionnelle', 'Autre']),
+  "gender": zod.union([zod.literal('Masculin'),zod.literal('Féminin'),zod.literal(null)]).nullish(),
+  "maritalStatus": zod.union([zod.literal('Célibataire'),zod.literal('Marié(e)'),zod.literal('Divorcé(e)'),zod.literal('Veuf / Veuve'),zod.literal('Union libre'),zod.literal('Pacsé(e)'),zod.literal('Préfère ne pas répondre'),zod.literal(null)]).nullish(),
+  "educationLevel": zod.union([zod.literal('Aucun'),zod.literal('Primaire'),zod.literal('Collège'),zod.literal('Lycée'),zod.literal('Baccalauréat'),zod.literal('Bac +2'),zod.literal('Bac +3'),zod.literal('Bac +4'),zod.literal('Bac +5'),zod.literal('Master'),zod.literal('Doctorat'),zod.literal('Formation professionnelle'),zod.literal('Autre'),zod.literal(null)]).nullish(),
   "observations": zod.string().max(createMembershipRequestBodyObservationsMax).nullish(),
-  "emergencyContactName": zod.string().min(createMembershipRequestBodyEmergencyContactNameMin).max(createMembershipRequestBodyEmergencyContactNameMax),
-  "emergencyContactPhone": zod.string().min(createMembershipRequestBodyEmergencyContactPhoneMin).max(createMembershipRequestBodyEmergencyContactPhoneMax),
-  "fatherFirstNames": zod.string().min(createMembershipRequestBodyFatherFirstNamesMin).max(createMembershipRequestBodyFatherFirstNamesMax),
-  "motherFullName": zod.string().min(createMembershipRequestBodyMotherFullNameMin).max(createMembershipRequestBodyMotherFullNameMax)
+  "emergencyContactName": zod.string().min(createMembershipRequestBodyEmergencyContactNameMin).max(createMembershipRequestBodyEmergencyContactNameMax).nullish(),
+  "emergencyContactPhone": zod.string().min(createMembershipRequestBodyEmergencyContactPhoneMin).max(createMembershipRequestBodyEmergencyContactPhoneMax).nullish(),
+  "fatherFirstNames": zod.string().min(createMembershipRequestBodyFatherFirstNamesMin).max(createMembershipRequestBodyFatherFirstNamesMax).nullish(),
+  "motherFullName": zod.string().min(createMembershipRequestBodyMotherFullNameMin).max(createMembershipRequestBodyMotherFullNameMax).nullish()
 })
 
 export const CreateMembershipRequestResponse = zod.object({
@@ -580,14 +581,14 @@ export const ListModerationRequestsResponseItem = zod.object({
   "profession": zod.string(),
   "bio": zod.string(),
   "project": zod.string().nullish(),
-  "gender": zod.enum(['Masculin', 'Féminin']),
-  "maritalStatus": zod.enum(['Célibataire', 'Marié(e)', 'Divorcé(e)', 'Veuf / Veuve', 'Union libre', 'Pacsé(e)', 'Préfère ne pas répondre']),
-  "educationLevel": zod.enum(['Aucun', 'Primaire', 'Collège', 'Lycée', 'Baccalauréat', 'Bac +2', 'Bac +3', 'Bac +4', 'Bac +5', 'Master', 'Doctorat', 'Formation professionnelle', 'Autre']),
+  "gender": zod.union([zod.literal('Masculin'),zod.literal('Féminin'),zod.literal(null)]).nullish(),
+  "maritalStatus": zod.union([zod.literal('Célibataire'),zod.literal('Marié(e)'),zod.literal('Divorcé(e)'),zod.literal('Veuf / Veuve'),zod.literal('Union libre'),zod.literal('Pacsé(e)'),zod.literal('Préfère ne pas répondre'),zod.literal(null)]).nullish(),
+  "educationLevel": zod.union([zod.literal('Aucun'),zod.literal('Primaire'),zod.literal('Collège'),zod.literal('Lycée'),zod.literal('Baccalauréat'),zod.literal('Bac +2'),zod.literal('Bac +3'),zod.literal('Bac +4'),zod.literal('Bac +5'),zod.literal('Master'),zod.literal('Doctorat'),zod.literal('Formation professionnelle'),zod.literal('Autre'),zod.literal(null)]).nullish(),
   "observations": zod.string().nullish(),
-  "emergencyContactName": zod.string(),
-  "emergencyContactPhone": zod.string(),
-  "fatherFirstNames": zod.string(),
-  "motherFullName": zod.string(),
+  "emergencyContactName": zod.string().nullish(),
+  "emergencyContactPhone": zod.string().nullish(),
+  "fatherFirstNames": zod.string().nullish(),
+  "motherFullName": zod.string().nullish(),
   "submittedAt": zod.string(),
   "status": zod.enum(['pending', 'approved', 'rejected']),
   "memberCode": zod.string().nullish()
@@ -620,14 +621,14 @@ export const ReviewModerationRequestResponse = zod.object({
   "profession": zod.string(),
   "bio": zod.string(),
   "project": zod.string().nullish(),
-  "gender": zod.enum(['Masculin', 'Féminin']),
-  "maritalStatus": zod.enum(['Célibataire', 'Marié(e)', 'Divorcé(e)', 'Veuf / Veuve', 'Union libre', 'Pacsé(e)', 'Préfère ne pas répondre']),
-  "educationLevel": zod.enum(['Aucun', 'Primaire', 'Collège', 'Lycée', 'Baccalauréat', 'Bac +2', 'Bac +3', 'Bac +4', 'Bac +5', 'Master', 'Doctorat', 'Formation professionnelle', 'Autre']),
+  "gender": zod.union([zod.literal('Masculin'),zod.literal('Féminin'),zod.literal(null)]).nullish(),
+  "maritalStatus": zod.union([zod.literal('Célibataire'),zod.literal('Marié(e)'),zod.literal('Divorcé(e)'),zod.literal('Veuf / Veuve'),zod.literal('Union libre'),zod.literal('Pacsé(e)'),zod.literal('Préfère ne pas répondre'),zod.literal(null)]).nullish(),
+  "educationLevel": zod.union([zod.literal('Aucun'),zod.literal('Primaire'),zod.literal('Collège'),zod.literal('Lycée'),zod.literal('Baccalauréat'),zod.literal('Bac +2'),zod.literal('Bac +3'),zod.literal('Bac +4'),zod.literal('Bac +5'),zod.literal('Master'),zod.literal('Doctorat'),zod.literal('Formation professionnelle'),zod.literal('Autre'),zod.literal(null)]).nullish(),
   "observations": zod.string().nullish(),
-  "emergencyContactName": zod.string(),
-  "emergencyContactPhone": zod.string(),
-  "fatherFirstNames": zod.string(),
-  "motherFullName": zod.string(),
+  "emergencyContactName": zod.string().nullish(),
+  "emergencyContactPhone": zod.string().nullish(),
+  "fatherFirstNames": zod.string().nullish(),
+  "motherFullName": zod.string().nullish(),
   "submittedAt": zod.string(),
   "status": zod.enum(['pending', 'approved', 'rejected']),
   "memberCode": zod.string().nullish()

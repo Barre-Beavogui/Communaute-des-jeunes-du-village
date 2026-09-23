@@ -699,23 +699,7 @@ components:
     MembershipRequest:
       type: object
       required:
-        [
-          id,
-          name,
-          email,
-          neighborhood,
-          profession,
-          bio,
-          gender,
-          maritalStatus,
-          educationLevel,
-          emergencyContactName,
-          emergencyContactPhone,
-          fatherFirstNames,
-          motherFullName,
-          submittedAt,
-          status,
-        ]
+        [id, name, email, neighborhood, profession, bio, submittedAt, status]
       properties:
         id: { type: string }
         name: { type: string }
@@ -726,9 +710,9 @@ components:
         profession: { type: string }
         bio: { type: string }
         project: { type: ["string", "null"] }
-        gender: { type: string, enum: [Masculin, Féminin] }
+        gender: { type: ["string", "null"], enum: [Masculin, Féminin, null] }
         maritalStatus:
-          type: string
+          type: ["string", "null"]
           enum:
             [
               Célibataire,
@@ -738,9 +722,10 @@ components:
               Union libre,
               Pacsé(e),
               Préfère ne pas répondre,
+              null,
             ]
         educationLevel:
-          type: string
+          type: ["string", "null"]
           enum:
             [
               Aucun,
@@ -756,12 +741,13 @@ components:
               Doctorat,
               Formation professionnelle,
               Autre,
+              null,
             ]
         observations: { type: ["string", "null"] }
-        emergencyContactName: { type: string }
-        emergencyContactPhone: { type: string }
-        fatherFirstNames: { type: string }
-        motherFullName: { type: string }
+        emergencyContactName: { type: ["string", "null"] }
+        emergencyContactPhone: { type: ["string", "null"] }
+        fatherFirstNames: { type: ["string", "null"] }
+        motherFullName: { type: ["string", "null"] }
         submittedAt: { type: string }
         status:
           type: string
@@ -769,33 +755,19 @@ components:
         memberCode: { type: ["string", "null"] }
     MembershipRequestCreate:
       type: object
-      required:
-        [
-          name,
-          email,
-          neighborhood,
-          profession,
-          bio,
-          gender,
-          maritalStatus,
-          educationLevel,
-          emergencyContactName,
-          emergencyContactPhone,
-          fatherFirstNames,
-          motherFullName,
-        ]
+      required: [name, email, phone, neighborhood, profession, bio]
       properties:
         name: { type: string, minLength: 2, maxLength: 120 }
         email: { type: string, maxLength: 254 }
-        phone: { type: ["string", "null"], maxLength: 40 }
+        phone: { type: string, minLength: 6, maxLength: 40 }
         avatarUrl: { type: ["string", "null"], maxLength: 500000 }
         neighborhood: { type: string, minLength: 2, maxLength: 120 }
         profession: { type: string, minLength: 2, maxLength: 80 }
         bio: { type: string, minLength: 10, maxLength: 500 }
         project: { type: ["string", "null"], maxLength: 500 }
-        gender: { type: string, enum: [Masculin, Féminin] }
+        gender: { type: ["string", "null"], enum: [Masculin, Féminin, null] }
         maritalStatus:
-          type: string
+          type: ["string", "null"]
           enum:
             [
               Célibataire,
@@ -805,9 +777,10 @@ components:
               Union libre,
               Pacsé(e),
               Préfère ne pas répondre,
+              null,
             ]
         educationLevel:
-          type: string
+          type: ["string", "null"]
           enum:
             [
               Aucun,
@@ -823,12 +796,17 @@ components:
               Doctorat,
               Formation professionnelle,
               Autre,
+              null,
             ]
         observations: { type: ["string", "null"], maxLength: 1500 }
-        emergencyContactName: { type: string, minLength: 2, maxLength: 120 }
-        emergencyContactPhone: { type: string, minLength: 6, maxLength: 40 }
-        fatherFirstNames: { type: string, minLength: 2, maxLength: 120 }
-        motherFullName: { type: string, minLength: 2, maxLength: 120 }
+        emergencyContactName:
+          { type: ["string", "null"], minLength: 2, maxLength: 120 }
+        emergencyContactPhone:
+          { type: ["string", "null"], minLength: 6, maxLength: 40 }
+        fatherFirstNames:
+          { type: ["string", "null"], minLength: 2, maxLength: 120 }
+        motherFullName:
+          { type: ["string", "null"], minLength: 2, maxLength: 120 }
     MembershipRequestReceipt:
       type: object
       required: [id, submittedAt, status]

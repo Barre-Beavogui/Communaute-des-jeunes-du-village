@@ -18,10 +18,10 @@ export interface MembershipRequestCreate {
   /** @maxLength 254 */
   email: string;
   /**
+     * @minLength 6
      * @maxLength 40
-     * @nullable
      */
-  phone?: string | null;
+  phone: string;
   /**
      * @maxLength 500000
      * @nullable
@@ -47,9 +47,12 @@ export interface MembershipRequestCreate {
      * @nullable
      */
   project?: string | null;
-  gender: MembershipRequestCreateGender;
-  maritalStatus: MembershipRequestCreateMaritalStatus;
-  educationLevel: MembershipRequestCreateEducationLevel;
+  /** @nullable */
+  gender?: MembershipRequestCreateGender;
+  /** @nullable */
+  maritalStatus?: MembershipRequestCreateMaritalStatus;
+  /** @nullable */
+  educationLevel?: MembershipRequestCreateEducationLevel;
   /**
      * @maxLength 1500
      * @nullable
@@ -58,21 +61,25 @@ export interface MembershipRequestCreate {
   /**
      * @minLength 2
      * @maxLength 120
+     * @nullable
      */
-  emergencyContactName: string;
+  emergencyContactName?: string | null;
   /**
      * @minLength 6
      * @maxLength 40
+     * @nullable
      */
-  emergencyContactPhone: string;
+  emergencyContactPhone?: string | null;
   /**
      * @minLength 2
      * @maxLength 120
+     * @nullable
      */
-  fatherFirstNames: string;
+  fatherFirstNames?: string | null;
   /**
      * @minLength 2
      * @maxLength 120
+     * @nullable
      */
-  motherFullName: string;
+  motherFullName?: string | null;
 }

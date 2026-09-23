@@ -60,7 +60,8 @@ export default function JoinPage() {
   const [photoError, setPhotoError] = useState("");
   const [processingPhoto, setProcessingPhoto] = useState(false);
   const [form, setForm] = useState({
-    name: "",
+    firstName: "",
+    lastName: "",
     email: "",
     phone: "",
     avatarUrl: "",
@@ -107,9 +108,9 @@ export default function JoinPage() {
     createRequest.mutate(
       {
         data: {
-          name: form.name,
+          name: `${form.firstName.trim()} ${form.lastName.trim()}`,
           email: form.email,
-          phone: form.phone || null,
+          phone: form.phone,
           avatarUrl: form.avatarUrl || null,
           neighborhood: form.neighborhood,
           profession:
@@ -118,16 +119,17 @@ export default function JoinPage() {
               : form.profession,
           bio: form.bio,
           project: form.project || null,
-          gender: form.gender as "Masculin" | "Féminin",
-          maritalStatus: form.maritalStatus as
+          gender: (form.gender || null) as "Masculin" | "Féminin" | null,
+          maritalStatus: (form.maritalStatus || null) as
             | "Célibataire"
             | "Marié(e)"
             | "Divorcé(e)"
             | "Veuf / Veuve"
             | "Union libre"
             | "Pacsé(e)"
-            | "Préfère ne pas répondre",
-          educationLevel: form.educationLevel as
+            | "Préfère ne pas répondre"
+            | null,
+          educationLevel: (form.educationLevel || null) as
             | "Aucun"
             | "Primaire"
             | "Collège"
@@ -140,12 +142,13 @@ export default function JoinPage() {
             | "Master"
             | "Doctorat"
             | "Formation professionnelle"
-            | "Autre",
+            | "Autre"
+            | null,
           observations: form.observations || null,
-          emergencyContactName: form.emergencyContactName,
-          emergencyContactPhone: form.emergencyContactPhone,
-          fatherFirstNames: form.fatherFirstNames,
-          motherFullName: form.motherFullName,
+          emergencyContactName: form.emergencyContactName || null,
+          emergencyContactPhone: form.emergencyContactPhone || null,
+          fatherFirstNames: form.fatherFirstNames || null,
+          motherFullName: form.motherFullName || null,
         },
       },
       { onSuccess: () => setSubmitted(true) },
@@ -229,7 +232,8 @@ export default function JoinPage() {
             Formulaire d’inscription
           </h2>
           <p className="mt-1 text-xs text-muted-foreground">
-            Les champs marqués sont nécessaires pour étudier la demande.
+            Seules les informations essentielles sont obligatoires. Les autres
+            champs sont clairement indiqués comme facultatifs.
           </p>
         </div>
 
@@ -290,26 +294,38 @@ export default function JoinPage() {
             </div>
           </div>
 
-          <label className="block space-y-2 text-xs font-bold sm:col-span-2">
+          <label className="block space-y-2 text-xs font-bold">
             <span className="flex items-center gap-2">
               <UserRound className="h-3.5 w-3.5 text-primary" />
-              Prénom et nom
+              Prénom
             </span>
             <input
               required
               minLength={2}
-              maxLength={120}
-              value={form.name}
-              onChange={(event) => setField("name", event.target.value)}
+              maxLength={60}
+              value={form.firstName}
+              onChange={(event) => setField("firstName", event.target.value)}
               className="field"
-              placeholder="Votre nom complet"
-              data-testid="input-join-name"
+              placeholder="Votre prénom"
+              data-testid="input-join-first-name"
             />
           </label>
           <label className="block space-y-2 text-xs font-bold">
-            Sexe
-            <select
+            Nom
+            <input
               required
+              minLength={2}
+              maxLength={60}
+              value={form.lastName}
+              onChange={(event) => setField("lastName", event.target.value)}
+              className="field"
+              placeholder="Votre nom de famille"
+              data-testid="input-join-last-name"
+            />
+          </label>
+          <label className="block space-y-2 text-xs font-bold">
+            Sexe <OptionalLabel />
+            <select
               value={form.gender}
               onChange={(event) => setField("gender", event.target.value)}
               className="field"
@@ -321,9 +337,8 @@ export default function JoinPage() {
             </select>
           </label>
           <label className="block space-y-2 text-xs font-bold">
-            Situation matrimoniale
+            Situation matrimoniale <OptionalLabel />
             <select
-              required
               value={form.maritalStatus}
               onChange={(event) =>
                 setField("maritalStatus", event.target.value)
@@ -356,13 +371,12 @@ export default function JoinPage() {
           <label className="block space-y-2 text-xs font-bold">
             <span className="flex items-center gap-2">
               <Phone className="h-3.5 w-3.5 text-primary" />
-              Téléphone / WhatsApp{" "}
-              <span className="font-normal text-muted-foreground">
-                (facultatif)
-              </span>
+              Numéro WhatsApp
             </span>
             <input
+              required
               type="tel"
+              minLength={6}
               maxLength={40}
               value={form.phone}
               onChange={(event) => setField("phone", event.target.value)}
@@ -424,9 +438,8 @@ export default function JoinPage() {
             </label>
           )}
           <label className="block space-y-2 text-xs font-bold sm:col-span-2">
-            Niveau d’études / qualification
+            Niveau d’études / qualification <OptionalLabel />
             <select
-              required
               value={form.educationLevel}
               onChange={(event) =>
                 setField("educationLevel", event.target.value)
@@ -484,9 +497,8 @@ export default function JoinPage() {
             </p>
           </div>
           <label className="block space-y-2 text-xs font-bold">
-            Prénoms du père
+            Prénoms du père <OptionalLabel />
             <input
-              required
               minLength={2}
               maxLength={120}
               value={form.fatherFirstNames}
@@ -498,9 +510,8 @@ export default function JoinPage() {
             />
           </label>
           <label className="block space-y-2 text-xs font-bold">
-            Prénom et nom de la mère
+            Prénom et nom de la mère <OptionalLabel />
             <input
-              required
               minLength={2}
               maxLength={120}
               value={form.motherFullName}
@@ -520,9 +531,8 @@ export default function JoinPage() {
             </p>
           </div>
           <label className="block space-y-2 text-xs font-bold">
-            Personne à contacter en cas d’urgence
+            Personne à contacter en cas d’urgence <OptionalLabel />
             <input
-              required
               minLength={2}
               maxLength={120}
               value={form.emergencyContactName}
@@ -535,9 +545,8 @@ export default function JoinPage() {
             />
           </label>
           <label className="block space-y-2 text-xs font-bold">
-            Téléphone du contact d’urgence
+            Téléphone du contact d’urgence <OptionalLabel />
             <input
-              required
               type="tel"
               minLength={6}
               maxLength={40}
@@ -579,7 +588,7 @@ export default function JoinPage() {
             <strong className="text-foreground">
               J’accepte que l’équipe de Zoboroma examine ces informations.
             </strong>{" "}
-            L’email, le téléphone et la photo pourront apparaître dans
+            L’email, le numéro WhatsApp et la photo pourront apparaître dans
             l’annuaire. Le sexe, la situation matrimoniale et le niveau d’études
             sont privés par défaut et ne pourront être publiés que par
             l’administrateur. La filiation, le contact d’urgence et les
@@ -609,5 +618,11 @@ export default function JoinPage() {
         </p>
       </form>
     </div>
+  );
+}
+
+function OptionalLabel() {
+  return (
+    <span className="font-normal text-muted-foreground">(facultatif)</span>
   );
 }

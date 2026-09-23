@@ -6,7 +6,10 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type MembershipRequestMaritalStatus = typeof MembershipRequestMaritalStatus[keyof typeof MembershipRequestMaritalStatus];
+/**
+ * @nullable
+ */
+export type MembershipRequestMaritalStatus = typeof MembershipRequestMaritalStatus[keyof typeof MembershipRequestMaritalStatus] | null;
 
 
 export const MembershipRequestMaritalStatus = {

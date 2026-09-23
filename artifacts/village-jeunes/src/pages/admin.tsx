@@ -871,37 +871,49 @@ export default function AdminPage() {
                   <dl className="mt-4 grid gap-x-6 gap-y-3 text-xs sm:grid-cols-2 lg:grid-cols-3">
                     <div>
                       <dt className="font-bold text-muted-foreground">Sexe</dt>
-                      <dd className="mt-1">{request.gender}</dd>
+                      <dd className="mt-1">
+                        {request.gender || "Non renseigné"}
+                      </dd>
                     </div>
                     <div>
                       <dt className="font-bold text-muted-foreground">
                         Situation matrimoniale
                       </dt>
-                      <dd className="mt-1">{request.maritalStatus}</dd>
+                      <dd className="mt-1">
+                        {request.maritalStatus || "Non renseignée"}
+                      </dd>
                     </div>
                     <div>
                       <dt className="font-bold text-muted-foreground">
                         Niveau d’études
                       </dt>
-                      <dd className="mt-1">{request.educationLevel}</dd>
+                      <dd className="mt-1">
+                        {request.educationLevel || "Non renseigné"}
+                      </dd>
                     </div>
                     <div>
                       <dt className="font-bold text-muted-foreground">
                         Prénoms du père
                       </dt>
-                      <dd className="mt-1">{request.fatherFirstNames}</dd>
+                      <dd className="mt-1">
+                        {request.fatherFirstNames || "Non renseigné"}
+                      </dd>
                     </div>
                     <div>
                       <dt className="font-bold text-muted-foreground">Mère</dt>
-                      <dd className="mt-1">{request.motherFullName}</dd>
+                      <dd className="mt-1">
+                        {request.motherFullName || "Non renseignée"}
+                      </dd>
                     </div>
                     <div>
                       <dt className="font-bold text-muted-foreground">
                         Contact d’urgence
                       </dt>
                       <dd className="mt-1">
-                        {request.emergencyContactName} ·{" "}
-                        {request.emergencyContactPhone}
+                        {request.emergencyContactName || "Non renseigné"}
+                        {request.emergencyContactPhone
+                          ? ` · ${request.emergencyContactPhone}`
+                          : ""}
                       </dd>
                     </div>
                   </dl>

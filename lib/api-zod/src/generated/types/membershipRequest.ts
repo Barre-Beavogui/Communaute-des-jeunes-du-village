@@ -26,15 +26,22 @@ export interface MembershipRequest {
   bio: string;
   /** @nullable */
   project?: string | null;
-  gender: MembershipRequestGender;
-  maritalStatus: MembershipRequestMaritalStatus;
-  educationLevel: MembershipRequestEducationLevel;
+  /** @nullable */
+  gender?: MembershipRequestGender;
+  /** @nullable */
+  maritalStatus?: MembershipRequestMaritalStatus;
+  /** @nullable */
+  educationLevel?: MembershipRequestEducationLevel;
   /** @nullable */
   observations?: string | null;
-  emergencyContactName: string;
-  emergencyContactPhone: string;
-  fatherFirstNames: string;
-  motherFullName: string;
+  /** @nullable */
+  emergencyContactName?: string | null;
+  /** @nullable */
+  emergencyContactPhone?: string | null;
+  /** @nullable */
+  fatherFirstNames?: string | null;
+  /** @nullable */
+  motherFullName?: string | null;
   submittedAt: string;
   status: MembershipRequestStatus;
   /** @nullable */

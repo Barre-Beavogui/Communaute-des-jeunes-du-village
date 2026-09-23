@@ -41,10 +41,13 @@ router.post("/membership-requests", async (req, res) => {
     res.status(400).json({ error: "Numéro de téléphone invalide." });
     return;
   }
-  const normalizedEmergencyPhone = normalizeLoginPhone(
-    data.emergencyContactPhone,
-  );
-  if (!normalizedEmergencyPhone || normalizedEmergencyPhone.length < 6) {
+  const normalizedEmergencyPhone = data.emergencyContactPhone
+    ? normalizeLoginPhone(data.emergencyContactPhone)
+    : null;
+  if (
+    data.emergencyContactPhone &&
+    (!normalizedEmergencyPhone || normalizedEmergencyPhone.length < 6)
+  ) {
     res.status(400).json({ error: "Téléphone du contact d’urgence invalide." });
     return;
   }
@@ -82,14 +85,14 @@ router.post("/membership-requests", async (req, res) => {
       profession: data.profession.trim(),
       bio: data.bio.trim(),
       project: data.project?.trim() || null,
-      gender: data.gender,
-      maritalStatus: data.maritalStatus,
-      educationLevel: data.educationLevel,
+      gender: data.gender || null,
+      maritalStatus: data.maritalStatus || null,
+      educationLevel: data.educationLevel || null,
       observations: data.observations?.trim() || null,
-      emergencyContactName: data.emergencyContactName.trim(),
-      emergencyContactPhone: data.emergencyContactPhone.trim(),
-      fatherFirstNames: data.fatherFirstNames.trim(),
-      motherFullName: data.motherFullName.trim(),
+      emergencyContactName: data.emergencyContactName?.trim() || null,
+      emergencyContactPhone: data.emergencyContactPhone?.trim() || null,
+      fatherFirstNames: data.fatherFirstNames?.trim() || null,
+      motherFullName: data.motherFullName?.trim() || null,
       status: "pending",
     })
     .returning();

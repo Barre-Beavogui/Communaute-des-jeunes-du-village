@@ -6,7 +6,10 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type MembershipRequestEducationLevel = typeof MembershipRequestEducationLevel[keyof typeof MembershipRequestEducationLevel];
+/**
+ * @nullable
+ */
+export type MembershipRequestEducationLevel = typeof MembershipRequestEducationLevel[keyof typeof MembershipRequestEducationLevel] | null;
 
 
 export const MembershipRequestEducationLevel = {

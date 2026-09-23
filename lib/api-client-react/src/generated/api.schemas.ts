@@ -78,7 +78,10 @@ export interface MembersSummary {
   topActivities: MembersSummaryTopActivitiesItem[];
 }
 
-export type MembershipRequestGender = typeof MembershipRequestGender[keyof typeof MembershipRequestGender];
+/**
+ * @nullable
+ */
+export type MembershipRequestGender = typeof MembershipRequestGender[keyof typeof MembershipRequestGender] | null;
 
 
 export const MembershipRequestGender = {
@@ -86,7 +89,10 @@ export const MembershipRequestGender = {
   Féminin: 'Féminin',
 } as const;
 
-export type MembershipRequestMaritalStatus = typeof MembershipRequestMaritalStatus[keyof typeof MembershipRequestMaritalStatus];
+/**
+ * @nullable
+ */
+export type MembershipRequestMaritalStatus = typeof MembershipRequestMaritalStatus[keyof typeof MembershipRequestMaritalStatus] | null;
 
 
 export const MembershipRequestMaritalStatus = {
@@ -99,7 +105,10 @@ export const MembershipRequestMaritalStatus = {
   Préfère_ne_pas_répondre: 'Préfère ne pas répondre',
 } as const;
 
-export type MembershipRequestEducationLevel = typeof MembershipRequestEducationLevel[keyof typeof MembershipRequestEducationLevel];
+/**
+ * @nullable
+ */
+export type MembershipRequestEducationLevel = typeof MembershipRequestEducationLevel[keyof typeof MembershipRequestEducationLevel] | null;
 
 
 export const MembershipRequestEducationLevel = {
@@ -143,22 +152,32 @@ export interface MembershipRequest {
   bio: string;
   /** @nullable */
   project?: string | null;
-  gender: MembershipRequestGender;
-  maritalStatus: MembershipRequestMaritalStatus;
-  educationLevel: MembershipRequestEducationLevel;
+  /** @nullable */
+  gender?: MembershipRequestGender;
+  /** @nullable */
+  maritalStatus?: MembershipRequestMaritalStatus;
+  /** @nullable */
+  educationLevel?: MembershipRequestEducationLevel;
   /** @nullable */
   observations?: string | null;
-  emergencyContactName: string;
-  emergencyContactPhone: string;
-  fatherFirstNames: string;
-  motherFullName: string;
+  /** @nullable */
+  emergencyContactName?: string | null;
+  /** @nullable */
+  emergencyContactPhone?: string | null;
+  /** @nullable */
+  fatherFirstNames?: string | null;
+  /** @nullable */
+  motherFullName?: string | null;
   submittedAt: string;
   status: MembershipRequestStatus;
   /** @nullable */
   memberCode?: string | null;
 }
 
-export type MembershipRequestCreateGender = typeof MembershipRequestCreateGender[keyof typeof MembershipRequestCreateGender];
+/**
+ * @nullable
+ */
+export type MembershipRequestCreateGender = typeof MembershipRequestCreateGender[keyof typeof MembershipRequestCreateGender] | null;
 
 
 export const MembershipRequestCreateGender = {
@@ -166,7 +185,10 @@ export const MembershipRequestCreateGender = {
   Féminin: 'Féminin',
 } as const;
 
-export type MembershipRequestCreateMaritalStatus = typeof MembershipRequestCreateMaritalStatus[keyof typeof MembershipRequestCreateMaritalStatus];
+/**
+ * @nullable
+ */
+export type MembershipRequestCreateMaritalStatus = typeof MembershipRequestCreateMaritalStatus[keyof typeof MembershipRequestCreateMaritalStatus] | null;
 
 
 export const MembershipRequestCreateMaritalStatus = {
@@ -179,7 +201,10 @@ export const MembershipRequestCreateMaritalStatus = {
   Préfère_ne_pas_répondre: 'Préfère ne pas répondre',
 } as const;
 
-export type MembershipRequestCreateEducationLevel = typeof MembershipRequestCreateEducationLevel[keyof typeof MembershipRequestCreateEducationLevel];
+/**
+ * @nullable
+ */
+export type MembershipRequestCreateEducationLevel = typeof MembershipRequestCreateEducationLevel[keyof typeof MembershipRequestCreateEducationLevel] | null;
 
 
 export const MembershipRequestCreateEducationLevel = {
@@ -207,10 +232,10 @@ export interface MembershipRequestCreate {
   /** @maxLength 254 */
   email: string;
   /**
+     * @minLength 6
      * @maxLength 40
-     * @nullable
      */
-  phone?: string | null;
+  phone: string;
   /**
      * @maxLength 500000
      * @nullable
@@ -236,9 +261,12 @@ export interface MembershipRequestCreate {
      * @nullable
      */
   project?: string | null;
-  gender: MembershipRequestCreateGender;
-  maritalStatus: MembershipRequestCreateMaritalStatus;
-  educationLevel: MembershipRequestCreateEducationLevel;
+  /** @nullable */
+  gender?: MembershipRequestCreateGender;
+  /** @nullable */
+  maritalStatus?: MembershipRequestCreateMaritalStatus;
+  /** @nullable */
+  educationLevel?: MembershipRequestCreateEducationLevel;
   /**
      * @maxLength 1500
      * @nullable
@@ -247,23 +275,27 @@ export interface MembershipRequestCreate {
   /**
      * @minLength 2
      * @maxLength 120
+     * @nullable
      */
-  emergencyContactName: string;
+  emergencyContactName?: string | null;
   /**
      * @minLength 6
      * @maxLength 40
+     * @nullable
      */
-  emergencyContactPhone: string;
+  emergencyContactPhone?: string | null;
   /**
      * @minLength 2
      * @maxLength 120
+     * @nullable
      */
-  fatherFirstNames: string;
+  fatherFirstNames?: string | null;
   /**
      * @minLength 2
      * @maxLength 120
+     * @nullable
      */
-  motherFullName: string;
+  motherFullName?: string | null;
 }
 
 export type MembershipRequestReceiptStatus = typeof MembershipRequestReceiptStatus[keyof typeof MembershipRequestReceiptStatus];
