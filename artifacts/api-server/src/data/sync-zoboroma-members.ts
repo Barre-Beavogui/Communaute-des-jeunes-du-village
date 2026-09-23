@@ -18,7 +18,18 @@ export async function syncZoboromaMembers() {
       contact text,
       instagram text,
       privacy text NOT NULL DEFAULT 'community',
-      status text NOT NULL DEFAULT 'approved'
+      status text NOT NULL DEFAULT 'approved',
+      gender text,
+      marital_status text,
+      education_level text,
+      observations text,
+      emergency_contact_name text,
+      emergency_contact_phone text,
+      father_first_names text,
+      mother_full_name text,
+      show_gender boolean NOT NULL DEFAULT false,
+      show_marital_status boolean NOT NULL DEFAULT false,
+      show_education_level boolean NOT NULL DEFAULT false
     )
   `);
 
@@ -33,6 +44,14 @@ export async function syncZoboromaMembers() {
       profession text NOT NULL DEFAULT 'Autre',
       bio text NOT NULL DEFAULT '',
       project text,
+      gender text,
+      marital_status text,
+      education_level text,
+      observations text,
+      emergency_contact_name text,
+      emergency_contact_phone text,
+      father_first_names text,
+      mother_full_name text,
       submitted_at timestamp NOT NULL DEFAULT now(),
       status text NOT NULL DEFAULT 'pending'
     )
@@ -74,6 +93,39 @@ export async function syncZoboromaMembers() {
   );
   await db.execute(
     sql`ALTER TABLE profiles ADD COLUMN IF NOT EXISTS show_phone boolean NOT NULL DEFAULT true`,
+  );
+  await db.execute(
+    sql`ALTER TABLE profiles ADD COLUMN IF NOT EXISTS gender text`,
+  );
+  await db.execute(
+    sql`ALTER TABLE profiles ADD COLUMN IF NOT EXISTS marital_status text`,
+  );
+  await db.execute(
+    sql`ALTER TABLE profiles ADD COLUMN IF NOT EXISTS education_level text`,
+  );
+  await db.execute(
+    sql`ALTER TABLE profiles ADD COLUMN IF NOT EXISTS observations text`,
+  );
+  await db.execute(
+    sql`ALTER TABLE profiles ADD COLUMN IF NOT EXISTS emergency_contact_name text`,
+  );
+  await db.execute(
+    sql`ALTER TABLE profiles ADD COLUMN IF NOT EXISTS emergency_contact_phone text`,
+  );
+  await db.execute(
+    sql`ALTER TABLE profiles ADD COLUMN IF NOT EXISTS father_first_names text`,
+  );
+  await db.execute(
+    sql`ALTER TABLE profiles ADD COLUMN IF NOT EXISTS mother_full_name text`,
+  );
+  await db.execute(
+    sql`ALTER TABLE profiles ADD COLUMN IF NOT EXISTS show_gender boolean NOT NULL DEFAULT false`,
+  );
+  await db.execute(
+    sql`ALTER TABLE profiles ADD COLUMN IF NOT EXISTS show_marital_status boolean NOT NULL DEFAULT false`,
+  );
+  await db.execute(
+    sql`ALTER TABLE profiles ADD COLUMN IF NOT EXISTS show_education_level boolean NOT NULL DEFAULT false`,
   );
   await db.execute(sql`
     CREATE UNIQUE INDEX IF NOT EXISTS profiles_member_code_hash_unique
@@ -251,6 +303,30 @@ export async function syncZoboromaMembers() {
   );
   await db.execute(
     sql`ALTER TABLE membership_requests ADD COLUMN IF NOT EXISTS project text`,
+  );
+  await db.execute(
+    sql`ALTER TABLE membership_requests ADD COLUMN IF NOT EXISTS gender text`,
+  );
+  await db.execute(
+    sql`ALTER TABLE membership_requests ADD COLUMN IF NOT EXISTS marital_status text`,
+  );
+  await db.execute(
+    sql`ALTER TABLE membership_requests ADD COLUMN IF NOT EXISTS education_level text`,
+  );
+  await db.execute(
+    sql`ALTER TABLE membership_requests ADD COLUMN IF NOT EXISTS observations text`,
+  );
+  await db.execute(
+    sql`ALTER TABLE membership_requests ADD COLUMN IF NOT EXISTS emergency_contact_name text`,
+  );
+  await db.execute(
+    sql`ALTER TABLE membership_requests ADD COLUMN IF NOT EXISTS emergency_contact_phone text`,
+  );
+  await db.execute(
+    sql`ALTER TABLE membership_requests ADD COLUMN IF NOT EXISTS father_first_names text`,
+  );
+  await db.execute(
+    sql`ALTER TABLE membership_requests ADD COLUMN IF NOT EXISTS mother_full_name text`,
   );
 
   await db.execute(sql`

@@ -41,6 +41,13 @@ router.post("/membership-requests", async (req, res) => {
     res.status(400).json({ error: "Numéro de téléphone invalide." });
     return;
   }
+  const normalizedEmergencyPhone = normalizeLoginPhone(
+    data.emergencyContactPhone,
+  );
+  if (!normalizedEmergencyPhone || normalizedEmergencyPhone.length < 6) {
+    res.status(400).json({ error: "Téléphone du contact d’urgence invalide." });
+    return;
+  }
   if (data.avatarUrl && !PROFILE_PHOTO_PATTERN.test(data.avatarUrl)) {
     res.status(400).json({ error: "La photo de profil est invalide." });
     return;
@@ -75,6 +82,14 @@ router.post("/membership-requests", async (req, res) => {
       profession: data.profession.trim(),
       bio: data.bio.trim(),
       project: data.project?.trim() || null,
+      gender: data.gender,
+      maritalStatus: data.maritalStatus,
+      educationLevel: data.educationLevel,
+      observations: data.observations?.trim() || null,
+      emergencyContactName: data.emergencyContactName.trim(),
+      emergencyContactPhone: data.emergencyContactPhone.trim(),
+      fatherFirstNames: data.fatherFirstNames.trim(),
+      motherFullName: data.motherFullName.trim(),
       status: "pending",
     })
     .returning();

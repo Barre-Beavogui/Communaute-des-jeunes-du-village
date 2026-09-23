@@ -34,6 +34,17 @@ export const profilesTable = pgTable("profiles", {
   loginPhoneNormalized: text("login_phone_normalized"),
   showEmail: boolean("show_email").notNull().default(true),
   showPhone: boolean("show_phone").notNull().default(true),
+  gender: text("gender"),
+  maritalStatus: text("marital_status"),
+  educationLevel: text("education_level"),
+  observations: text("observations"),
+  emergencyContactName: text("emergency_contact_name"),
+  emergencyContactPhone: text("emergency_contact_phone"),
+  fatherFirstNames: text("father_first_names"),
+  motherFullName: text("mother_full_name"),
+  showGender: boolean("show_gender").notNull().default(false),
+  showMaritalStatus: boolean("show_marital_status").notNull().default(false),
+  showEducationLevel: boolean("show_education_level").notNull().default(false),
 });
 
 export const membershipRequestsTable = pgTable("membership_requests", {
@@ -46,6 +57,14 @@ export const membershipRequestsTable = pgTable("membership_requests", {
   profession: text("profession").notNull().default("Autre"),
   bio: text("bio").notNull().default(""),
   project: text("project"),
+  gender: text("gender"),
+  maritalStatus: text("marital_status"),
+  educationLevel: text("education_level"),
+  observations: text("observations"),
+  emergencyContactName: text("emergency_contact_name"),
+  emergencyContactPhone: text("emergency_contact_phone"),
+  fatherFirstNames: text("father_first_names"),
+  motherFullName: text("mother_full_name"),
   submittedAt: timestamp("submitted_at").notNull().defaultNow(),
   status: text("status").notNull().default("pending"),
 });

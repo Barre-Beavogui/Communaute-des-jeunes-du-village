@@ -66,6 +66,17 @@ function profileSettings(row: typeof profilesTable.$inferSelect) {
     phone: row.loginPhone ?? row.contact,
     showEmail: row.showEmail,
     showPhone: row.showPhone,
+    gender: row.gender,
+    maritalStatus: row.maritalStatus,
+    educationLevel: row.educationLevel,
+    observations: row.observations,
+    emergencyContactName: row.emergencyContactName,
+    emergencyContactPhone: row.emergencyContactPhone,
+    fatherFirstNames: row.fatherFirstNames,
+    motherFullName: row.motherFullName,
+    showGender: row.showGender,
+    showMaritalStatus: row.showMaritalStatus,
+    showEducationLevel: row.showEducationLevel,
   };
 }
 
@@ -304,6 +315,16 @@ router.patch("/member/profile", requireMember, async (req, res) => {
     res.status(400).json({ error: "La photo de profil est invalide." });
     return;
   }
+  const emergencyPhone = body.emergencyContactPhone?.trim() || null;
+  if (emergencyPhone) {
+    const normalizedEmergencyPhone = normalizeLoginPhone(emergencyPhone);
+    if (!normalizedEmergencyPhone || normalizedEmergencyPhone.length < 6) {
+      res
+        .status(400)
+        .json({ error: "Téléphone du contact d’urgence invalide." });
+      return;
+    }
+  }
 
   const [emailConflict, phoneConflict] = await Promise.all([
     normalizedEmail
@@ -361,6 +382,14 @@ router.patch("/member/profile", requireMember, async (req, res) => {
       loginPhoneNormalized: normalizedPhone,
       showEmail: Boolean(email && body.showEmail),
       showPhone: Boolean(phone && body.showPhone),
+      gender: body.gender || null,
+      maritalStatus: body.maritalStatus || null,
+      educationLevel: body.educationLevel || null,
+      observations: body.observations?.trim() || null,
+      emergencyContactName: body.emergencyContactName?.trim() || null,
+      emergencyContactPhone: emergencyPhone,
+      fatherFirstNames: body.fatherFirstNames?.trim() || null,
+      motherFullName: body.motherFullName?.trim() || null,
     })
     .where(
       and(

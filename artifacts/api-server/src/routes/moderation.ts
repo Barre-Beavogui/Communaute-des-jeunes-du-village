@@ -23,6 +23,9 @@ import {
   ReviewModerationRequestParams,
   ReviewModerationRequestBody,
   ReviewModerationRequestResponse,
+  UpdateProfileVisibilityBody,
+  UpdateProfileVisibilityParams,
+  UpdateProfileVisibilityResponse,
 } from "@workspace/api-zod";
 import { requireAdmin } from "../lib/admin-auth.js";
 import {
@@ -31,6 +34,7 @@ import {
   normalizeLoginEmail,
   normalizeLoginPhone,
 } from "../lib/member-auth.js";
+import { toProfile } from "./profiles.js";
 
 const router: IRouter = Router();
 
@@ -220,6 +224,14 @@ router.patch("/moderation/requests/:id", async (req, res) => {
           loginEmailNormalized: normalizedEmail,
           loginPhone: request.phone,
           loginPhoneNormalized: normalizedPhone,
+          gender: request.gender,
+          maritalStatus: request.maritalStatus,
+          educationLevel: request.educationLevel,
+          observations: request.observations,
+          emergencyContactName: request.emergencyContactName,
+          emergencyContactPhone: request.emergencyContactPhone,
+          fatherFirstNames: request.fatherFirstNames,
+          motherFullName: request.motherFullName,
         })
         .onConflictDoNothing({ target: profilesTable.id });
     }
@@ -248,6 +260,31 @@ router.patch("/moderation/requests/:id", async (req, res) => {
       memberCode: result.memberCode,
     }),
   );
+});
+
+router.patch("/moderation/profiles/:id/visibility", async (req, res) => {
+  const params = UpdateProfileVisibilityParams.parse(req.params);
+  const body = UpdateProfileVisibilityBody.parse(req.body);
+  const [updated] = await db
+    .update(profilesTable)
+    .set({
+      showGender: body.showGender,
+      showMaritalStatus: body.showMaritalStatus,
+      showEducationLevel: body.showEducationLevel,
+    })
+    .where(
+      and(
+        eq(profilesTable.id, params.id),
+        eq(profilesTable.status, "approved"),
+      ),
+    )
+    .returning();
+
+  if (!updated) {
+    res.status(404).json({ error: "Profil introuvable." });
+    return;
+  }
+  res.json(UpdateProfileVisibilityResponse.parse(toProfile(updated, true)));
 });
 
 router.delete("/moderation/profiles/:id", async (req, res) => {

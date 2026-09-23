@@ -36,6 +36,7 @@ import {
   useListPasswordResetRequests,
   useListProfiles,
   useReviewModerationRequest,
+  useUpdateProfileVisibility,
 } from "@workspace/api-client-react";
 import { AdminCommunity } from "@/components/admin-community";
 import { buildMemberInvitation } from "@/lib/member-invitation";
@@ -92,6 +93,10 @@ export default function AdminPage() {
   >("all");
   const [exportingMembers, setExportingMembers] = useState(false);
   const [exportError, setExportError] = useState("");
+  const [visibilityUpdatingId, setVisibilityUpdatingId] = useState<
+    string | null
+  >(null);
+  const [visibilityError, setVisibilityError] = useState("");
   const login = useAdminLogin();
   const requestsQuery = useListModerationRequests({
     query: {
@@ -118,6 +123,7 @@ export default function AdminPage() {
   const deleteProfile = useDeleteModerationProfile();
   const generateCode = useGenerateMemberCode();
   const createResetCode = useCreatePasswordResetCode();
+  const updateVisibility = useUpdateProfileVisibility();
   const requests = requestsQuery.data ?? [];
   const members = membersQuery.data ?? [];
   const passwordResetRequests = passwordResetRequestsQuery.data ?? [];
@@ -154,6 +160,14 @@ export default function AdminPage() {
           member.activities.join(" "),
           member.bio,
           member.project,
+          member.gender,
+          member.maritalStatus,
+          member.educationLevel,
+          member.fatherFirstNames,
+          member.motherFullName,
+          member.emergencyContactName,
+          member.emergencyContactPhone,
+          member.observations,
         ].some((value) => normalizeSearchValue(value).includes(search));
       const matchesNeighborhood =
         memberNeighborhood === "all" ||
@@ -338,6 +352,33 @@ export default function AdminPage() {
     );
   };
 
+  const changeProfileVisibility = (
+    id: string,
+    values: {
+      showGender: boolean;
+      showMaritalStatus: boolean;
+      showEducationLevel: boolean;
+    },
+  ) => {
+    setVisibilityUpdatingId(id);
+    setVisibilityError("");
+    updateVisibility.mutate(
+      { id, data: values },
+      {
+        onSuccess: async () => {
+          await queryClient.invalidateQueries({
+            queryKey: getListProfilesQueryKey(),
+          });
+        },
+        onError: () =>
+          setVisibilityError(
+            "La visibilité n’a pas pu être modifiée. Reconnectez-vous puis réessayez.",
+          ),
+        onSettled: () => setVisibilityUpdatingId(null),
+      },
+    );
+  };
+
   const resetMemberFilters = () => {
     setMemberSearch("");
     setMemberNeighborhood("all");
@@ -369,7 +410,7 @@ export default function AdminPage() {
         paperSize: 9,
       };
 
-      worksheet.mergeCells("A1:K1");
+      worksheet.mergeCells("A1:V1");
       worksheet.getCell("A1").value = "Base de données des membres de Zoboroma";
       worksheet.getCell("A1").font = {
         name: "Arial",
@@ -380,7 +421,7 @@ export default function AdminPage() {
       worksheet.getCell("A1").alignment = { vertical: "middle" };
       worksheet.getRow(1).height = 30;
 
-      worksheet.mergeCells("A2:K2");
+      worksheet.mergeCells("A2:V2");
       worksheet.getCell("A2").value =
         `${filteredMembers.length} membre${filteredMembers.length > 1 ? "s" : ""} exporté${filteredMembers.length > 1 ? "s" : ""} le ${new Date().toLocaleDateString("fr-FR")}`;
       worksheet.getCell("A2").font = {
@@ -400,7 +441,7 @@ export default function AdminPage() {
             ? "Projet : non renseigné"
             : null,
       ].filter(Boolean);
-      worksheet.mergeCells("A3:K3");
+      worksheet.mergeCells("A3:V3");
       worksheet.getCell("A3").value = appliedFilters.length
         ? `Filtres appliqués : ${appliedFilters.join(" · ")}`
         : "Filtres appliqués : aucun";
@@ -433,6 +474,17 @@ export default function AdminPage() {
           { name: "Photo (URL)", filterButton: true },
           { name: "Visibilité du profil", filterButton: true },
           { name: "Statut", filterButton: true },
+          { name: "Sexe", filterButton: true },
+          { name: "Situation matrimoniale", filterButton: true },
+          { name: "Niveau d’études", filterButton: true },
+          { name: "Prénoms du père", filterButton: true },
+          { name: "Prénom et nom de la mère", filterButton: true },
+          { name: "Contact d’urgence", filterButton: true },
+          { name: "Téléphone d’urgence", filterButton: true },
+          { name: "Observations / recommandations", filterButton: true },
+          { name: "Sexe publié", filterButton: true },
+          { name: "Situation familiale publiée", filterButton: true },
+          { name: "Niveau d’études publié", filterButton: true },
         ],
         rows: filteredMembers.map((member) => [
           member.id,
@@ -446,10 +498,24 @@ export default function AdminPage() {
           member.avatarUrl ?? "",
           member.privacy === "community" ? "Communauté" : "Privé",
           "Approuvé",
+          member.gender ?? "",
+          member.maritalStatus ?? "",
+          member.educationLevel ?? "",
+          member.fatherFirstNames ?? "",
+          member.motherFullName ?? "",
+          member.emergencyContactName ?? "",
+          member.emergencyContactPhone ?? "",
+          member.observations ?? "",
+          member.showGender ? "Oui" : "Non",
+          member.showMaritalStatus ? "Oui" : "Non",
+          member.showEducationLevel ? "Oui" : "Non",
         ]),
       });
 
-      const columnWidths = [24, 28, 32, 24, 22, 32, 48, 44, 42, 20, 14];
+      const columnWidths = [
+        24, 28, 32, 24, 22, 32, 48, 44, 42, 20, 14, 14, 24, 24, 26, 30, 28, 24,
+        48, 16, 22, 20,
+      ];
       columnWidths.forEach((width, index) => {
         worksheet.getColumn(index + 1).width = width;
       });
@@ -795,6 +861,59 @@ export default function AdminPage() {
                     {request.project || "Aucun projet indiqué pour le moment."}
                   </p>
                 </div>
+                <div className="rounded-xl border border-primary/15 bg-primary/5 p-4 md:col-span-2">
+                  <div className="flex items-center gap-2">
+                    <ShieldCheck className="h-4 w-4 text-primary" />
+                    <p className="font-mono text-[9px] font-bold uppercase tracking-[.16em] text-primary">
+                      Informations administratives
+                    </p>
+                  </div>
+                  <dl className="mt-4 grid gap-x-6 gap-y-3 text-xs sm:grid-cols-2 lg:grid-cols-3">
+                    <div>
+                      <dt className="font-bold text-muted-foreground">Sexe</dt>
+                      <dd className="mt-1">{request.gender}</dd>
+                    </div>
+                    <div>
+                      <dt className="font-bold text-muted-foreground">
+                        Situation matrimoniale
+                      </dt>
+                      <dd className="mt-1">{request.maritalStatus}</dd>
+                    </div>
+                    <div>
+                      <dt className="font-bold text-muted-foreground">
+                        Niveau d’études
+                      </dt>
+                      <dd className="mt-1">{request.educationLevel}</dd>
+                    </div>
+                    <div>
+                      <dt className="font-bold text-muted-foreground">
+                        Prénoms du père
+                      </dt>
+                      <dd className="mt-1">{request.fatherFirstNames}</dd>
+                    </div>
+                    <div>
+                      <dt className="font-bold text-muted-foreground">Mère</dt>
+                      <dd className="mt-1">{request.motherFullName}</dd>
+                    </div>
+                    <div>
+                      <dt className="font-bold text-muted-foreground">
+                        Contact d’urgence
+                      </dt>
+                      <dd className="mt-1">
+                        {request.emergencyContactName} ·{" "}
+                        {request.emergencyContactPhone}
+                      </dd>
+                    </div>
+                  </dl>
+                  <div className="mt-4 border-t border-primary/10 pt-4">
+                    <p className="text-[10px] font-bold uppercase tracking-[.12em] text-muted-foreground">
+                      Observations et recommandations
+                    </p>
+                    <p className="mt-2 text-xs leading-6 text-foreground/80">
+                      {request.observations || "Aucune observation transmise."}
+                    </p>
+                  </div>
+                </div>
               </div>
             </article>
           ))}
@@ -864,6 +983,12 @@ export default function AdminPage() {
         {exportError && (
           <p className="border-b border-destructive/20 bg-destructive/5 px-5 py-3 text-xs font-semibold text-destructive sm:px-6">
             {exportError}
+          </p>
+        )}
+
+        {visibilityError && (
+          <p className="border-b border-destructive/20 bg-destructive/5 px-5 py-3 text-xs font-semibold text-destructive sm:px-6">
+            {visibilityError}
           </p>
         )}
 
@@ -954,8 +1079,8 @@ export default function AdminPage() {
           </div>
           <p className="mt-4 flex items-start gap-2 rounded-xl border border-secondary/15 bg-secondary/5 px-4 py-3 text-[10px] font-semibold leading-5 text-muted-foreground">
             <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-secondary" />
-            Cet export administratif contient l’email et le téléphone complets,
-            même lorsqu’un membre choisit de les masquer dans l’annuaire.
+            Cet export administratif contient toutes les informations, y compris
+            celles qui sont masquées dans l’annuaire.
           </p>
         </div>
 
@@ -1086,7 +1211,7 @@ export default function AdminPage() {
             {filteredMembers.map((member) => (
               <article
                 key={member.id}
-                className="flex flex-col justify-between gap-4 px-5 py-4 sm:flex-row sm:items-center sm:px-6"
+                className="grid gap-4 px-5 py-5 sm:grid-cols-[1fr_auto] sm:items-start sm:px-6"
                 data-testid={`row-member-admin-${member.id}`}
               >
                 <div className="flex min-w-0 items-center gap-3">
@@ -1126,6 +1251,19 @@ export default function AdminPage() {
                             <Phone className="h-3 w-3" />
                             {member.phone ?? member.contact}
                           </span>
+                        )}
+                      </p>
+                    )}
+                    {(member.gender ||
+                      member.maritalStatus ||
+                      member.educationLevel) && (
+                      <p className="mt-1.5 flex flex-wrap gap-x-3 gap-y-1 text-[10px] font-semibold text-muted-foreground">
+                        {member.gender && <span>{member.gender}</span>}
+                        {member.maritalStatus && (
+                          <span>• {member.maritalStatus}</span>
+                        )}
+                        {member.educationLevel && (
+                          <span>• {member.educationLevel}</span>
                         )}
                       </p>
                     )}
@@ -1245,6 +1383,124 @@ export default function AdminPage() {
                       </AlertDialogFooter>
                     </AlertDialogContent>
                   </AlertDialog>
+                </div>
+
+                <div className="rounded-2xl border border-border bg-background p-4 sm:col-span-2">
+                  <div className="flex flex-col justify-between gap-3 lg:flex-row lg:items-start">
+                    <div>
+                      <p className="text-xs font-extrabold">
+                        Informations privées du membre
+                      </p>
+                      <p className="mt-1 text-[10px] leading-5 text-muted-foreground">
+                        Le contact d’urgence, la filiation et les observations
+                        restent toujours réservés à l’administration.
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        disabled={
+                          !member.gender || visibilityUpdatingId === member.id
+                        }
+                        onClick={() =>
+                          changeProfileVisibility(member.id, {
+                            showGender: !member.showGender,
+                            showMaritalStatus: member.showMaritalStatus,
+                            showEducationLevel: member.showEducationLevel,
+                          })
+                        }
+                        className={`rounded-full border px-3 py-2 text-[10px] font-bold disabled:opacity-40 ${
+                          member.showGender
+                            ? "border-secondary bg-secondary text-secondary-foreground"
+                            : "border-border bg-card text-muted-foreground"
+                        }`}
+                      >
+                        Sexe : {member.showGender ? "visible" : "privé"}
+                      </button>
+                      <button
+                        type="button"
+                        disabled={
+                          !member.maritalStatus ||
+                          visibilityUpdatingId === member.id
+                        }
+                        onClick={() =>
+                          changeProfileVisibility(member.id, {
+                            showGender: member.showGender,
+                            showMaritalStatus: !member.showMaritalStatus,
+                            showEducationLevel: member.showEducationLevel,
+                          })
+                        }
+                        className={`rounded-full border px-3 py-2 text-[10px] font-bold disabled:opacity-40 ${
+                          member.showMaritalStatus
+                            ? "border-secondary bg-secondary text-secondary-foreground"
+                            : "border-border bg-card text-muted-foreground"
+                        }`}
+                      >
+                        Situation :{" "}
+                        {member.showMaritalStatus ? "visible" : "privée"}
+                      </button>
+                      <button
+                        type="button"
+                        disabled={
+                          !member.educationLevel ||
+                          visibilityUpdatingId === member.id
+                        }
+                        onClick={() =>
+                          changeProfileVisibility(member.id, {
+                            showGender: member.showGender,
+                            showMaritalStatus: member.showMaritalStatus,
+                            showEducationLevel: !member.showEducationLevel,
+                          })
+                        }
+                        className={`rounded-full border px-3 py-2 text-[10px] font-bold disabled:opacity-40 ${
+                          member.showEducationLevel
+                            ? "border-secondary bg-secondary text-secondary-foreground"
+                            : "border-border bg-card text-muted-foreground"
+                        }`}
+                      >
+                        Études :{" "}
+                        {member.showEducationLevel ? "visibles" : "privées"}
+                      </button>
+                    </div>
+                  </div>
+                  <dl className="mt-4 grid gap-x-6 gap-y-3 border-t border-border pt-4 text-xs sm:grid-cols-2 lg:grid-cols-4">
+                    <div>
+                      <dt className="font-bold text-muted-foreground">Père</dt>
+                      <dd className="mt-1">
+                        {member.fatherFirstNames || "Non renseigné"}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="font-bold text-muted-foreground">Mère</dt>
+                      <dd className="mt-1">
+                        {member.motherFullName || "Non renseignée"}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="font-bold text-muted-foreground">
+                        Contact d’urgence
+                      </dt>
+                      <dd className="mt-1">
+                        {member.emergencyContactName || "Non renseigné"}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="font-bold text-muted-foreground">
+                        Téléphone d’urgence
+                      </dt>
+                      <dd className="mt-1">
+                        {member.emergencyContactPhone || "Non renseigné"}
+                      </dd>
+                    </div>
+                  </dl>
+                  <div className="mt-4 border-t border-border pt-4">
+                    <p className="text-[10px] font-bold uppercase tracking-[.12em] text-muted-foreground">
+                      Observations et recommandations
+                    </p>
+                    <p className="mt-2 text-xs leading-6 text-foreground/80">
+                      {member.observations || "Aucune observation renseignée."}
+                    </p>
+                  </div>
                 </div>
               </article>
             ))}

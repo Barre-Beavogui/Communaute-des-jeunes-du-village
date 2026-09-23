@@ -53,7 +53,8 @@ import type {
   PollCreate,
   PollStatusUpdate,
   PollVote,
-  Profile
+  Profile,
+  ProfileVisibilityUpdate
 } from './api.schemas';
 
 import { customFetch } from '../custom-fetch';
@@ -1996,6 +1997,78 @@ export const useDeleteModerationProfile = <TError = ErrorType<void>,
         TContext
       > => {
       return useMutation(getDeleteModerationProfileMutationOptions(options));
+    }
+
+export const getUpdateProfileVisibilityUrl = (id: string,) => {
+
+
+
+
+  return `/api/moderation/profiles/${id}/visibility`
+}
+
+/**
+ * @summary Choose which personal profile fields appear in the directory
+ */
+export const updateProfileVisibility = async (id: string,
+    profileVisibilityUpdate: ProfileVisibilityUpdate, options?: Parameters<typeof customFetch>[1]): Promise<Profile> => {
+
+  return customFetch<Profile>(getUpdateProfileVisibilityUrl(id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(profileVisibilityUpdate)
+  }
+);}
+
+
+
+
+
+export const getUpdateProfileVisibilityMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateProfileVisibility>>, TError,{id: string;data: BodyType<ProfileVisibilityUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateProfileVisibility>>, TError,{id: string;data: BodyType<ProfileVisibilityUpdate>}, TContext> => {
+
+const mutationKey = ['updateProfileVisibility'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateProfileVisibility>>, {id: string;data: BodyType<ProfileVisibilityUpdate>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updateProfileVisibility(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateProfileVisibilityMutationResult = NonNullable<Awaited<ReturnType<typeof updateProfileVisibility>>>
+    export type UpdateProfileVisibilityMutationBody = BodyType<ProfileVisibilityUpdate>
+    export type UpdateProfileVisibilityMutationError = ErrorType<void>
+
+    /**
+ * @summary Choose which personal profile fields appear in the directory
+ */
+export const useUpdateProfileVisibility = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateProfileVisibility>>, TError,{id: string;data: BodyType<ProfileVisibilityUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateProfileVisibility>>,
+        TError,
+        {id: string;data: BodyType<ProfileVisibilityUpdate>},
+        TContext
+      > => {
+      return useMutation(getUpdateProfileVisibilityMutationOptions(options));
     }
 
 export const getGenerateMemberCodeUrl = (id: string,) => {

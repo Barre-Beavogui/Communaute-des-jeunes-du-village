@@ -5,6 +5,9 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { MemberProfileUpdateEducationLevel } from './memberProfileUpdateEducationLevel';
+import type { MemberProfileUpdateGender } from './memberProfileUpdateGender';
+import type { MemberProfileUpdateMaritalStatus } from './memberProfileUpdateMaritalStatus';
 
 export interface MemberProfileUpdate {
   /**
@@ -49,4 +52,35 @@ export interface MemberProfileUpdate {
   phone?: string | null;
   showEmail: boolean;
   showPhone: boolean;
+  /** @nullable */
+  gender?: MemberProfileUpdateGender;
+  /** @nullable */
+  maritalStatus?: MemberProfileUpdateMaritalStatus;
+  /** @nullable */
+  educationLevel?: MemberProfileUpdateEducationLevel;
+  /**
+     * @maxLength 1500
+     * @nullable
+     */
+  observations?: string | null;
+  /**
+     * @maxLength 120
+     * @nullable
+     */
+  emergencyContactName?: string | null;
+  /**
+     * @maxLength 40
+     * @nullable
+     */
+  emergencyContactPhone?: string | null;
+  /**
+     * @maxLength 120
+     * @nullable
+     */
+  fatherFirstNames?: string | null;
+  /**
+     * @maxLength 120
+     * @nullable
+     */
+  motherFullName?: string | null;
 }

@@ -37,6 +37,11 @@ export default function MemberPage() {
     profileQuery.data && typeof profileQuery.data.name === "string"
       ? profileQuery.data
       : fallback;
+  const gender = "gender" in profile ? profile.gender : null;
+  const maritalStatus =
+    "maritalStatus" in profile ? profile.maritalStatus : null;
+  const educationLevel =
+    "educationLevel" in profile ? profile.educationLevel : null;
   const profiles = Array.isArray(profilesQuery.data)
     ? profilesQuery.data
     : demoProfiles;
@@ -157,6 +162,45 @@ export default function MemberPage() {
                     ))}
                   </div>
                 </div>
+                {(gender || maritalStatus || educationLevel) && (
+                  <div>
+                    <p className="font-mono text-[10px] font-bold uppercase tracking-[.17em] text-primary">
+                      Informations du profil
+                    </p>
+                    <dl className="mt-4 grid gap-3 sm:grid-cols-3">
+                      {gender && (
+                        <div className="rounded-2xl border border-border bg-background p-4">
+                          <dt className="text-[10px] font-bold uppercase tracking-[.1em] text-muted-foreground">
+                            Sexe
+                          </dt>
+                          <dd className="mt-2 text-sm font-extrabold">
+                            {gender}
+                          </dd>
+                        </div>
+                      )}
+                      {maritalStatus && (
+                        <div className="rounded-2xl border border-border bg-background p-4">
+                          <dt className="text-[10px] font-bold uppercase tracking-[.1em] text-muted-foreground">
+                            Situation familiale
+                          </dt>
+                          <dd className="mt-2 text-sm font-extrabold">
+                            {maritalStatus}
+                          </dd>
+                        </div>
+                      )}
+                      {educationLevel && (
+                        <div className="rounded-2xl border border-border bg-background p-4">
+                          <dt className="text-[10px] font-bold uppercase tracking-[.1em] text-muted-foreground">
+                            Études / qualification
+                          </dt>
+                          <dd className="mt-2 text-sm font-extrabold">
+                            {educationLevel}
+                          </dd>
+                        </div>
+                      )}
+                    </dl>
+                  </div>
+                )}
                 {profile.project && (
                   <div className="rounded-2xl bg-secondary px-5 py-5 text-secondary-foreground">
                     <p className="font-mono text-[10px] font-bold uppercase tracking-[.17em] text-secondary-foreground/70">

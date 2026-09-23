@@ -44,6 +44,25 @@ export interface Profile {
   phone?: string | null;
   /** @nullable */
   instagram?: string | null;
+  /** @nullable */
+  gender?: string | null;
+  /** @nullable */
+  maritalStatus?: string | null;
+  /** @nullable */
+  educationLevel?: string | null;
+  /** @nullable */
+  observations?: string | null;
+  /** @nullable */
+  emergencyContactName?: string | null;
+  /** @nullable */
+  emergencyContactPhone?: string | null;
+  /** @nullable */
+  fatherFirstNames?: string | null;
+  /** @nullable */
+  motherFullName?: string | null;
+  showGender: boolean;
+  showMaritalStatus: boolean;
+  showEducationLevel: boolean;
   privacy: ProfilePrivacy;
   status: ProfileStatus;
 }
@@ -58,6 +77,46 @@ export interface MembersSummary {
   activeProjects: number;
   topActivities: MembersSummaryTopActivitiesItem[];
 }
+
+export type MembershipRequestGender = typeof MembershipRequestGender[keyof typeof MembershipRequestGender];
+
+
+export const MembershipRequestGender = {
+  Masculin: 'Masculin',
+  Féminin: 'Féminin',
+} as const;
+
+export type MembershipRequestMaritalStatus = typeof MembershipRequestMaritalStatus[keyof typeof MembershipRequestMaritalStatus];
+
+
+export const MembershipRequestMaritalStatus = {
+  Célibataire: 'Célibataire',
+  'Marié(e)': 'Marié(e)',
+  'Divorcé(e)': 'Divorcé(e)',
+  'Veuf_/_Veuve': 'Veuf / Veuve',
+  Union_libre: 'Union libre',
+  'Pacsé(e)': 'Pacsé(e)',
+  Préfère_ne_pas_répondre: 'Préfère ne pas répondre',
+} as const;
+
+export type MembershipRequestEducationLevel = typeof MembershipRequestEducationLevel[keyof typeof MembershipRequestEducationLevel];
+
+
+export const MembershipRequestEducationLevel = {
+  Aucun: 'Aucun',
+  Primaire: 'Primaire',
+  Collège: 'Collège',
+  Lycée: 'Lycée',
+  Baccalauréat: 'Baccalauréat',
+  'Bac_+2': 'Bac +2',
+  'Bac_+3': 'Bac +3',
+  'Bac_+4': 'Bac +4',
+  'Bac_+5': 'Bac +5',
+  Master: 'Master',
+  Doctorat: 'Doctorat',
+  Formation_professionnelle: 'Formation professionnelle',
+  Autre: 'Autre',
+} as const;
 
 export type MembershipRequestStatus = typeof MembershipRequestStatus[keyof typeof MembershipRequestStatus];
 
@@ -84,11 +143,60 @@ export interface MembershipRequest {
   bio: string;
   /** @nullable */
   project?: string | null;
+  gender: MembershipRequestGender;
+  maritalStatus: MembershipRequestMaritalStatus;
+  educationLevel: MembershipRequestEducationLevel;
+  /** @nullable */
+  observations?: string | null;
+  emergencyContactName: string;
+  emergencyContactPhone: string;
+  fatherFirstNames: string;
+  motherFullName: string;
   submittedAt: string;
   status: MembershipRequestStatus;
   /** @nullable */
   memberCode?: string | null;
 }
+
+export type MembershipRequestCreateGender = typeof MembershipRequestCreateGender[keyof typeof MembershipRequestCreateGender];
+
+
+export const MembershipRequestCreateGender = {
+  Masculin: 'Masculin',
+  Féminin: 'Féminin',
+} as const;
+
+export type MembershipRequestCreateMaritalStatus = typeof MembershipRequestCreateMaritalStatus[keyof typeof MembershipRequestCreateMaritalStatus];
+
+
+export const MembershipRequestCreateMaritalStatus = {
+  Célibataire: 'Célibataire',
+  'Marié(e)': 'Marié(e)',
+  'Divorcé(e)': 'Divorcé(e)',
+  'Veuf_/_Veuve': 'Veuf / Veuve',
+  Union_libre: 'Union libre',
+  'Pacsé(e)': 'Pacsé(e)',
+  Préfère_ne_pas_répondre: 'Préfère ne pas répondre',
+} as const;
+
+export type MembershipRequestCreateEducationLevel = typeof MembershipRequestCreateEducationLevel[keyof typeof MembershipRequestCreateEducationLevel];
+
+
+export const MembershipRequestCreateEducationLevel = {
+  Aucun: 'Aucun',
+  Primaire: 'Primaire',
+  Collège: 'Collège',
+  Lycée: 'Lycée',
+  Baccalauréat: 'Baccalauréat',
+  'Bac_+2': 'Bac +2',
+  'Bac_+3': 'Bac +3',
+  'Bac_+4': 'Bac +4',
+  'Bac_+5': 'Bac +5',
+  Master: 'Master',
+  Doctorat: 'Doctorat',
+  Formation_professionnelle: 'Formation professionnelle',
+  Autre: 'Autre',
+} as const;
 
 export interface MembershipRequestCreate {
   /**
@@ -128,6 +236,34 @@ export interface MembershipRequestCreate {
      * @nullable
      */
   project?: string | null;
+  gender: MembershipRequestCreateGender;
+  maritalStatus: MembershipRequestCreateMaritalStatus;
+  educationLevel: MembershipRequestCreateEducationLevel;
+  /**
+     * @maxLength 1500
+     * @nullable
+     */
+  observations?: string | null;
+  /**
+     * @minLength 2
+     * @maxLength 120
+     */
+  emergencyContactName: string;
+  /**
+     * @minLength 6
+     * @maxLength 40
+     */
+  emergencyContactPhone: string;
+  /**
+     * @minLength 2
+     * @maxLength 120
+     */
+  fatherFirstNames: string;
+  /**
+     * @minLength 2
+     * @maxLength 120
+     */
+  motherFullName: string;
 }
 
 export type MembershipRequestReceiptStatus = typeof MembershipRequestReceiptStatus[keyof typeof MembershipRequestReceiptStatus];
@@ -166,6 +302,12 @@ export const ModerationReviewStatus = {
 
 export interface ModerationReview {
   status: ModerationReviewStatus;
+}
+
+export interface ProfileVisibilityUpdate {
+  showGender: boolean;
+  showMaritalStatus: boolean;
+  showEducationLevel: boolean;
 }
 
 export interface MemberLogin {
@@ -269,7 +411,75 @@ export interface MemberProfileSettings {
   phone?: string | null;
   showEmail: boolean;
   showPhone: boolean;
+  /** @nullable */
+  gender?: string | null;
+  /** @nullable */
+  maritalStatus?: string | null;
+  /** @nullable */
+  educationLevel?: string | null;
+  /** @nullable */
+  observations?: string | null;
+  /** @nullable */
+  emergencyContactName?: string | null;
+  /** @nullable */
+  emergencyContactPhone?: string | null;
+  /** @nullable */
+  fatherFirstNames?: string | null;
+  /** @nullable */
+  motherFullName?: string | null;
+  showGender: boolean;
+  showMaritalStatus: boolean;
+  showEducationLevel: boolean;
 }
+
+/**
+ * @nullable
+ */
+export type MemberProfileUpdateGender = typeof MemberProfileUpdateGender[keyof typeof MemberProfileUpdateGender] | null;
+
+
+export const MemberProfileUpdateGender = {
+  Masculin: 'Masculin',
+  Féminin: 'Féminin',
+} as const;
+
+/**
+ * @nullable
+ */
+export type MemberProfileUpdateMaritalStatus = typeof MemberProfileUpdateMaritalStatus[keyof typeof MemberProfileUpdateMaritalStatus] | null;
+
+
+export const MemberProfileUpdateMaritalStatus = {
+  Célibataire: 'Célibataire',
+  'Marié(e)': 'Marié(e)',
+  'Divorcé(e)': 'Divorcé(e)',
+  'Veuf_/_Veuve': 'Veuf / Veuve',
+  Union_libre: 'Union libre',
+  'Pacsé(e)': 'Pacsé(e)',
+  Préfère_ne_pas_répondre: 'Préfère ne pas répondre',
+} as const;
+
+/**
+ * @nullable
+ */
+export type MemberProfileUpdateEducationLevel = typeof MemberProfileUpdateEducationLevel[keyof typeof MemberProfileUpdateEducationLevel] | null;
+
+
+export const MemberProfileUpdateEducationLevel = {
+  Aucun: 'Aucun',
+  Primaire: 'Primaire',
+  Collège: 'Collège',
+  Lycée: 'Lycée',
+  Baccalauréat: 'Baccalauréat',
+  'Bac_+2': 'Bac +2',
+  'Bac_+3': 'Bac +3',
+  'Bac_+4': 'Bac +4',
+  'Bac_+5': 'Bac +5',
+  Master: 'Master',
+  Doctorat: 'Doctorat',
+  Formation_professionnelle: 'Formation professionnelle',
+  Autre: 'Autre',
+} as const;
 
 export interface MemberProfileUpdate {
   /**
@@ -314,6 +524,37 @@ export interface MemberProfileUpdate {
   phone?: string | null;
   showEmail: boolean;
   showPhone: boolean;
+  /** @nullable */
+  gender?: MemberProfileUpdateGender;
+  /** @nullable */
+  maritalStatus?: MemberProfileUpdateMaritalStatus;
+  /** @nullable */
+  educationLevel?: MemberProfileUpdateEducationLevel;
+  /**
+     * @maxLength 1500
+     * @nullable
+     */
+  observations?: string | null;
+  /**
+     * @maxLength 120
+     * @nullable
+     */
+  emergencyContactName?: string | null;
+  /**
+     * @maxLength 40
+     * @nullable
+     */
+  emergencyContactPhone?: string | null;
+  /**
+     * @maxLength 120
+     * @nullable
+     */
+  fatherFirstNames?: string | null;
+  /**
+     * @maxLength 120
+     * @nullable
+     */
+  motherFullName?: string | null;
 }
 
 export type ChatMessageType = typeof ChatMessageType[keyof typeof ChatMessageType];

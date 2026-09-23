@@ -9,13 +9,13 @@ const principles = [
   },
   {
     icon: Eye,
-    title: "Vous choisissez la visibilité",
-    text: "Depuis votre espace membre, vous pouvez afficher ou masquer votre email et votre numéro de téléphone dans l’annuaire.",
+    title: "Une visibilité maîtrisée",
+    text: "Vous contrôlez l’affichage de votre email et de votre téléphone. Le sexe, la situation matrimoniale et le niveau d’études sont privés par défaut ; seul l’administrateur peut autoriser leur affichage.",
   },
   {
     icon: LockKeyhole,
-    title: "Un accès réservé",
-    text: "L’annuaire, les actualités, les votes et les sondages sont accessibles uniquement aux membres approuvés et connectés.",
+    title: "Les données sensibles protégées",
+    text: "La filiation, le contact d’urgence et les observations restent uniquement accessibles à l’administration et ne sont jamais publiés dans l’annuaire.",
   },
   {
     icon: ShieldCheck,

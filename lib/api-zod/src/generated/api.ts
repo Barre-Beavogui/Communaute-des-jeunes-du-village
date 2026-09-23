@@ -33,6 +33,17 @@ export const ListProfilesResponseItem = zod.object({
   "email": zod.string().nullish(),
   "phone": zod.string().nullish(),
   "instagram": zod.string().nullish(),
+  "gender": zod.string().nullish(),
+  "maritalStatus": zod.string().nullish(),
+  "educationLevel": zod.string().nullish(),
+  "observations": zod.string().nullish(),
+  "emergencyContactName": zod.string().nullish(),
+  "emergencyContactPhone": zod.string().nullish(),
+  "fatherFirstNames": zod.string().nullish(),
+  "motherFullName": zod.string().nullish(),
+  "showGender": zod.boolean(),
+  "showMaritalStatus": zod.boolean(),
+  "showEducationLevel": zod.boolean(),
   "privacy": zod.enum(['community', 'private']),
   "status": zod.enum(['approved', 'pending'])
 })
@@ -59,6 +70,17 @@ export const GetProfileResponse = zod.object({
   "email": zod.string().nullish(),
   "phone": zod.string().nullish(),
   "instagram": zod.string().nullish(),
+  "gender": zod.string().nullish(),
+  "maritalStatus": zod.string().nullish(),
+  "educationLevel": zod.string().nullish(),
+  "observations": zod.string().nullish(),
+  "emergencyContactName": zod.string().nullish(),
+  "emergencyContactPhone": zod.string().nullish(),
+  "fatherFirstNames": zod.string().nullish(),
+  "motherFullName": zod.string().nullish(),
+  "showGender": zod.boolean(),
+  "showMaritalStatus": zod.boolean(),
+  "showEducationLevel": zod.boolean(),
   "privacy": zod.enum(['community', 'private']),
   "status": zod.enum(['approved', 'pending'])
 })
@@ -100,6 +122,20 @@ export const createMembershipRequestBodyBioMax = 500;
 
 export const createMembershipRequestBodyProjectMax = 500;
 
+export const createMembershipRequestBodyObservationsMax = 1500;
+
+export const createMembershipRequestBodyEmergencyContactNameMin = 2;
+export const createMembershipRequestBodyEmergencyContactNameMax = 120;
+
+export const createMembershipRequestBodyEmergencyContactPhoneMin = 6;
+export const createMembershipRequestBodyEmergencyContactPhoneMax = 40;
+
+export const createMembershipRequestBodyFatherFirstNamesMin = 2;
+export const createMembershipRequestBodyFatherFirstNamesMax = 120;
+
+export const createMembershipRequestBodyMotherFullNameMin = 2;
+export const createMembershipRequestBodyMotherFullNameMax = 120;
+
 
 
 export const CreateMembershipRequestBody = zod.object({
@@ -110,7 +146,15 @@ export const CreateMembershipRequestBody = zod.object({
   "neighborhood": zod.string().min(createMembershipRequestBodyNeighborhoodMin).max(createMembershipRequestBodyNeighborhoodMax),
   "profession": zod.string().min(createMembershipRequestBodyProfessionMin).max(createMembershipRequestBodyProfessionMax),
   "bio": zod.string().min(createMembershipRequestBodyBioMin).max(createMembershipRequestBodyBioMax),
-  "project": zod.string().max(createMembershipRequestBodyProjectMax).nullish()
+  "project": zod.string().max(createMembershipRequestBodyProjectMax).nullish(),
+  "gender": zod.enum(['Masculin', 'Féminin']),
+  "maritalStatus": zod.enum(['Célibataire', 'Marié(e)', 'Divorcé(e)', 'Veuf / Veuve', 'Union libre', 'Pacsé(e)', 'Préfère ne pas répondre']),
+  "educationLevel": zod.enum(['Aucun', 'Primaire', 'Collège', 'Lycée', 'Baccalauréat', 'Bac +2', 'Bac +3', 'Bac +4', 'Bac +5', 'Master', 'Doctorat', 'Formation professionnelle', 'Autre']),
+  "observations": zod.string().max(createMembershipRequestBodyObservationsMax).nullish(),
+  "emergencyContactName": zod.string().min(createMembershipRequestBodyEmergencyContactNameMin).max(createMembershipRequestBodyEmergencyContactNameMax),
+  "emergencyContactPhone": zod.string().min(createMembershipRequestBodyEmergencyContactPhoneMin).max(createMembershipRequestBodyEmergencyContactPhoneMax),
+  "fatherFirstNames": zod.string().min(createMembershipRequestBodyFatherFirstNamesMin).max(createMembershipRequestBodyFatherFirstNamesMax),
+  "motherFullName": zod.string().min(createMembershipRequestBodyMotherFullNameMin).max(createMembershipRequestBodyMotherFullNameMax)
 })
 
 export const CreateMembershipRequestResponse = zod.object({
@@ -244,7 +288,18 @@ export const GetMemberProfileSettingsResponse = zod.object({
   "email": zod.string().nullish(),
   "phone": zod.string().nullish(),
   "showEmail": zod.boolean(),
-  "showPhone": zod.boolean()
+  "showPhone": zod.boolean(),
+  "gender": zod.string().nullish(),
+  "maritalStatus": zod.string().nullish(),
+  "educationLevel": zod.string().nullish(),
+  "observations": zod.string().nullish(),
+  "emergencyContactName": zod.string().nullish(),
+  "emergencyContactPhone": zod.string().nullish(),
+  "fatherFirstNames": zod.string().nullish(),
+  "motherFullName": zod.string().nullish(),
+  "showGender": zod.boolean(),
+  "showMaritalStatus": zod.boolean(),
+  "showEducationLevel": zod.boolean()
 })
 
 
@@ -271,6 +326,16 @@ export const updateMemberProfileBodyEmailMax = 254;
 
 export const updateMemberProfileBodyPhoneMax = 40;
 
+export const updateMemberProfileBodyObservationsMax = 1500;
+
+export const updateMemberProfileBodyEmergencyContactNameMax = 120;
+
+export const updateMemberProfileBodyEmergencyContactPhoneMax = 40;
+
+export const updateMemberProfileBodyFatherFirstNamesMax = 120;
+
+export const updateMemberProfileBodyMotherFullNameMax = 120;
+
 
 
 export const UpdateMemberProfileBody = zod.object({
@@ -283,7 +348,15 @@ export const UpdateMemberProfileBody = zod.object({
   "email": zod.string().max(updateMemberProfileBodyEmailMax).nullish(),
   "phone": zod.string().max(updateMemberProfileBodyPhoneMax).nullish(),
   "showEmail": zod.boolean(),
-  "showPhone": zod.boolean()
+  "showPhone": zod.boolean(),
+  "gender": zod.union([zod.literal('Masculin'),zod.literal('Féminin'),zod.literal(null)]).nullish(),
+  "maritalStatus": zod.union([zod.literal('Célibataire'),zod.literal('Marié(e)'),zod.literal('Divorcé(e)'),zod.literal('Veuf / Veuve'),zod.literal('Union libre'),zod.literal('Pacsé(e)'),zod.literal('Préfère ne pas répondre'),zod.literal(null)]).nullish(),
+  "educationLevel": zod.union([zod.literal('Aucun'),zod.literal('Primaire'),zod.literal('Collège'),zod.literal('Lycée'),zod.literal('Baccalauréat'),zod.literal('Bac +2'),zod.literal('Bac +3'),zod.literal('Bac +4'),zod.literal('Bac +5'),zod.literal('Master'),zod.literal('Doctorat'),zod.literal('Formation professionnelle'),zod.literal('Autre'),zod.literal(null)]).nullish(),
+  "observations": zod.string().max(updateMemberProfileBodyObservationsMax).nullish(),
+  "emergencyContactName": zod.string().max(updateMemberProfileBodyEmergencyContactNameMax).nullish(),
+  "emergencyContactPhone": zod.string().max(updateMemberProfileBodyEmergencyContactPhoneMax).nullish(),
+  "fatherFirstNames": zod.string().max(updateMemberProfileBodyFatherFirstNamesMax).nullish(),
+  "motherFullName": zod.string().max(updateMemberProfileBodyMotherFullNameMax).nullish()
 })
 
 export const updateMemberProfileResponseAvatarUrlMax = 500000;
@@ -302,7 +375,18 @@ export const UpdateMemberProfileResponse = zod.object({
   "email": zod.string().nullish(),
   "phone": zod.string().nullish(),
   "showEmail": zod.boolean(),
-  "showPhone": zod.boolean()
+  "showPhone": zod.boolean(),
+  "gender": zod.string().nullish(),
+  "maritalStatus": zod.string().nullish(),
+  "educationLevel": zod.string().nullish(),
+  "observations": zod.string().nullish(),
+  "emergencyContactName": zod.string().nullish(),
+  "emergencyContactPhone": zod.string().nullish(),
+  "fatherFirstNames": zod.string().nullish(),
+  "motherFullName": zod.string().nullish(),
+  "showGender": zod.boolean(),
+  "showMaritalStatus": zod.boolean(),
+  "showEducationLevel": zod.boolean()
 })
 
 
@@ -496,6 +580,14 @@ export const ListModerationRequestsResponseItem = zod.object({
   "profession": zod.string(),
   "bio": zod.string(),
   "project": zod.string().nullish(),
+  "gender": zod.enum(['Masculin', 'Féminin']),
+  "maritalStatus": zod.enum(['Célibataire', 'Marié(e)', 'Divorcé(e)', 'Veuf / Veuve', 'Union libre', 'Pacsé(e)', 'Préfère ne pas répondre']),
+  "educationLevel": zod.enum(['Aucun', 'Primaire', 'Collège', 'Lycée', 'Baccalauréat', 'Bac +2', 'Bac +3', 'Bac +4', 'Bac +5', 'Master', 'Doctorat', 'Formation professionnelle', 'Autre']),
+  "observations": zod.string().nullish(),
+  "emergencyContactName": zod.string(),
+  "emergencyContactPhone": zod.string(),
+  "fatherFirstNames": zod.string(),
+  "motherFullName": zod.string(),
   "submittedAt": zod.string(),
   "status": zod.enum(['pending', 'approved', 'rejected']),
   "memberCode": zod.string().nullish()
@@ -528,6 +620,14 @@ export const ReviewModerationRequestResponse = zod.object({
   "profession": zod.string(),
   "bio": zod.string(),
   "project": zod.string().nullish(),
+  "gender": zod.enum(['Masculin', 'Féminin']),
+  "maritalStatus": zod.enum(['Célibataire', 'Marié(e)', 'Divorcé(e)', 'Veuf / Veuve', 'Union libre', 'Pacsé(e)', 'Préfère ne pas répondre']),
+  "educationLevel": zod.enum(['Aucun', 'Primaire', 'Collège', 'Lycée', 'Baccalauréat', 'Bac +2', 'Bac +3', 'Bac +4', 'Bac +5', 'Master', 'Doctorat', 'Formation professionnelle', 'Autre']),
+  "observations": zod.string().nullish(),
+  "emergencyContactName": zod.string(),
+  "emergencyContactPhone": zod.string(),
+  "fatherFirstNames": zod.string(),
+  "motherFullName": zod.string(),
   "submittedAt": zod.string(),
   "status": zod.enum(['pending', 'approved', 'rejected']),
   "memberCode": zod.string().nullish()
@@ -572,6 +672,48 @@ export const DeleteModerationProfileParams = zod.object({
 })
 
 export const DeleteModerationProfileResponse = zod.void()
+
+
+/**
+ * @summary Choose which personal profile fields appear in the directory
+ */
+export const UpdateProfileVisibilityParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const UpdateProfileVisibilityBody = zod.object({
+  "showGender": zod.boolean(),
+  "showMaritalStatus": zod.boolean(),
+  "showEducationLevel": zod.boolean()
+})
+
+export const UpdateProfileVisibilityResponse = zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "initials": zod.string(),
+  "neighborhood": zod.string(),
+  "avatarUrl": zod.string().nullish(),
+  "bio": zod.string(),
+  "activities": zod.array(zod.string()),
+  "project": zod.string().nullish(),
+  "contact": zod.string().nullish(),
+  "email": zod.string().nullish(),
+  "phone": zod.string().nullish(),
+  "instagram": zod.string().nullish(),
+  "gender": zod.string().nullish(),
+  "maritalStatus": zod.string().nullish(),
+  "educationLevel": zod.string().nullish(),
+  "observations": zod.string().nullish(),
+  "emergencyContactName": zod.string().nullish(),
+  "emergencyContactPhone": zod.string().nullish(),
+  "fatherFirstNames": zod.string().nullish(),
+  "motherFullName": zod.string().nullish(),
+  "showGender": zod.boolean(),
+  "showMaritalStatus": zod.boolean(),
+  "showEducationLevel": zod.boolean(),
+  "privacy": zod.enum(['community', 'private']),
+  "status": zod.enum(['approved', 'pending'])
+})
 
 
 /**

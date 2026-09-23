@@ -26,4 +26,23 @@ export interface MemberProfileSettings {
   phone?: string | null;
   showEmail: boolean;
   showPhone: boolean;
+  /** @nullable */
+  gender?: string | null;
+  /** @nullable */
+  maritalStatus?: string | null;
+  /** @nullable */
+  educationLevel?: string | null;
+  /** @nullable */
+  observations?: string | null;
+  /** @nullable */
+  emergencyContactName?: string | null;
+  /** @nullable */
+  emergencyContactPhone?: string | null;
+  /** @nullable */
+  fatherFirstNames?: string | null;
+  /** @nullable */
+  motherFullName?: string | null;
+  showGender: boolean;
+  showMaritalStatus: boolean;
+  showEducationLevel: boolean;
 }

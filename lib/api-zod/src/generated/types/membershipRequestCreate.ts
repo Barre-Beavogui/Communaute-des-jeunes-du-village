@@ -5,6 +5,9 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { MembershipRequestCreateEducationLevel } from './membershipRequestCreateEducationLevel';
+import type { MembershipRequestCreateGender } from './membershipRequestCreateGender';
+import type { MembershipRequestCreateMaritalStatus } from './membershipRequestCreateMaritalStatus';
 
 export interface MembershipRequestCreate {
   /**
@@ -44,4 +47,32 @@ export interface MembershipRequestCreate {
      * @nullable
      */
   project?: string | null;
+  gender: MembershipRequestCreateGender;
+  maritalStatus: MembershipRequestCreateMaritalStatus;
+  educationLevel: MembershipRequestCreateEducationLevel;
+  /**
+     * @maxLength 1500
+     * @nullable
+     */
+  observations?: string | null;
+  /**
+     * @minLength 2
+     * @maxLength 120
+     */
+  emergencyContactName: string;
+  /**
+     * @minLength 6
+     * @maxLength 40
+     */
+  emergencyContactPhone: string;
+  /**
+     * @minLength 2
+     * @maxLength 120
+     */
+  fatherFirstNames: string;
+  /**
+     * @minLength 2
+     * @maxLength 120
+     */
+  motherFullName: string;
 }

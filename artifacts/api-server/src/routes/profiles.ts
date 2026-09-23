@@ -14,9 +14,9 @@ import { authorizationToken } from "../lib/member-auth.js";
 
 const router: IRouter = Router();
 
-function toProfile(
+export function toProfile(
   row: typeof profilesTable.$inferSelect,
-  includePrivateContacts = false,
+  includePrivateDetails = false,
 ) {
   const phone = row.loginPhone ?? row.contact;
   return {
@@ -28,18 +28,37 @@ function toProfile(
     bio: row.bio,
     activities: row.activities ?? [],
     project: row.project,
-    contact: includePrivateContacts || row.showPhone ? phone : null,
-    email: includePrivateContacts || row.showEmail ? row.loginEmail : null,
-    phone: includePrivateContacts || row.showPhone ? phone : null,
+    contact: includePrivateDetails || row.showPhone ? phone : null,
+    email: includePrivateDetails || row.showEmail ? row.loginEmail : null,
+    phone: includePrivateDetails || row.showPhone ? phone : null,
     instagram: null,
+    gender: includePrivateDetails || row.showGender ? row.gender : null,
+    maritalStatus:
+      includePrivateDetails || row.showMaritalStatus ? row.maritalStatus : null,
+    educationLevel:
+      includePrivateDetails || row.showEducationLevel
+        ? row.educationLevel
+        : null,
+    observations: includePrivateDetails ? row.observations : null,
+    emergencyContactName: includePrivateDetails
+      ? row.emergencyContactName
+      : null,
+    emergencyContactPhone: includePrivateDetails
+      ? row.emergencyContactPhone
+      : null,
+    fatherFirstNames: includePrivateDetails ? row.fatherFirstNames : null,
+    motherFullName: includePrivateDetails ? row.motherFullName : null,
+    showGender: row.showGender,
+    showMaritalStatus: row.showMaritalStatus,
+    showEducationLevel: row.showEducationLevel,
     privacy: row.privacy as "community" | "private",
     status: row.status as "approved" | "pending",
   };
 }
 
 router.get("/profiles", requireCommunityAccess, async (req, res) => {
-  const includePrivateContacts = isValidAdminToken(authorizationToken(req));
-  if (includePrivateContacts) {
+  const includePrivateDetails = isValidAdminToken(authorizationToken(req));
+  if (includePrivateDetails) {
     res.setHeader("Cache-Control", "private, no-store");
   }
   const rows = await db
@@ -48,14 +67,14 @@ router.get("/profiles", requireCommunityAccess, async (req, res) => {
     .where(eq(profilesTable.status, "approved"));
   res.json(
     ListProfilesResponse.parse(
-      rows.map((row) => toProfile(row, includePrivateContacts)),
+      rows.map((row) => toProfile(row, includePrivateDetails)),
     ),
   );
 });
 
 router.get("/profiles/:id", requireCommunityAccess, async (req, res) => {
-  const includePrivateContacts = isValidAdminToken(authorizationToken(req));
-  if (includePrivateContacts) {
+  const includePrivateDetails = isValidAdminToken(authorizationToken(req));
+  if (includePrivateDetails) {
     res.setHeader("Cache-Control", "private, no-store");
   }
   const params = GetProfileParams.parse(req.params);
@@ -67,7 +86,7 @@ router.get("/profiles/:id", requireCommunityAccess, async (req, res) => {
     res.status(404).json({ error: "Profil introuvable" });
     return;
   }
-  res.json(GetProfileResponse.parse(toProfile(row, includePrivateContacts)));
+  res.json(GetProfileResponse.parse(toProfile(row, includePrivateDetails)));
 });
 
 router.get("/members/summary", requireCommunityAccess, async (_req, res) => {

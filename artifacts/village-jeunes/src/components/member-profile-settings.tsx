@@ -42,7 +42,41 @@ type ProfileForm = {
   phone: string;
   showEmail: boolean;
   showPhone: boolean;
+  gender: string;
+  maritalStatus: string;
+  educationLevel: string;
+  observations: string;
+  emergencyContactName: string;
+  emergencyContactPhone: string;
+  fatherFirstNames: string;
+  motherFullName: string;
 };
+
+const maritalStatuses = [
+  "Célibataire",
+  "Marié(e)",
+  "Divorcé(e)",
+  "Veuf / Veuve",
+  "Union libre",
+  "Pacsé(e)",
+  "Préfère ne pas répondre",
+];
+
+const educationLevels = [
+  "Aucun",
+  "Primaire",
+  "Collège",
+  "Lycée",
+  "Baccalauréat",
+  "Bac +2",
+  "Bac +3",
+  "Bac +4",
+  "Bac +5",
+  "Master",
+  "Doctorat",
+  "Formation professionnelle",
+  "Autre",
+];
 
 const emptyForm: ProfileForm = {
   name: "",
@@ -55,6 +89,14 @@ const emptyForm: ProfileForm = {
   phone: "",
   showEmail: true,
   showPhone: true,
+  gender: "",
+  maritalStatus: "",
+  educationLevel: "",
+  observations: "",
+  emergencyContactName: "",
+  emergencyContactPhone: "",
+  fatherFirstNames: "",
+  motherFullName: "",
 };
 
 export function MemberProfileSettings({
@@ -91,6 +133,14 @@ export function MemberProfileSettings({
       phone: settingsQuery.data.phone ?? "",
       showEmail: settingsQuery.data.showEmail,
       showPhone: settingsQuery.data.showPhone,
+      gender: settingsQuery.data.gender ?? "",
+      maritalStatus: settingsQuery.data.maritalStatus ?? "",
+      educationLevel: settingsQuery.data.educationLevel ?? "",
+      observations: settingsQuery.data.observations ?? "",
+      emergencyContactName: settingsQuery.data.emergencyContactName ?? "",
+      emergencyContactPhone: settingsQuery.data.emergencyContactPhone ?? "",
+      fatherFirstNames: settingsQuery.data.fatherFirstNames ?? "",
+      motherFullName: settingsQuery.data.motherFullName ?? "",
     });
   }, [settingsQuery.data]);
 
@@ -135,6 +185,36 @@ export function MemberProfileSettings({
           phone: form.phone.trim() || null,
           showEmail: form.showEmail,
           showPhone: form.showPhone,
+          gender: (form.gender || null) as "Masculin" | "Féminin" | null,
+          maritalStatus: (form.maritalStatus || null) as
+            | "Célibataire"
+            | "Marié(e)"
+            | "Divorcé(e)"
+            | "Veuf / Veuve"
+            | "Union libre"
+            | "Pacsé(e)"
+            | "Préfère ne pas répondre"
+            | null,
+          educationLevel: (form.educationLevel || null) as
+            | "Aucun"
+            | "Primaire"
+            | "Collège"
+            | "Lycée"
+            | "Baccalauréat"
+            | "Bac +2"
+            | "Bac +3"
+            | "Bac +4"
+            | "Bac +5"
+            | "Master"
+            | "Doctorat"
+            | "Formation professionnelle"
+            | "Autre"
+            | null,
+          observations: form.observations.trim() || null,
+          emergencyContactName: form.emergencyContactName.trim() || null,
+          emergencyContactPhone: form.emergencyContactPhone.trim() || null,
+          fatherFirstNames: form.fatherFirstNames.trim() || null,
+          motherFullName: form.motherFullName.trim() || null,
         },
       },
       {
@@ -266,6 +346,53 @@ export function MemberProfileSettings({
             className="field"
           />
         </Field>
+        <Field label="Sexe">
+          <select
+            value={form.gender}
+            onChange={(event) => setField("gender", event.target.value)}
+            className="field"
+          >
+            <option value="">Non renseigné</option>
+            <option>Masculin</option>
+            <option>Féminin</option>
+          </select>
+        </Field>
+        <Field label="Situation matrimoniale">
+          <select
+            value={form.maritalStatus}
+            onChange={(event) => setField("maritalStatus", event.target.value)}
+            className="field"
+          >
+            <option value="">Non renseignée</option>
+            {maritalStatuses.map((status) => (
+              <option key={status}>{status}</option>
+            ))}
+          </select>
+        </Field>
+        <Field
+          label="Niveau d’études / qualification"
+          className="sm:col-span-2"
+        >
+          <select
+            value={form.educationLevel}
+            onChange={(event) => setField("educationLevel", event.target.value)}
+            className="field"
+          >
+            <option value="">Non renseigné</option>
+            {educationLevels.map((level) => (
+              <option key={level}>{level}</option>
+            ))}
+          </select>
+        </Field>
+        <div className="sm:col-span-2 rounded-2xl border border-primary/15 bg-primary/5 p-4 text-[11px] leading-5 text-muted-foreground">
+          <strong className="text-foreground">Publication contrôlée.</strong>{" "}
+          L’administrateur choisit si le sexe, la situation matrimoniale ou le
+          niveau d’études apparaît dans l’annuaire. Actuellement : sexe{" "}
+          {settingsQuery.data?.showGender ? "visible" : "privé"}, situation{" "}
+          {settingsQuery.data?.showMaritalStatus ? "visible" : "privée"}, niveau
+          d’études{" "}
+          {settingsQuery.data?.showEducationLevel ? "visible" : "privé"}.
+        </div>
         <Field label="Présentation" className="sm:col-span-2">
           <textarea
             required
@@ -302,6 +429,65 @@ export function MemberProfileSettings({
             value={form.phone}
             onChange={(event) => setField("phone", event.target.value)}
             className="field"
+          />
+        </Field>
+        <div className="sm:col-span-2 mt-2 rounded-2xl border border-border bg-background p-4">
+          <p className="text-xs font-extrabold">Informations administratives</p>
+          <p className="mt-1 text-[10px] leading-5 text-muted-foreground">
+            La filiation, le contact d’urgence et vos observations ne sont
+            jamais affichés dans l’annuaire.
+          </p>
+        </div>
+        <Field label="Prénoms du père">
+          <input
+            maxLength={120}
+            value={form.fatherFirstNames}
+            onChange={(event) =>
+              setField("fatherFirstNames", event.target.value)
+            }
+            className="field"
+          />
+        </Field>
+        <Field label="Prénom et nom de la mère">
+          <input
+            maxLength={120}
+            value={form.motherFullName}
+            onChange={(event) => setField("motherFullName", event.target.value)}
+            className="field"
+          />
+        </Field>
+        <Field label="Personne à contacter en cas d’urgence">
+          <input
+            maxLength={120}
+            value={form.emergencyContactName}
+            onChange={(event) =>
+              setField("emergencyContactName", event.target.value)
+            }
+            className="field"
+          />
+        </Field>
+        <Field label="Téléphone du contact d’urgence">
+          <input
+            type="tel"
+            maxLength={40}
+            value={form.emergencyContactPhone}
+            onChange={(event) =>
+              setField("emergencyContactPhone", event.target.value)
+            }
+            className="field"
+          />
+        </Field>
+        <Field
+          label="Observations et recommandations"
+          className="sm:col-span-2"
+        >
+          <textarea
+            maxLength={1500}
+            rows={5}
+            value={form.observations}
+            onChange={(event) => setField("observations", event.target.value)}
+            className="field resize-y"
+            placeholder="Vos suggestions pour améliorer l’organisation, la cohésion et les activités de l’association…"
           />
         </Field>
       </div>

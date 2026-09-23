@@ -5,6 +5,9 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { MembershipRequestEducationLevel } from './membershipRequestEducationLevel';
+import type { MembershipRequestGender } from './membershipRequestGender';
+import type { MembershipRequestMaritalStatus } from './membershipRequestMaritalStatus';
 import type { MembershipRequestStatus } from './membershipRequestStatus';
 
 export interface MembershipRequest {
@@ -23,6 +26,15 @@ export interface MembershipRequest {
   bio: string;
   /** @nullable */
   project?: string | null;
+  gender: MembershipRequestGender;
+  maritalStatus: MembershipRequestMaritalStatus;
+  educationLevel: MembershipRequestEducationLevel;
+  /** @nullable */
+  observations?: string | null;
+  emergencyContactName: string;
+  emergencyContactPhone: string;
+  fatherFirstNames: string;
+  motherFullName: string;
   submittedAt: string;
   status: MembershipRequestStatus;
   /** @nullable */

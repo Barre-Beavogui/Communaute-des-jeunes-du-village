@@ -27,6 +27,32 @@ const professions = [
   "Autre",
 ];
 
+const maritalStatuses = [
+  "Célibataire",
+  "Marié(e)",
+  "Divorcé(e)",
+  "Veuf / Veuve",
+  "Union libre",
+  "Pacsé(e)",
+  "Préfère ne pas répondre",
+];
+
+const educationLevels = [
+  "Aucun",
+  "Primaire",
+  "Collège",
+  "Lycée",
+  "Baccalauréat",
+  "Bac +2",
+  "Bac +3",
+  "Bac +4",
+  "Bac +5",
+  "Master",
+  "Doctorat",
+  "Formation professionnelle",
+  "Autre",
+];
+
 export default function JoinPage() {
   const createRequest = useCreateMembershipRequest();
   const [submitted, setSubmitted] = useState(false);
@@ -43,6 +69,14 @@ export default function JoinPage() {
     otherProfession: "",
     bio: "",
     project: "",
+    gender: "",
+    maritalStatus: "",
+    educationLevel: "",
+    observations: "",
+    emergencyContactName: "",
+    emergencyContactPhone: "",
+    fatherFirstNames: "",
+    motherFullName: "",
   });
   const setField = (field: keyof typeof form, value: string) =>
     setForm((current) => ({ ...current, [field]: value }));
@@ -84,6 +118,34 @@ export default function JoinPage() {
               : form.profession,
           bio: form.bio,
           project: form.project || null,
+          gender: form.gender as "Masculin" | "Féminin",
+          maritalStatus: form.maritalStatus as
+            | "Célibataire"
+            | "Marié(e)"
+            | "Divorcé(e)"
+            | "Veuf / Veuve"
+            | "Union libre"
+            | "Pacsé(e)"
+            | "Préfère ne pas répondre",
+          educationLevel: form.educationLevel as
+            | "Aucun"
+            | "Primaire"
+            | "Collège"
+            | "Lycée"
+            | "Baccalauréat"
+            | "Bac +2"
+            | "Bac +3"
+            | "Bac +4"
+            | "Bac +5"
+            | "Master"
+            | "Doctorat"
+            | "Formation professionnelle"
+            | "Autre",
+          observations: form.observations || null,
+          emergencyContactName: form.emergencyContactName,
+          emergencyContactPhone: form.emergencyContactPhone,
+          fatherFirstNames: form.fatherFirstNames,
+          motherFullName: form.motherFullName,
         },
       },
       { onSuccess: () => setSubmitted(true) },
@@ -131,9 +193,9 @@ export default function JoinPage() {
           <em className="text-primary">compte ici.</em>
         </h1>
         <p className="mt-6 max-w-sm text-sm leading-7 text-muted-foreground">
-          Présentez-vous en quelques lignes. Aucun âge n’est demandé. Après
-          validation, vous pourrez choisir si votre email et votre téléphone
-          restent visibles dans l’annuaire.
+          Présentez-vous en quelques lignes. Aucun âge n’est demandé. Vos
+          informations sensibles restent dans l’espace administratif et vous
+          pourrez mettre votre profil à jour après validation.
         </p>
         <div className="mt-8 space-y-3 text-xs font-semibold text-foreground/75">
           <p className="flex items-start gap-3">
@@ -245,6 +307,37 @@ export default function JoinPage() {
             />
           </label>
           <label className="block space-y-2 text-xs font-bold">
+            Sexe
+            <select
+              required
+              value={form.gender}
+              onChange={(event) => setField("gender", event.target.value)}
+              className="field"
+              data-testid="select-join-gender"
+            >
+              <option value="">Choisir</option>
+              <option>Masculin</option>
+              <option>Féminin</option>
+            </select>
+          </label>
+          <label className="block space-y-2 text-xs font-bold">
+            Situation matrimoniale
+            <select
+              required
+              value={form.maritalStatus}
+              onChange={(event) =>
+                setField("maritalStatus", event.target.value)
+              }
+              className="field"
+              data-testid="select-join-marital-status"
+            >
+              <option value="">Choisir une situation</option>
+              {maritalStatuses.map((status) => (
+                <option key={status}>{status}</option>
+              ))}
+            </select>
+          </label>
+          <label className="block space-y-2 text-xs font-bold">
             <span className="flex items-center gap-2">
               <Mail className="h-3.5 w-3.5 text-primary" />
               Email
@@ -331,6 +424,23 @@ export default function JoinPage() {
             </label>
           )}
           <label className="block space-y-2 text-xs font-bold sm:col-span-2">
+            Niveau d’études / qualification
+            <select
+              required
+              value={form.educationLevel}
+              onChange={(event) =>
+                setField("educationLevel", event.target.value)
+              }
+              className="field"
+              data-testid="select-join-education-level"
+            >
+              <option value="">Choisir un niveau</option>
+              {educationLevels.map((level) => (
+                <option key={level}>{level}</option>
+              ))}
+            </select>
+          </label>
+          <label className="block space-y-2 text-xs font-bold sm:col-span-2">
             Présentez-vous en quelques mots
             <textarea
               required
@@ -340,9 +450,14 @@ export default function JoinPage() {
               value={form.bio}
               onChange={(event) => setField("bio", event.target.value)}
               className="field resize-none"
-              placeholder="Votre parcours, vos centres d’intérêt, ce que vous aimez faire…"
+              placeholder="Exemple : Je m’appelle Gbadé Koivogui, je vis à Conakry. Présentez ensuite votre activité, vos compétences, vos centres d’intérêt et ce que vous souhaitez apporter à Zoboroma."
               data-testid="input-join-bio"
             />
+            <span className="block text-[10px] font-normal leading-5 text-muted-foreground">
+              Comme dans l’exemple de Gbadé Koivogui, indiquez simplement qui
+              vous êtes, où vous vivez, ce que vous faites et comment vous
+              aimeriez participer à la communauté.
+            </span>
             <span className="block text-right text-[10px] font-normal text-muted-foreground">
               {form.bio.length}/500
             </span>
@@ -362,6 +477,94 @@ export default function JoinPage() {
               data-testid="input-join-project"
             />
           </label>
+          <div className="sm:col-span-2 mt-2 rounded-2xl border border-primary/15 bg-primary/5 p-4">
+            <p className="text-xs font-extrabold text-primary">Filiation</p>
+            <p className="mt-1 text-[10px] leading-5 text-muted-foreground">
+              Ces informations restent uniquement visibles par l’administrateur.
+            </p>
+          </div>
+          <label className="block space-y-2 text-xs font-bold">
+            Prénoms du père
+            <input
+              required
+              minLength={2}
+              maxLength={120}
+              value={form.fatherFirstNames}
+              onChange={(event) =>
+                setField("fatherFirstNames", event.target.value)
+              }
+              className="field"
+              data-testid="input-join-father-first-names"
+            />
+          </label>
+          <label className="block space-y-2 text-xs font-bold">
+            Prénom et nom de la mère
+            <input
+              required
+              minLength={2}
+              maxLength={120}
+              value={form.motherFullName}
+              onChange={(event) =>
+                setField("motherFullName", event.target.value)
+              }
+              className="field"
+              data-testid="input-join-mother-full-name"
+            />
+          </label>
+          <div className="sm:col-span-2 mt-2 rounded-2xl border border-secondary/15 bg-secondary/5 p-4">
+            <p className="text-xs font-extrabold text-secondary">
+              Contact en cas d’urgence
+            </p>
+            <p className="mt-1 text-[10px] leading-5 text-muted-foreground">
+              Réservé à l’administrateur et jamais affiché dans l’annuaire.
+            </p>
+          </div>
+          <label className="block space-y-2 text-xs font-bold">
+            Personne à contacter en cas d’urgence
+            <input
+              required
+              minLength={2}
+              maxLength={120}
+              value={form.emergencyContactName}
+              onChange={(event) =>
+                setField("emergencyContactName", event.target.value)
+              }
+              className="field"
+              placeholder="Prénom et nom"
+              data-testid="input-join-emergency-contact-name"
+            />
+          </label>
+          <label className="block space-y-2 text-xs font-bold">
+            Téléphone du contact d’urgence
+            <input
+              required
+              type="tel"
+              minLength={6}
+              maxLength={40}
+              value={form.emergencyContactPhone}
+              onChange={(event) =>
+                setField("emergencyContactPhone", event.target.value)
+              }
+              className="field"
+              placeholder="+224…"
+              data-testid="input-join-emergency-contact-phone"
+            />
+          </label>
+          <label className="block space-y-2 text-xs font-bold sm:col-span-2">
+            Observations et recommandations
+            <textarea
+              maxLength={1500}
+              rows={5}
+              value={form.observations}
+              onChange={(event) => setField("observations", event.target.value)}
+              className="field resize-y"
+              placeholder="Formulez toute observation ou recommandation susceptible d’améliorer l’organisation, la cohésion, l’efficacité des activités et le bon fonctionnement de l’association."
+              data-testid="input-join-observations"
+            />
+            <span className="block text-[10px] font-normal leading-5 text-muted-foreground">
+              Cette réponse est réservée à l’administration.
+            </span>
+          </label>
         </div>
 
         <label className="mt-6 flex cursor-pointer items-start gap-3 rounded-xl border border-border bg-background p-4 text-xs leading-5 text-muted-foreground">
@@ -376,9 +579,11 @@ export default function JoinPage() {
             <strong className="text-foreground">
               J’accepte que l’équipe de Zoboroma examine ces informations.
             </strong>{" "}
-            L’email et le téléphone seront visibles dans l’annuaire après
-            validation. Si j’ajoute une photo, elle sera également visible sur
-            mon profil.
+            L’email, le téléphone et la photo pourront apparaître dans
+            l’annuaire. Le sexe, la situation matrimoniale et le niveau d’études
+            sont privés par défaut et ne pourront être publiés que par
+            l’administrateur. La filiation, le contact d’urgence et les
+            observations restent strictement administratifs.
           </span>
         </label>
 
@@ -399,8 +604,8 @@ export default function JoinPage() {
           {createRequest.isPending ? "Envoi en cours…" : "Envoyer ma demande"}
         </button>
         <p className="mt-4 flex items-center justify-center gap-1.5 text-center text-[10px] font-semibold text-muted-foreground">
-          <LockKeyhole className="h-3 w-3" /> Aucun âge demandé · coordonnées
-          visibles après validation
+          <LockKeyhole className="h-3 w-3" /> Données sensibles protégées ·
+          profil modifiable après connexion
         </p>
       </form>
     </div>
