@@ -281,7 +281,7 @@ export default function MemberLoginPage() {
           connecterez avec votre email ou votre numéro de téléphone.
         </p>
         <Link
-          href="/"
+          href="/inscription"
           className="mt-5 inline-flex text-xs font-extrabold text-primary"
         >
           Pas encore membre ? S’inscrire

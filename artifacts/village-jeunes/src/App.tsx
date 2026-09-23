@@ -16,6 +16,7 @@ import NewsPage from "@/pages/news";
 import NotFound from "@/pages/not-found";
 import PrivacyPage from "@/pages/privacy";
 import ZoboromaPage from "@/pages/zoboroma";
+import WelcomePage from "@/pages/welcome";
 import { hasMemberSession } from "@/lib/member-session";
 import { Route, Switch, useLocation, Router as WouterRouter } from "wouter";
 
@@ -27,7 +28,7 @@ function Router() {
     // survives a page crash.
     <RoutedErrorBoundary>
       <Switch>
-        <Route path="/" component={JoinPage} />
+        <Route path="/" component={WelcomePage} />
         <Route path="/accueil">
           <MemberOnly>
             <HomePage />
@@ -67,7 +68,7 @@ function Router() {
         <Route path="/inscription" component={JoinPage} />
         <Route path="/confidentialite" component={PrivacyPage} />
         <Route path="/admin" component={AdminPage} />
-        <Route>{hasMemberSession() ? <NotFound /> : <JoinPage />}</Route>
+        <Route>{hasMemberSession() ? <NotFound /> : <WelcomePage />}</Route>
       </Switch>
     </RoutedErrorBoundary>
   );

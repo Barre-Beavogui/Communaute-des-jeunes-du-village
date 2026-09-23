@@ -150,7 +150,7 @@ export function VillageShell({ children }: { children: ReactNode }) {
                   showPrivateNavigation
                     ? "/connexion-membre"
                     : location.startsWith("/connexion-membre")
-                      ? "/"
+                      ? "/inscription"
                       : "/connexion-membre"
                 }
                 className="flex items-center gap-2 rounded-full bg-foreground px-4 py-2.5 text-xs font-bold text-background hover:-translate-y-0.5 hover:shadow-lg"
@@ -240,7 +240,7 @@ export function VillageShell({ children }: { children: ReactNode }) {
                       ["/connexion-membre", "Mon espace membre"],
                     ]
                   : [
-                      ["/", "Demander une inscription"],
+                      ["/inscription", "Créer un compte"],
                       ["/connexion-membre", "Connexion membre"],
                     ]
                 ).map(([href, label]) => (
