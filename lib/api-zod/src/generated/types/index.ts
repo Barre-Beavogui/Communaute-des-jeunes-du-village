@@ -7,6 +7,10 @@
  */
 
 export * from './adminLogin';
+export * from './adminProfileUpdate';
+export * from './adminProfileUpdateEducationLevel';
+export * from './adminProfileUpdateGender';
+export * from './adminProfileUpdateMaritalStatus';
 export * from './adminSession';
 export * from './announcement';
 export * from './announcementCreate';

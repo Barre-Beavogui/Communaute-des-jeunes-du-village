@@ -48,6 +48,8 @@ export function toProfile(
       : null,
     fatherFirstNames: includePrivateDetails ? row.fatherFirstNames : null,
     motherFullName: includePrivateDetails ? row.motherFullName : null,
+    showEmail: row.showEmail,
+    showPhone: row.showPhone,
     showGender: row.showGender,
     showMaritalStatus: row.showMaritalStatus,
     showEducationLevel: row.showEducationLevel,

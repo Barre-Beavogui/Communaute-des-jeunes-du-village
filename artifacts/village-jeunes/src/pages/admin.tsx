@@ -39,6 +39,7 @@ import {
   useUpdateProfileVisibility,
 } from "@workspace/api-client-react";
 import { AdminCommunity } from "@/components/admin-community";
+import { AdminProfileEditor } from "@/components/admin-profile-editor";
 import { buildMemberInvitation } from "@/lib/member-invitation";
 import {
   AlertDialog,
@@ -1283,6 +1284,7 @@ export default function AdminPage() {
                 </div>
 
                 <div className="flex flex-wrap gap-2">
+                  <AdminProfileEditor profile={member} />
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
                       <button

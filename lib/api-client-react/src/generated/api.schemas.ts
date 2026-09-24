@@ -60,6 +60,8 @@ export interface Profile {
   fatherFirstNames?: string | null;
   /** @nullable */
   motherFullName?: string | null;
+  showEmail: boolean;
+  showPhone: boolean;
   showGender: boolean;
   showMaritalStatus: boolean;
   showEducationLevel: boolean;
@@ -587,6 +589,134 @@ export interface MemberProfileUpdate {
      * @nullable
      */
   motherFullName?: string | null;
+}
+
+/**
+ * @nullable
+ */
+export type AdminProfileUpdateGender = typeof AdminProfileUpdateGender[keyof typeof AdminProfileUpdateGender] | null;
+
+
+export const AdminProfileUpdateGender = {
+  Masculin: 'Masculin',
+  Féminin: 'Féminin',
+} as const;
+
+/**
+ * @nullable
+ */
+export type AdminProfileUpdateMaritalStatus = typeof AdminProfileUpdateMaritalStatus[keyof typeof AdminProfileUpdateMaritalStatus] | null;
+
+
+export const AdminProfileUpdateMaritalStatus = {
+  Célibataire: 'Célibataire',
+  'Marié(e)': 'Marié(e)',
+  'Divorcé(e)': 'Divorcé(e)',
+  'Veuf_/_Veuve': 'Veuf / Veuve',
+  Union_libre: 'Union libre',
+  'Pacsé(e)': 'Pacsé(e)',
+  Préfère_ne_pas_répondre: 'Préfère ne pas répondre',
+} as const;
+
+/**
+ * @nullable
+ */
+export type AdminProfileUpdateEducationLevel = typeof AdminProfileUpdateEducationLevel[keyof typeof AdminProfileUpdateEducationLevel] | null;
+
+
+export const AdminProfileUpdateEducationLevel = {
+  Aucun: 'Aucun',
+  Primaire: 'Primaire',
+  Collège: 'Collège',
+  Lycée: 'Lycée',
+  Baccalauréat: 'Baccalauréat',
+  'Bac_+2': 'Bac +2',
+  'Bac_+3': 'Bac +3',
+  'Bac_+4': 'Bac +4',
+  'Bac_+5': 'Bac +5',
+  Master: 'Master',
+  Doctorat: 'Doctorat',
+  Formation_professionnelle: 'Formation professionnelle',
+  Autre: 'Autre',
+} as const;
+
+export interface AdminProfileUpdate {
+  /**
+     * @minLength 2
+     * @maxLength 120
+     */
+  name: string;
+  /**
+     * @maxLength 500000
+     * @nullable
+     */
+  avatarUrl?: string | null;
+  /**
+     * @minLength 2
+     * @maxLength 120
+     */
+  neighborhood: string;
+  /**
+     * @minLength 10
+     * @maxLength 500
+     */
+  bio: string;
+  /**
+     * @minLength 2
+     * @maxLength 80
+     */
+  profession: string;
+  /**
+     * @maxLength 500
+     * @nullable
+     */
+  project?: string | null;
+  /**
+     * @maxLength 254
+     * @nullable
+     */
+  email?: string | null;
+  /**
+     * @maxLength 40
+     * @nullable
+     */
+  phone?: string | null;
+  showEmail: boolean;
+  showPhone: boolean;
+  /** @nullable */
+  gender?: AdminProfileUpdateGender;
+  /** @nullable */
+  maritalStatus?: AdminProfileUpdateMaritalStatus;
+  /** @nullable */
+  educationLevel?: AdminProfileUpdateEducationLevel;
+  /**
+     * @maxLength 1500
+     * @nullable
+     */
+  observations?: string | null;
+  /**
+     * @maxLength 120
+     * @nullable
+     */
+  emergencyContactName?: string | null;
+  /**
+     * @maxLength 40
+     * @nullable
+     */
+  emergencyContactPhone?: string | null;
+  /**
+     * @maxLength 120
+     * @nullable
+     */
+  fatherFirstNames?: string | null;
+  /**
+     * @maxLength 120
+     * @nullable
+     */
+  motherFullName?: string | null;
+  showGender: boolean;
+  showMaritalStatus: boolean;
+  showEducationLevel: boolean;
 }
 
 export type ChatMessageType = typeof ChatMessageType[keyof typeof ChatMessageType];

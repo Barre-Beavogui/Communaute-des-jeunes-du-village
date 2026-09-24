@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { and, desc, eq, or } from "drizzle-orm";
+import { and, desc, eq, ne, or } from "drizzle-orm";
 import { db } from "@workspace/db";
 import {
   announcementDislikesTable,
@@ -23,6 +23,9 @@ import {
   ReviewModerationRequestParams,
   ReviewModerationRequestBody,
   ReviewModerationRequestResponse,
+  UpdateModerationProfileBody,
+  UpdateModerationProfileParams,
+  UpdateModerationProfileResponse,
   UpdateProfileVisibilityBody,
   UpdateProfileVisibilityParams,
   UpdateProfileVisibilityResponse,
@@ -37,6 +40,7 @@ import {
 import { toProfile } from "./profiles.js";
 
 const router: IRouter = Router();
+const PROFILE_PHOTO_PATTERN = /^data:image\/jpeg;base64,[A-Za-z0-9+/]+={0,2}$/;
 
 function toRequest(row: typeof membershipRequestsTable.$inferSelect) {
   return {
@@ -285,6 +289,122 @@ router.patch("/moderation/profiles/:id/visibility", async (req, res) => {
     return;
   }
   res.json(UpdateProfileVisibilityResponse.parse(toProfile(updated, true)));
+});
+
+router.patch("/moderation/profiles/:id", async (req, res) => {
+  const params = UpdateModerationProfileParams.parse(req.params);
+  const body = UpdateModerationProfileBody.parse(req.body);
+  const email = body.email?.trim() || null;
+  const phone = body.phone?.trim() || null;
+  const normalizedEmail = email ? normalizeLoginEmail(email) : null;
+  const normalizedPhone = phone ? normalizeLoginPhone(phone) : null;
+
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    res.status(400).json({ error: "Adresse email invalide." });
+    return;
+  }
+  if (phone && (!normalizedPhone || normalizedPhone.length < 6)) {
+    res.status(400).json({ error: "Numéro de téléphone invalide." });
+    return;
+  }
+  if (body.avatarUrl && !PROFILE_PHOTO_PATTERN.test(body.avatarUrl)) {
+    res.status(400).json({ error: "La photo de profil est invalide." });
+    return;
+  }
+  const emergencyPhone = body.emergencyContactPhone?.trim() || null;
+  if (emergencyPhone) {
+    const normalizedEmergencyPhone = normalizeLoginPhone(emergencyPhone);
+    if (!normalizedEmergencyPhone || normalizedEmergencyPhone.length < 6) {
+      res
+        .status(400)
+        .json({ error: "Téléphone du contact d’urgence invalide." });
+      return;
+    }
+  }
+
+  const [emailConflict, phoneConflict] = await Promise.all([
+    normalizedEmail
+      ? db
+          .select({ id: profilesTable.id })
+          .from(profilesTable)
+          .where(
+            and(
+              ne(profilesTable.id, params.id),
+              eq(profilesTable.loginEmailNormalized, normalizedEmail),
+            ),
+          )
+      : Promise.resolve([]),
+    normalizedPhone
+      ? db
+          .select({ id: profilesTable.id })
+          .from(profilesTable)
+          .where(
+            and(
+              ne(profilesTable.id, params.id),
+              eq(profilesTable.loginPhoneNormalized, normalizedPhone),
+            ),
+          )
+      : Promise.resolve([]),
+  ]);
+  if (emailConflict.length || phoneConflict.length) {
+    res.status(409).json({
+      error: "Cet email ou ce téléphone est déjà utilisé par un autre compte.",
+    });
+    return;
+  }
+
+  const name = body.name.trim();
+  const initials = name
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((part) => part[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+  const [updated] = await db
+    .update(profilesTable)
+    .set({
+      name,
+      initials,
+      avatarUrl: body.avatarUrl || null,
+      neighborhood: body.neighborhood.trim(),
+      bio: body.bio.trim(),
+      activities: [body.profession.trim()],
+      project: body.project?.trim() || null,
+      contact: phone,
+      loginEmail: email,
+      loginEmailNormalized: normalizedEmail,
+      loginPhone: phone,
+      loginPhoneNormalized: normalizedPhone,
+      showEmail: Boolean(email && body.showEmail),
+      showPhone: Boolean(phone && body.showPhone),
+      gender: body.gender || null,
+      maritalStatus: body.maritalStatus || null,
+      educationLevel: body.educationLevel || null,
+      observations: body.observations?.trim() || null,
+      emergencyContactName: body.emergencyContactName?.trim() || null,
+      emergencyContactPhone: emergencyPhone,
+      fatherFirstNames: body.fatherFirstNames?.trim() || null,
+      motherFullName: body.motherFullName?.trim() || null,
+      showGender: Boolean(body.gender && body.showGender),
+      showMaritalStatus: Boolean(body.maritalStatus && body.showMaritalStatus),
+      showEducationLevel: Boolean(
+        body.educationLevel && body.showEducationLevel,
+      ),
+    })
+    .where(
+      and(
+        eq(profilesTable.id, params.id),
+        eq(profilesTable.status, "approved"),
+      ),
+    )
+    .returning();
+
+  if (!updated) {
+    res.status(404).json({ error: "Profil introuvable." });
+    return;
+  }
+  res.json(UpdateModerationProfileResponse.parse(toProfile(updated, true)));
 });
 
 router.delete("/moderation/profiles/:id", async (req, res) => {

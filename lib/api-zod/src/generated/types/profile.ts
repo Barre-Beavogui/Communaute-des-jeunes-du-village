@@ -43,6 +43,8 @@ export interface Profile {
   fatherFirstNames?: string | null;
   /** @nullable */
   motherFullName?: string | null;
+  showEmail: boolean;
+  showPhone: boolean;
   showGender: boolean;
   showMaritalStatus: boolean;
   showEducationLevel: boolean;

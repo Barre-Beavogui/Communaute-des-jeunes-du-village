@@ -21,6 +21,7 @@ import type {
 
 import type {
   AdminLogin,
+  AdminProfileUpdate,
   AdminSession,
   Announcement,
   AnnouncementCreate,
@@ -1926,6 +1927,78 @@ export const useCreatePasswordResetCode = <TError = ErrorType<void>,
         TContext
       > => {
       return useMutation(getCreatePasswordResetCodeMutationOptions(options));
+    }
+
+export const getUpdateModerationProfileUrl = (id: string,) => {
+
+
+
+
+  return `/api/moderation/profiles/${id}`
+}
+
+/**
+ * @summary Update all editable information for a community profile
+ */
+export const updateModerationProfile = async (id: string,
+    adminProfileUpdate: AdminProfileUpdate, options?: Parameters<typeof customFetch>[1]): Promise<Profile> => {
+
+  return customFetch<Profile>(getUpdateModerationProfileUrl(id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(adminProfileUpdate)
+  }
+);}
+
+
+
+
+
+export const getUpdateModerationProfileMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateModerationProfile>>, TError,{id: string;data: BodyType<AdminProfileUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateModerationProfile>>, TError,{id: string;data: BodyType<AdminProfileUpdate>}, TContext> => {
+
+const mutationKey = ['updateModerationProfile'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateModerationProfile>>, {id: string;data: BodyType<AdminProfileUpdate>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updateModerationProfile(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateModerationProfileMutationResult = NonNullable<Awaited<ReturnType<typeof updateModerationProfile>>>
+    export type UpdateModerationProfileMutationBody = BodyType<AdminProfileUpdate>
+    export type UpdateModerationProfileMutationError = ErrorType<void>
+
+    /**
+ * @summary Update all editable information for a community profile
+ */
+export const useUpdateModerationProfile = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateModerationProfile>>, TError,{id: string;data: BodyType<AdminProfileUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateModerationProfile>>,
+        TError,
+        {id: string;data: BodyType<AdminProfileUpdate>},
+        TContext
+      > => {
+      return useMutation(getUpdateModerationProfileMutationOptions(options));
     }
 
 export const getDeleteModerationProfileUrl = (id: string,) => {

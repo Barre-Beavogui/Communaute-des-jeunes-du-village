@@ -3,7 +3,6 @@ import {
   BriefcaseBusiness,
   Camera,
   Check,
-  HeartHandshake,
   LockKeyhole,
   Mail,
   MapPin,
@@ -182,46 +181,10 @@ export default function JoinPage() {
   }
 
   return (
-    <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[.72fr_1.28fr] lg:items-start">
-      <aside className="vj-enter lg:sticky lg:top-28">
-        <div className="grid h-12 w-12 place-items-center rounded-xl bg-primary text-primary-foreground">
-          <HeartHandshake className="h-6 w-6" />
-        </div>
-        <p className="mt-8 text-xs font-bold uppercase tracking-[.12em] text-primary">
-          Inscription
-        </p>
-        <h1 className="mt-3 text-4xl font-bold leading-tight tracking-[-.04em] sm:text-5xl">
-          Demande d’inscription
-        </h1>
-        <p className="mt-6 max-w-sm text-sm leading-7 text-muted-foreground">
-          Renseignez les informations nécessaires à la création de votre profil.
-          Vous pourrez les modifier depuis votre espace membre.
-        </p>
-        <div className="mt-8 space-y-3 text-xs font-semibold text-foreground/75">
-          <p className="flex items-start gap-3">
-            <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-accent text-[10px] font-extrabold">
-              1
-            </span>
-            Envoyez votre demande d’inscription.
-          </p>
-          <p className="flex items-start gap-3">
-            <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-accent text-[10px] font-extrabold">
-              2
-            </span>
-            L’administrateur vérifie les informations.
-          </p>
-          <p className="flex items-start gap-3">
-            <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-accent text-[10px] font-extrabold">
-              3
-            </span>
-            Après validation, vous recevez votre code d’activation.
-          </p>
-        </div>
-      </aside>
-
+    <div className="mx-auto max-w-4xl">
       <form
         onSubmit={submit}
-        className="vj-enter vj-enter-delay-1 rounded-2xl border border-border bg-card p-6 sm:p-9"
+        className="vj-enter rounded-2xl border border-border bg-card p-6 sm:p-9"
       >
         <div className="mb-8">
           <h2 className="text-xl font-extrabold tracking-[-.04em]">

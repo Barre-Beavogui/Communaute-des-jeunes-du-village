@@ -472,6 +472,33 @@ paths:
         "404":
           description: Request not found
   /moderation/profiles/{id}:
+    patch:
+      operationId: updateModerationProfile
+      tags: [moderation]
+      summary: Update all editable information for a community profile
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminProfileUpdate"
+      responses:
+        "200":
+          description: Updated community profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Profile"
+        "404":
+          description: Profile not found
+        "409":
+          description: Email or phone already used
     delete:
       operationId: deleteModerationProfile
       tags: [moderation]
@@ -646,6 +673,8 @@ components:
           activities,
           privacy,
           status,
+          showEmail,
+          showPhone,
           showGender,
           showMaritalStatus,
           showEducationLevel,
@@ -673,6 +702,8 @@ components:
         emergencyContactPhone: { type: ["string", "null"] }
         fatherFirstNames: { type: ["string", "null"] }
         motherFullName: { type: ["string", "null"] }
+        showEmail: { type: boolean }
+        showPhone: { type: boolean }
         showGender: { type: boolean }
         showMaritalStatus: { type: boolean }
         showEducationLevel: { type: boolean }
@@ -1000,6 +1031,72 @@ components:
         emergencyContactPhone: { type: ["string", "null"], maxLength: 40 }
         fatherFirstNames: { type: ["string", "null"], maxLength: 120 }
         motherFullName: { type: ["string", "null"], maxLength: 120 }
+    AdminProfileUpdate:
+      type: object
+      required:
+        [
+          name,
+          neighborhood,
+          bio,
+          profession,
+          showEmail,
+          showPhone,
+          showGender,
+          showMaritalStatus,
+          showEducationLevel,
+        ]
+      properties:
+        name: { type: string, minLength: 2, maxLength: 120 }
+        avatarUrl: { type: ["string", "null"], maxLength: 500000 }
+        neighborhood: { type: string, minLength: 2, maxLength: 120 }
+        bio: { type: string, minLength: 10, maxLength: 500 }
+        profession: { type: string, minLength: 2, maxLength: 80 }
+        project: { type: ["string", "null"], maxLength: 500 }
+        email: { type: ["string", "null"], maxLength: 254 }
+        phone: { type: ["string", "null"], maxLength: 40 }
+        showEmail: { type: boolean }
+        showPhone: { type: boolean }
+        gender: { type: ["string", "null"], enum: [Masculin, Féminin, null] }
+        maritalStatus:
+          type: ["string", "null"]
+          enum:
+            [
+              Célibataire,
+              Marié(e),
+              Divorcé(e),
+              Veuf / Veuve,
+              Union libre,
+              Pacsé(e),
+              Préfère ne pas répondre,
+              null,
+            ]
+        educationLevel:
+          type: ["string", "null"]
+          enum:
+            [
+              Aucun,
+              Primaire,
+              Collège,
+              Lycée,
+              Baccalauréat,
+              Bac +2,
+              Bac +3,
+              Bac +4,
+              Bac +5,
+              Master,
+              Doctorat,
+              Formation professionnelle,
+              Autre,
+              null,
+            ]
+        observations: { type: ["string", "null"], maxLength: 1500 }
+        emergencyContactName: { type: ["string", "null"], maxLength: 120 }
+        emergencyContactPhone: { type: ["string", "null"], maxLength: 40 }
+        fatherFirstNames: { type: ["string", "null"], maxLength: 120 }
+        motherFullName: { type: ["string", "null"], maxLength: 120 }
+        showGender: { type: boolean }
+        showMaritalStatus: { type: boolean }
+        showEducationLevel: { type: boolean }
     ChatMessage:
       type: object
       required: [id, profileId, memberName, initials, type, createdAt]
