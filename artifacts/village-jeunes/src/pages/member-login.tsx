@@ -262,32 +262,7 @@ export default function MemberLoginPage() {
   }
 
   return (
-    <div className="mx-auto grid min-h-[68vh] max-w-5xl items-center gap-10 lg:grid-cols-[1fr_.85fr]">
-      <section className="vj-enter">
-        <span className="grid h-14 w-14 place-items-center rounded-2xl bg-secondary text-secondary-foreground shadow-[5px_5px_0_hsl(var(--accent))]">
-          <ShieldCheck className="h-7 w-7" />
-        </span>
-        <p className="mt-8 font-mono text-[10px] font-bold uppercase tracking-[.18em] text-secondary">
-          Accès réservé aux membres
-        </p>
-        <h1 className="vj-display mt-3 text-6xl leading-[.88] sm:text-7xl">
-          Votre espace,
-          <br />
-          <em className="text-primary">votre communauté.</em>
-        </h1>
-        <p className="mt-6 max-w-md text-sm leading-7 text-muted-foreground">
-          Après validation de votre inscription, l’administrateur vous transmet
-          un code personnel et un lien d’activation. Ensuite, vous vous
-          connecterez avec votre email ou votre numéro de téléphone.
-        </p>
-        <Link
-          href="/inscription"
-          className="mt-5 inline-flex text-xs font-extrabold text-primary"
-        >
-          Pas encore membre ? S’inscrire
-        </Link>
-      </section>
-
+    <div className="mx-auto grid min-h-[68vh] max-w-lg place-items-center">
       <form
         onSubmit={
           mode === "activate"
@@ -296,7 +271,7 @@ export default function MemberLoginPage() {
               ? submitPasswordReset
               : submitLogin
         }
-        className="vj-enter vj-enter-delay-1 rounded-[28px] border border-border bg-card p-7 shadow-md sm:p-9"
+        className="vj-enter w-full rounded-[28px] border border-border bg-card p-7 shadow-md sm:p-9"
       >
         <div className="flex items-center gap-3">
           <span className="grid h-10 w-10 place-items-center rounded-xl bg-primary/10 text-primary">
@@ -305,18 +280,18 @@ export default function MemberLoginPage() {
           <div>
             <h2 className="text-lg font-extrabold tracking-[-.04em]">
               {mode === "activate"
-                ? "Première connexion"
+                ? "Activer votre compte"
                 : mode === "forgot"
-                  ? "Mot de passe oublié"
-                  : "Connexion membre"}
+                  ? "Réinitialiser le mot de passe"
+                  : "Connexion"}
             </h2>
-            <p className="text-xs text-muted-foreground">
-              {mode === "activate"
-                ? "Activez le compte avec le code reçu"
-                : mode === "forgot"
-                  ? "Demandez un nouveau code sécurisé"
-                  : "Email ou téléphone et mot de passe"}
-            </p>
+            {mode !== "login" && (
+              <p className="text-xs text-muted-foreground">
+                {mode === "activate"
+                  ? "Saisissez le code reçu."
+                  : "Saisissez l’email ou le numéro WhatsApp du compte."}
+              </p>
+            )}
           </div>
         </div>
 
