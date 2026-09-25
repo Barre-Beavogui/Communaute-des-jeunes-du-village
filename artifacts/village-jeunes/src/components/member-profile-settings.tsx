@@ -404,7 +404,7 @@ export function MemberProfileSettings({
             className="field resize-y"
           />
         </Field>
-        <Field label="Projet ou envie du moment" className="sm:col-span-2">
+        <Field label="Projet ou initiative" className="sm:col-span-2">
           <textarea
             maxLength={500}
             rows={3}

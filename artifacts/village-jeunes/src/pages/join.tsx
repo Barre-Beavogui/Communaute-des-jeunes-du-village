@@ -184,63 +184,58 @@ export default function JoinPage() {
   return (
     <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[.72fr_1.28fr] lg:items-start">
       <aside className="vj-enter lg:sticky lg:top-28">
-        <div className="grid h-12 w-12 place-items-center rounded-2xl bg-primary text-primary-foreground">
+        <div className="grid h-12 w-12 place-items-center rounded-xl bg-primary text-primary-foreground">
           <HeartHandshake className="h-6 w-6" />
         </div>
-        <p className="mt-8 font-mono text-[10px] font-bold uppercase tracking-[.18em] text-primary">
-          Rejoindre le recensement
+        <p className="mt-8 text-xs font-bold uppercase tracking-[.12em] text-primary">
+          Inscription
         </p>
-        <h1 className="vj-display mt-3 text-6xl leading-[.86] sm:text-7xl">
-          Votre parcours
-          <br />
-          <em className="text-primary">compte ici.</em>
+        <h1 className="mt-3 text-4xl font-bold leading-tight tracking-[-.04em] sm:text-5xl">
+          Demande d’inscription
         </h1>
         <p className="mt-6 max-w-sm text-sm leading-7 text-muted-foreground">
-          Présentez-vous en quelques lignes. Aucun âge n’est demandé. Vos
-          informations sensibles restent dans l’espace administratif et vous
-          pourrez mettre votre profil à jour après validation.
+          Renseignez les informations nécessaires à la création de votre profil.
+          Vous pourrez les modifier depuis votre espace membre.
         </p>
         <div className="mt-8 space-y-3 text-xs font-semibold text-foreground/75">
           <p className="flex items-start gap-3">
             <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-accent text-[10px] font-extrabold">
               1
             </span>
-            Vous envoyez votre demande.
+            Envoyez votre demande d’inscription.
           </p>
           <p className="flex items-start gap-3">
             <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-accent text-[10px] font-extrabold">
               2
             </span>
-            L’équipe vérifie les informations.
+            L’administrateur vérifie les informations.
           </p>
           <p className="flex items-start gap-3">
             <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-accent text-[10px] font-extrabold">
               3
             </span>
-            Après approbation, l’administrateur vous envoie votre code de
-            première connexion.
+            Après validation, vous recevez votre code d’activation.
           </p>
         </div>
       </aside>
 
       <form
         onSubmit={submit}
-        className="vj-enter vj-enter-delay-1 rounded-[28px] border border-border bg-card p-6 shadow-md sm:p-9"
+        className="vj-enter vj-enter-delay-1 rounded-2xl border border-border bg-card p-6 sm:p-9"
       >
         <div className="mb-8">
           <h2 className="text-xl font-extrabold tracking-[-.04em]">
             Formulaire d’inscription
           </h2>
           <p className="mt-1 text-xs text-muted-foreground">
-            Seules les informations essentielles sont obligatoires. Les autres
-            champs sont clairement indiqués comme facultatifs.
+            Renseignez les champs essentiels avec des informations exactes.
           </p>
         </div>
 
         <div className="grid gap-5 sm:grid-cols-2">
-          <div className="rounded-2xl border border-border bg-background p-4 sm:col-span-2">
+          <div className="rounded-xl border border-border bg-background p-4 sm:col-span-2">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-              <div className="grid h-24 w-24 shrink-0 place-items-center overflow-hidden rounded-[28%] bg-muted text-primary ring-4 ring-card">
+              <div className="grid h-24 w-24 shrink-0 place-items-center overflow-hidden rounded-xl bg-muted text-primary">
                 {form.avatarUrl ? (
                   <img
                     src={form.avatarUrl}
@@ -255,11 +250,10 @@ export default function JoinPage() {
               <div className="min-w-0 flex-1">
                 <p className="text-xs font-extrabold">Photo de profil</p>
                 <p className="mt-1 text-[11px] leading-5 text-muted-foreground">
-                  Facultative · JPG, PNG ou WebP · recadrée automatiquement au
-                  format carré.
+                  JPG, PNG ou WebP · recadrage automatique au format carré.
                 </p>
                 <div className="mt-3 flex flex-wrap gap-2">
-                  <label className="inline-flex cursor-pointer items-center gap-2 rounded-full bg-foreground px-4 py-2.5 text-xs font-bold text-background hover:-translate-y-0.5">
+                  <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-foreground px-4 py-2.5 text-xs font-bold text-background hover:bg-foreground/90">
                     <Camera className="h-4 w-4" />
                     {processingPhoto
                       ? "Préparation…"
@@ -279,7 +273,7 @@ export default function JoinPage() {
                     <button
                       type="button"
                       onClick={() => setField("avatarUrl", "")}
-                      className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2.5 text-xs font-bold text-muted-foreground hover:border-destructive hover:text-destructive"
+                      className="inline-flex items-center gap-2 rounded-lg border border-border px-4 py-2.5 text-xs font-bold text-muted-foreground hover:border-destructive hover:text-destructive"
                     >
                       <Trash2 className="h-4 w-4" /> Retirer
                     </button>
@@ -324,7 +318,7 @@ export default function JoinPage() {
             />
           </label>
           <label className="block space-y-2 text-xs font-bold">
-            Sexe <OptionalLabel />
+            Sexe
             <select
               value={form.gender}
               onChange={(event) => setField("gender", event.target.value)}
@@ -337,7 +331,7 @@ export default function JoinPage() {
             </select>
           </label>
           <label className="block space-y-2 text-xs font-bold">
-            Situation matrimoniale <OptionalLabel />
+            Situation matrimoniale
             <select
               value={form.maritalStatus}
               onChange={(event) =>
@@ -438,7 +432,7 @@ export default function JoinPage() {
             </label>
           )}
           <label className="block space-y-2 text-xs font-bold sm:col-span-2">
-            Niveau d’études / qualification <OptionalLabel />
+            Niveau d’études / qualification
             <select
               value={form.educationLevel}
               onChange={(event) =>
@@ -454,7 +448,7 @@ export default function JoinPage() {
             </select>
           </label>
           <label className="block space-y-2 text-xs font-bold sm:col-span-2">
-            Présentez-vous en quelques mots
+            Présentation
             <textarea
               required
               minLength={10}
@@ -463,23 +457,20 @@ export default function JoinPage() {
               value={form.bio}
               onChange={(event) => setField("bio", event.target.value)}
               className="field resize-none"
-              placeholder="Exemple : Je m’appelle Gbadé Koivogui, je vis à Conakry. Présentez ensuite votre activité, vos compétences, vos centres d’intérêt et ce que vous souhaitez apporter à Zoboroma."
+              placeholder="Exemple : Je réside à Conakry, j’exerce dans…, mes compétences sont… et je souhaite contribuer à…"
               data-testid="input-join-bio"
             />
             <span className="block text-[10px] font-normal leading-5 text-muted-foreground">
-              Comme dans l’exemple de Gbadé Koivogui, indiquez simplement qui
-              vous êtes, où vous vivez, ce que vous faites et comment vous
-              aimeriez participer à la communauté.
+              Présentez brièvement votre parcours, votre activité, vos
+              compétences et la contribution que vous souhaitez apporter à la
+              communauté.
             </span>
             <span className="block text-right text-[10px] font-normal text-muted-foreground">
               {form.bio.length}/500
             </span>
           </label>
           <label className="block space-y-2 text-xs font-bold sm:col-span-2">
-            Projet ou envie du moment{" "}
-            <span className="font-normal text-muted-foreground">
-              (facultatif)
-            </span>
+            Projet ou initiative
             <textarea
               maxLength={500}
               rows={3}
@@ -497,7 +488,7 @@ export default function JoinPage() {
             </p>
           </div>
           <label className="block space-y-2 text-xs font-bold">
-            Prénoms du père <OptionalLabel />
+            Prénoms du père
             <input
               minLength={2}
               maxLength={120}
@@ -510,7 +501,7 @@ export default function JoinPage() {
             />
           </label>
           <label className="block space-y-2 text-xs font-bold">
-            Prénom et nom de la mère <OptionalLabel />
+            Prénom et nom de la mère
             <input
               minLength={2}
               maxLength={120}
@@ -531,7 +522,7 @@ export default function JoinPage() {
             </p>
           </div>
           <label className="block space-y-2 text-xs font-bold">
-            Personne à contacter en cas d’urgence <OptionalLabel />
+            Personne à contacter en cas d’urgence
             <input
               minLength={2}
               maxLength={120}
@@ -545,7 +536,7 @@ export default function JoinPage() {
             />
           </label>
           <label className="block space-y-2 text-xs font-bold">
-            Téléphone du contact d’urgence <OptionalLabel />
+            Téléphone du contact d’urgence
             <input
               type="tel"
               minLength={6}
@@ -586,13 +577,11 @@ export default function JoinPage() {
           />
           <span>
             <strong className="text-foreground">
-              J’accepte que l’équipe de Zoboroma examine ces informations.
+              J’autorise le traitement de ces informations pour gérer mon
+              inscription et mon profil.
             </strong>{" "}
-            L’email, le numéro WhatsApp et la photo pourront apparaître dans
-            l’annuaire. Le sexe, la situation matrimoniale et le niveau d’études
-            sont privés par défaut et ne pourront être publiés que par
-            l’administrateur. La filiation, le contact d’urgence et les
-            observations restent strictement administratifs.
+            Les données réservées à l’administration ne sont pas publiées dans
+            l’annuaire.
           </span>
         </label>
 
@@ -606,23 +595,16 @@ export default function JoinPage() {
         <button
           type="submit"
           disabled={createRequest.isPending || processingPhoto || !consent}
-          className="mt-7 flex w-full items-center justify-center gap-2 rounded-full bg-primary px-5 py-3.5 text-xs font-extrabold text-primary-foreground hover:-translate-y-0.5 hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-50"
+          className="mt-7 flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-5 py-3.5 text-xs font-extrabold text-primary-foreground hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
           data-testid="button-submit-join"
         >
           <Send className="h-4 w-4" />
           {createRequest.isPending ? "Envoi en cours…" : "Envoyer ma demande"}
         </button>
         <p className="mt-4 flex items-center justify-center gap-1.5 text-center text-[10px] font-semibold text-muted-foreground">
-          <LockKeyhole className="h-3 w-3" /> Données sensibles protégées ·
-          profil modifiable après connexion
+          <LockKeyhole className="h-3 w-3" /> Profil modifiable après connexion
         </p>
       </form>
     </div>
-  );
-}
-
-function OptionalLabel() {
-  return (
-    <span className="font-normal text-muted-foreground">(facultatif)</span>
   );
 }

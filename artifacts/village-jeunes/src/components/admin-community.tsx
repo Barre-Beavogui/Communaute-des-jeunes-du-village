@@ -188,7 +188,7 @@ function AdminAnnouncements() {
           </label>
 
           <div>
-            <p className="text-xs font-bold">Média facultatif</p>
+            <p className="text-xs font-bold">Média</p>
             <div className="mt-2 grid grid-cols-3 gap-2">
               {(
                 [

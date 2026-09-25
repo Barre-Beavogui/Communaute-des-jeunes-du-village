@@ -137,7 +137,7 @@ export default function MemberPage() {
               <div className="space-y-9">
                 <div>
                   <p className="font-mono text-[10px] font-bold uppercase tracking-[.17em] text-primary">
-                    En quelques mots
+                    Présentation
                   </p>
                   <p
                     className="mt-3 text-lg leading-8 text-foreground/85"
@@ -148,7 +148,7 @@ export default function MemberPage() {
                 </div>
                 <div>
                   <p className="font-mono text-[10px] font-bold uppercase tracking-[.17em] text-primary">
-                    Ses terrains de jeu
+                    Activités et compétences
                   </p>
                   <div className="mt-4 flex flex-wrap gap-2">
                     {profile.activities.map((tag) => (
@@ -204,7 +204,7 @@ export default function MemberPage() {
                 {profile.project && (
                   <div className="rounded-2xl bg-secondary px-5 py-5 text-secondary-foreground">
                     <p className="font-mono text-[10px] font-bold uppercase tracking-[.17em] text-secondary-foreground/70">
-                      Son projet en ce moment
+                      Projet ou initiative
                     </p>
                     <p
                       className="mt-3 text-base font-bold leading-7"

@@ -1,74 +1,39 @@
-import { ArrowRight, KeyRound, UserPlus, UsersRound } from "lucide-react";
+import { KeyRound, UserPlus } from "lucide-react";
 import { Link } from "wouter";
 
 export default function WelcomePage() {
   return (
-    <div className="mx-auto flex min-h-[68vh] max-w-5xl items-center">
-      <section className="vj-enter w-full overflow-hidden rounded-[32px] border border-border bg-card shadow-md">
-        <div className="grid lg:grid-cols-[1.05fr_.95fr]">
-          <div className="bg-foreground px-6 py-12 text-background sm:px-10 sm:py-16">
-            <span className="grid h-14 w-14 place-items-center rounded-2xl bg-primary text-primary-foreground shadow-[5px_5px_0_hsl(var(--accent))]">
-              <UsersRound className="h-7 w-7" />
-            </span>
-            <p className="mt-9 font-mono text-[10px] font-bold uppercase tracking-[.2em] text-accent">
-              Bienvenue sur Zoboroma Jeunes
-            </p>
-            <h1 className="vj-display mt-4 text-6xl leading-[.86] sm:text-7xl">
-              Retrouvons-nous
-              <br />
-              <em className="text-primary">au même endroit.</em>
-            </h1>
-            <p className="mt-6 max-w-lg text-sm leading-7 text-background/68">
-              Connectez-vous pour accéder à la communauté. Si vous n’avez pas
-              encore de compte, envoyez votre demande d’inscription.
-            </p>
-          </div>
-
-          <div className="grid content-center gap-4 p-6 sm:p-10">
-            <Link
-              href="/connexion-membre"
-              className="group rounded-[24px] border border-primary/20 bg-primary p-6 text-primary-foreground transition hover:-translate-y-1 hover:shadow-lg"
-              data-testid="link-welcome-login"
-            >
-              <span className="grid h-11 w-11 place-items-center rounded-2xl bg-primary-foreground/15">
-                <KeyRound className="h-5 w-5" />
-              </span>
-              <h2 className="mt-5 text-2xl font-extrabold tracking-[-.04em]">
-                Connectez-vous
-              </h2>
-              <p className="mt-2 text-xs leading-6 text-primary-foreground/75">
-                Utilisez votre email ou votre numéro WhatsApp et votre mot de
-                passe.
-              </p>
-              <span className="mt-5 inline-flex items-center gap-2 text-xs font-extrabold">
-                Ouvrir mon espace
-                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-              </span>
-            </Link>
-
-            <Link
-              href="/inscription"
-              className="group rounded-[24px] border border-border bg-background p-6 transition hover:-translate-y-1 hover:border-secondary hover:shadow-lg"
-              data-testid="link-welcome-signup"
-            >
-              <span className="grid h-11 w-11 place-items-center rounded-2xl bg-secondary/12 text-secondary">
-                <UserPlus className="h-5 w-5" />
-              </span>
-              <h2 className="mt-5 text-2xl font-extrabold tracking-[-.04em]">
-                Créer un compte
-              </h2>
-              <p className="mt-2 text-xs leading-6 text-muted-foreground">
-                Remplissez le formulaire pour demander votre inscription à la
-                communauté.
-              </p>
-              <span className="mt-5 inline-flex items-center gap-2 text-xs font-extrabold text-secondary">
-                Commencer l’inscription
-                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-              </span>
-            </Link>
-          </div>
+    <main className="flex min-h-[100dvh] items-center justify-center bg-[#f3f5f2] px-5 py-10 text-[#17251f]">
+      <section className="w-full max-w-sm rounded-2xl border border-[#d5dcd7] bg-white p-6 sm:p-8">
+        <div className="mb-8 flex items-center justify-center gap-3">
+          <span className="grid h-11 w-11 place-items-center rounded-xl bg-[#244f43] text-sm font-bold text-white">
+            ZJ
+          </span>
+          <span className="text-lg font-bold tracking-[-.03em]">
+            Zoboroma Jeunes
+          </span>
         </div>
+
+        <nav className="grid gap-3" aria-label="Accès au site">
+          <Link
+            href="/connexion-membre"
+            className="flex min-h-14 items-center justify-center gap-3 rounded-xl bg-[#244f43] px-5 text-sm font-bold text-white transition-colors hover:bg-[#1b3d34] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#244f43] focus-visible:ring-offset-2"
+            data-testid="link-welcome-login"
+          >
+            <KeyRound className="h-4 w-4" />
+            Se connecter
+          </Link>
+
+          <Link
+            href="/inscription"
+            className="flex min-h-14 items-center justify-center gap-3 rounded-xl border border-[#b9c6bf] bg-white px-5 text-sm font-bold text-[#244f43] transition-colors hover:bg-[#eef2ef] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#244f43] focus-visible:ring-offset-2"
+            data-testid="link-welcome-signup"
+          >
+            <UserPlus className="h-4 w-4" />
+            Créer un compte
+          </Link>
+        </nav>
       </section>
-    </div>
+    </main>
   );
 }

@@ -79,69 +79,69 @@
   --elevate-1: rgba(0, 0, 0, 0.03);
   --elevate-2: rgba(0, 0, 0, 0.08);
 
-  --background: 42 40% 94%;
+  --background: 140 14% 96%;
 
-  --foreground: 300 18% 18%;
+  --foreground: 157 24% 15%;
 
-  --border: 36 22% 84%;
+  --border: 145 12% 83%;
 
-  --card: 42 44% 98%;
+  --card: 0 0% 100%;
 
-  --card-foreground: 300 18% 18%;
+  --card-foreground: 157 24% 15%;
 
-  --card-border: 36 22% 86%;
+  --card-border: 145 12% 85%;
 
-  --sidebar: 300 22% 20%;
+  --sidebar: 158 37% 20%;
 
-  --sidebar-foreground: 42 40% 94%;
+  --sidebar-foreground: 140 14% 96%;
 
-  --sidebar-border: 300 17% 29%;
+  --sidebar-border: 158 25% 30%;
 
-  --sidebar-primary: 18 67% 54%;
+  --sidebar-primary: 37 45% 51%;
 
-  --sidebar-primary-foreground: 42 44% 98%;
+  --sidebar-primary-foreground: 0 0% 100%;
 
-  --sidebar-accent: 300 17% 28%;
+  --sidebar-accent: 158 28% 27%;
 
-  --sidebar-accent-foreground: 42 40% 94%;
+  --sidebar-accent-foreground: 140 14% 96%;
 
-  --sidebar-ring: 18 67% 54%;
+  --sidebar-ring: 37 45% 51%;
 
-  --popover: 42 44% 98%;
+  --popover: 0 0% 100%;
 
-  --popover-foreground: 300 18% 18%;
+  --popover-foreground: 157 24% 15%;
 
-  --popover-border: 36 22% 84%;
+  --popover-border: 145 12% 83%;
 
-  --primary: 18 67% 54%;
+  --primary: 158 37% 29%;
 
-  --primary-foreground: 42 44% 98%;
+  --primary-foreground: 0 0% 100%;
 
-  --secondary: 162 31% 40%;
+  --secondary: 37 45% 46%;
 
-  --secondary-foreground: 42 44% 98%;
+  --secondary-foreground: 0 0% 100%;
 
-  --muted: 40 26% 88%;
+  --muted: 142 12% 91%;
 
-  --muted-foreground: 300 10% 43%;
+  --muted-foreground: 155 10% 42%;
 
-  --accent: 43 82% 66%;
+  --accent: 39 45% 86%;
 
-  --accent-foreground: 300 18% 18%;
+  --accent-foreground: 157 24% 15%;
 
   --destructive: 1 65% 51%;
 
-  --destructive-foreground: 42 44% 98%;
+  --destructive-foreground: 0 0% 100%;
 
-  --input: 36 22% 78%;
-  --ring: 18 67% 54%;
-  --chart-1: 18 67% 54%;
-  --chart-2: 162 31% 40%;
-  --chart-3: 43 82% 66%;
-  --chart-4: 300 22% 20%;
-  --chart-5: 24 68% 70%;
+  --input: 145 12% 76%;
+  --ring: 158 37% 29%;
+  --chart-1: 158 37% 29%;
+  --chart-2: 37 45% 46%;
+  --chart-3: 203 35% 42%;
+  --chart-4: 157 24% 15%;
+  --chart-5: 18 40% 55%;
 
-  --app-font-sans: "Inter", sans-serif;
+  --app-font-sans: "Plus Jakarta Sans", sans-serif;
   --app-font-serif: Georgia, serif;
   --app-font-mono: Menlo, monospace;
   --radius: 0.5rem; /* 8px */
@@ -433,49 +433,49 @@
   }
 }
 
-/* Village Jeunes — “sunlit courtyard” palette */
+/* Village Jeunes — restrained community palette */
 :root {
-  --background: 42 40% 94%;
-  --foreground: 300 18% 18%;
-  --border: 36 22% 84%;
-  --card: 42 44% 98%;
-  --card-foreground: 300 18% 18%;
-  --card-border: 36 22% 86%;
-  --sidebar: 300 22% 20%;
-  --sidebar-foreground: 42 40% 94%;
-  --sidebar-border: 300 17% 29%;
-  --sidebar-primary: 18 67% 54%;
-  --sidebar-primary-foreground: 42 44% 98%;
-  --sidebar-accent: 300 17% 28%;
-  --sidebar-accent-foreground: 42 40% 94%;
-  --sidebar-ring: 18 67% 54%;
-  --popover: 42 44% 98%;
-  --popover-foreground: 300 18% 18%;
-  --popover-border: 36 22% 84%;
-  --primary: 18 67% 54%;
-  --primary-foreground: 42 44% 98%;
-  --secondary: 162 31% 40%;
-  --secondary-foreground: 42 44% 98%;
-  --muted: 40 26% 88%;
-  --muted-foreground: 300 10% 43%;
-  --accent: 43 82% 66%;
-  --accent-foreground: 300 18% 18%;
+  --background: 140 14% 96%;
+  --foreground: 157 24% 15%;
+  --border: 145 12% 83%;
+  --card: 0 0% 100%;
+  --card-foreground: 157 24% 15%;
+  --card-border: 145 12% 85%;
+  --sidebar: 158 37% 20%;
+  --sidebar-foreground: 140 14% 96%;
+  --sidebar-border: 158 25% 30%;
+  --sidebar-primary: 37 45% 51%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 158 28% 27%;
+  --sidebar-accent-foreground: 140 14% 96%;
+  --sidebar-ring: 37 45% 51%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 157 24% 15%;
+  --popover-border: 145 12% 83%;
+  --primary: 158 37% 29%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 37 45% 46%;
+  --secondary-foreground: 0 0% 100%;
+  --muted: 142 12% 91%;
+  --muted-foreground: 155 10% 42%;
+  --accent: 39 45% 86%;
+  --accent-foreground: 157 24% 15%;
   --destructive: 1 65% 51%;
-  --destructive-foreground: 42 44% 98%;
-  --input: 36 22% 78%;
-  --ring: 18 67% 54%;
-  --chart-1: 18 67% 54%;
-  --chart-2: 162 31% 40%;
-  --chart-3: 43 82% 66%;
-  --chart-4: 300 22% 20%;
-  --chart-5: 24 68% 70%;
+  --destructive-foreground: 0 0% 100%;
+  --input: 145 12% 76%;
+  --ring: 158 37% 29%;
+  --chart-1: 158 37% 29%;
+  --chart-2: 37 45% 46%;
+  --chart-3: 203 35% 42%;
+  --chart-4: 157 24% 15%;
+  --chart-5: 18 40% 55%;
   --app-font-sans: "Plus Jakarta Sans", sans-serif;
   --app-font-serif: "Instrument Serif", Georgia, serif;
   --app-font-mono: "Space Mono", monospace;
-  --radius: 1rem;
-  --shadow-sm: 0 3px 12px hsl(300 18% 18% / 0.06);
-  --shadow-md: 0 12px 28px hsl(300 18% 18% / 0.09);
-  --shadow-lg: 0 22px 55px hsl(300 18% 18% / 0.12);
+  --radius: 0.75rem;
+  --shadow-sm: 0 1px 3px hsl(157 24% 15% / 0.06);
+  --shadow-md: 0 8px 24px hsl(157 24% 15% / 0.08);
+  --shadow-lg: 0 16px 40px hsl(157 24% 15% / 0.1);
 }
 
 .dark {
@@ -521,9 +521,7 @@ html {
 
 body {
   min-width: 320px;
-  background:
-    radial-gradient(circle at 8% 5%, hsl(43 82% 66% / 0.16), transparent 24rem),
-    hsl(var(--background));
+  background: hsl(var(--background));
 }
 
 button,

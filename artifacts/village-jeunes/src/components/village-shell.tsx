@@ -94,6 +94,10 @@ export function VillageShell({ children }: { children: ReactNode }) {
     if (choice.outcome === "accepted") setInstallPrompt(null);
   };
 
+  if (location === "/") {
+    return <>{children}</>;
+  }
+
   return (
     <div className="vj-noise min-h-[100dvh] bg-background text-foreground">
       <header className="sticky top-0 z-40 border-b border-border/70 bg-background/90 backdrop-blur-xl">
@@ -103,7 +107,7 @@ export function VillageShell({ children }: { children: ReactNode }) {
             className="group flex items-center gap-3"
             data-testid="link-home-logo"
           >
-            <span className="grid h-11 w-11 rotate-[-5deg] place-items-center rounded-[13px] bg-primary text-sm font-extrabold tracking-[-0.08em] text-primary-foreground shadow-[4px_4px_0_hsl(var(--accent))] transition-transform group-hover:rotate-0">
+            <span className="grid h-11 w-11 place-items-center rounded-xl bg-primary text-sm font-extrabold tracking-[-0.05em] text-primary-foreground">
               ZJ
             </span>
             <span className="hidden text-[15px] font-extrabold tracking-[-0.04em] lg:block">
@@ -153,7 +157,7 @@ export function VillageShell({ children }: { children: ReactNode }) {
                       ? "/inscription"
                       : "/connexion-membre"
                 }
-                className="flex items-center gap-2 rounded-full bg-foreground px-4 py-2.5 text-xs font-bold text-background hover:-translate-y-0.5 hover:shadow-lg"
+                className="flex items-center gap-2 rounded-lg bg-foreground px-4 py-2.5 text-xs font-bold text-background hover:bg-foreground/90"
                 data-testid="link-member-header"
               >
                 {showPrivateNavigation ? (
@@ -211,7 +215,7 @@ export function VillageShell({ children }: { children: ReactNode }) {
                 className="inline-flex items-center gap-3"
                 data-testid="link-footer-home"
               >
-                <span className="grid h-11 w-11 rotate-[-5deg] place-items-center rounded-[13px] bg-primary text-sm font-extrabold tracking-[-0.08em] text-primary-foreground shadow-[4px_4px_0_hsl(var(--accent))]">
+                <span className="grid h-11 w-11 place-items-center rounded-xl bg-primary text-sm font-extrabold tracking-[-0.05em] text-primary-foreground">
                   ZJ
                 </span>
                 <span className="text-base font-extrabold tracking-[-.04em]">
