@@ -1,4 +1,4 @@
-const CACHE_NAME = "zoboroma-app-v2";
+const CACHE_NAME = "zoboroma-app-v3";
 const APP_SHELL = [
   "/",
   "/manifest.webmanifest",
@@ -40,7 +40,7 @@ self.addEventListener("fetch", (event) => {
 
   if (request.mode === "navigate") {
     event.respondWith(
-      fetch(request)
+      fetch(request, { cache: "no-store" })
         .then((response) => {
           const copy = response.clone();
           void caches
@@ -51,6 +51,23 @@ self.addEventListener("fetch", (event) => {
         .catch(async () => {
           return (await caches.match(request)) ?? (await caches.match("/"));
         }),
+    );
+    return;
+  }
+
+  if (["script", "style", "worker"].includes(request.destination)) {
+    event.respondWith(
+      fetch(request, { cache: "no-store" })
+        .then((response) => {
+          if (response.ok) {
+            const copy = response.clone();
+            void caches
+              .open(CACHE_NAME)
+              .then((cache) => cache.put(request, copy));
+          }
+          return response;
+        })
+        .catch(() => caches.match(request)),
     );
     return;
   }
