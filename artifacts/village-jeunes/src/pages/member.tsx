@@ -15,7 +15,8 @@ import { demoProfiles } from "@/lib/demo-data";
 
 export default function MemberPage() {
   const params = useParams<{ id: string }>();
-  const id = params.id ?? "";
+  const id =
+    params.id ?? new URLSearchParams(window.location.search).get("id") ?? "";
   const profileQuery = useGetProfile(id, {
     query: { enabled: Boolean(id), queryKey: getGetProfileQueryKey(id) },
   });

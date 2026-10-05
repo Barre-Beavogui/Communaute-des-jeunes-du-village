@@ -5,13 +5,14 @@ import {
   createAdminSession,
   passwordMatches,
 } from "../lib/admin-auth.js";
+import { clearRateLimit, consumeRateLimit } from "../lib/rate-limit.js";
 
 const router: IRouter = Router();
 const attempts = new Map<string, { count: number; resetAt: number }>();
 const MAX_ATTEMPTS = 5;
 const WINDOW_MS = 15 * 60 * 1000;
 
-router.post("/admin/login", (req, res) => {
+router.post("/admin/login", async (req, res) => {
   if (!adminIsConfigured()) {
     res
       .status(503)
@@ -20,6 +21,12 @@ router.post("/admin/login", (req, res) => {
   }
 
   const key = req.ip || "unknown";
+  if (!(await consumeRateLimit("admin-login", key, MAX_ATTEMPTS, WINDOW_MS))) {
+    res
+      .status(429)
+      .json({ error: "Trop de tentatives. Réessayez dans quelques minutes." });
+    return;
+  }
   const now = Date.now();
   const current = attempts.get(key);
   const entry =
@@ -42,6 +49,7 @@ router.post("/admin/login", (req, res) => {
   }
 
   attempts.delete(key);
+  await clearRateLimit("admin-login", key);
   const session = createAdminSession();
   res.json(
     AdminLoginResponse.parse({

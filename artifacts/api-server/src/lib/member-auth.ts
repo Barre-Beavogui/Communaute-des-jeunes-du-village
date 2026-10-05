@@ -14,12 +14,16 @@ const CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 const scryptAsync = promisify(scrypt);
 
 function sessionSecret() {
-  return process.env["ADMIN_SESSION_SECRET"]?.trim() ?? "";
+  return (
+    process.env["MEMBER_SESSION_SECRET"]?.trim() ||
+    process.env["ADMIN_SESSION_SECRET"]?.trim() ||
+    ""
+  );
 }
 
 function sign(payload: string) {
   return createHmac("sha256", sessionSecret())
-    .update(payload)
+    .update(`member:${payload}`)
     .digest("base64url");
 }
 

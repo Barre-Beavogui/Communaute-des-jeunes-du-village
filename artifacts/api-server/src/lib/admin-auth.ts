@@ -25,14 +25,14 @@ export function passwordMatches(candidate: string) {
 
 function sign(payload: string) {
   return createHmac("sha256", sessionSecret())
-    .update(payload)
+    .update(`admin:${payload}`)
     .digest("base64url");
 }
 
 export function createAdminSession() {
   const expiresAt = new Date(Date.now() + SESSION_DURATION_MS);
   const payload = Buffer.from(
-    JSON.stringify({ exp: expiresAt.getTime() }),
+    JSON.stringify({ exp: expiresAt.getTime(), role: "admin" }),
   ).toString("base64url");
   return { token: `${payload}.${sign(payload)}`, expiresAt };
 }
@@ -55,8 +55,12 @@ export function isValidAdminToken(token: string) {
   try {
     const decoded = JSON.parse(
       Buffer.from(payload, "base64url").toString("utf8"),
-    ) as { exp?: unknown };
-    return typeof decoded.exp === "number" && decoded.exp > Date.now();
+    ) as { exp?: unknown; role?: unknown };
+    return (
+      decoded.role === "admin" &&
+      typeof decoded.exp === "number" &&
+      decoded.exp > Date.now()
+    );
   } catch {
     return false;
   }

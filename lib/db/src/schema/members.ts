@@ -92,6 +92,12 @@ export const chatMessagesTable = pgTable("chat_messages", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+export const securityRateLimitsTable = pgTable("security_rate_limits", {
+  key: text("key").primaryKey(),
+  count: integer("count").notNull().default(0),
+  resetAt: timestamp("reset_at").notNull(),
+});
+
 export const insertProfileSchema = createInsertSchema(profilesTable);
 export const insertMembershipRequestSchema = createInsertSchema(
   membershipRequestsTable,
@@ -102,3 +108,4 @@ export type DeletedProfile = typeof deletedProfilesTable.$inferSelect;
 export type PasswordResetRequest =
   typeof passwordResetRequestsTable.$inferSelect;
 export type ChatMessage = typeof chatMessagesTable.$inferSelect;
+export type SecurityRateLimit = typeof securityRateLimitsTable.$inferSelect;

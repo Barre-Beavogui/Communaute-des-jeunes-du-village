@@ -240,6 +240,19 @@ export async function syncZoboromaMembers() {
   `);
 
   await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS security_rate_limits (
+      key text PRIMARY KEY,
+      count integer NOT NULL DEFAULT 0,
+      reset_at timestamp NOT NULL
+    )
+  `);
+
+  await db.execute(sql`
+    CREATE INDEX IF NOT EXISTS security_rate_limits_reset_at_index
+    ON security_rate_limits (reset_at)
+  `);
+
+  await db.execute(sql`
     CREATE INDEX IF NOT EXISTS chat_presence_last_seen_index
     ON chat_presence (last_seen DESC)
   `);
@@ -346,6 +359,16 @@ export async function syncZoboromaMembers() {
     WHERE
       request.status = 'approved'
       AND right(profile.id, 8) = left(request.id, 8)
+  `);
+
+  await db.execute(sql`
+    DELETE FROM membership_requests
+    WHERE status IN ('approved', 'rejected')
+  `);
+
+  await db.execute(sql`
+    DELETE FROM password_reset_requests
+    WHERE status <> 'pending'
   `);
 
   await db.transaction(async (tx) => {

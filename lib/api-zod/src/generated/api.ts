@@ -114,7 +114,7 @@ export const createMembershipRequestBodyEmailMax = 254;
 export const createMembershipRequestBodyPhoneMin = 6;
 export const createMembershipRequestBodyPhoneMax = 40;
 
-export const createMembershipRequestBodyAvatarUrlMax = 500000;
+export const createMembershipRequestBodyAvatarUrlMax = 220000;
 
 export const createMembershipRequestBodyNeighborhoodMin = 2;
 export const createMembershipRequestBodyNeighborhoodMax = 120;
@@ -277,7 +277,7 @@ export const RequestMemberPasswordResetResponse = zod.object({
 /**
  * @summary Get the connected member profile settings
  */
-export const getMemberProfileSettingsResponseAvatarUrlMax = 500000;
+export const getMemberProfileSettingsResponseAvatarUrlMax = 220000;
 
 
 
@@ -314,7 +314,7 @@ export const GetMemberProfileSettingsResponse = zod.object({
 export const updateMemberProfileBodyNameMin = 2;
 export const updateMemberProfileBodyNameMax = 120;
 
-export const updateMemberProfileBodyAvatarUrlMax = 500000;
+export const updateMemberProfileBodyAvatarUrlMax = 220000;
 
 export const updateMemberProfileBodyNeighborhoodMin = 2;
 export const updateMemberProfileBodyNeighborhoodMax = 120;
@@ -364,7 +364,7 @@ export const UpdateMemberProfileBody = zod.object({
   "motherFullName": zod.string().max(updateMemberProfileBodyMotherFullNameMax).nullish()
 })
 
-export const updateMemberProfileResponseAvatarUrlMax = 500000;
+export const updateMemberProfileResponseAvatarUrlMax = 220000;
 
 
 
@@ -419,11 +419,11 @@ export const ListChatMessagesResponse = zod.array(ListChatMessagesResponseItem)
  */
 export const sendChatMessageBodyContentMax = 1000;
 
-export const sendChatMessageBodyAudioDataMax = 900000;
+export const sendChatMessageBodyAudioDataMax = 650000;
 
 export const sendChatMessageBodyAudioMimeTypeMax = 40;
 
-export const sendChatMessageBodyDurationSecondsMax = 45;
+export const sendChatMessageBodyDurationSecondsMax = 30;
 
 
 
@@ -571,7 +571,7 @@ export const VotePollResponse = zod.object({
 /**
  * @summary List pending membership requests
  */
-export const listModerationRequestsResponseAvatarUrlMax = 500000;
+export const listModerationRequestsResponseAvatarUrlMax = 220000;
 
 
 
@@ -611,7 +611,7 @@ export const ReviewModerationRequestBody = zod.object({
   "status": zod.enum(['approved', 'rejected'])
 })
 
-export const reviewModerationRequestResponseAvatarUrlMax = 500000;
+export const reviewModerationRequestResponseAvatarUrlMax = 220000;
 
 
 
@@ -670,6 +670,35 @@ export const CreatePasswordResetCodeResponse = zod.object({
 
 
 /**
+ * @summary List the latest group messages for moderation
+ */
+export const ListModerationChatMessagesResponseItem = zod.object({
+  "id": zod.string(),
+  "profileId": zod.string(),
+  "memberName": zod.string(),
+  "initials": zod.string(),
+  "avatarUrl": zod.string().nullish(),
+  "type": zod.enum(['text', 'audio']),
+  "content": zod.string().nullish(),
+  "audioData": zod.string().nullish(),
+  "audioMimeType": zod.string().nullish(),
+  "durationSeconds": zod.number().nullish(),
+  "createdAt": zod.string()
+})
+export const ListModerationChatMessagesResponse = zod.array(ListModerationChatMessagesResponseItem)
+
+
+/**
+ * @summary Permanently remove a group message
+ */
+export const DeleteModerationChatMessageParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const DeleteModerationChatMessageResponse = zod.void()
+
+
+/**
  * @summary Update all editable information for a community profile
  */
 export const UpdateModerationProfileParams = zod.object({
@@ -679,7 +708,7 @@ export const UpdateModerationProfileParams = zod.object({
 export const updateModerationProfileBodyNameMin = 2;
 export const updateModerationProfileBodyNameMax = 120;
 
-export const updateModerationProfileBodyAvatarUrlMax = 500000;
+export const updateModerationProfileBodyAvatarUrlMax = 220000;
 
 export const updateModerationProfileBodyNeighborhoodMin = 2;
 export const updateModerationProfileBodyNeighborhoodMax = 120;
@@ -850,7 +879,7 @@ export const createAnnouncementBodyTitleMax = 120;
 export const createAnnouncementBodyContentMin = 3;
 export const createAnnouncementBodyContentMax = 3000;
 
-export const createAnnouncementBodyMediaUrlMax = 500000;
+export const createAnnouncementBodyMediaUrlMax = 320000;
 
 
 

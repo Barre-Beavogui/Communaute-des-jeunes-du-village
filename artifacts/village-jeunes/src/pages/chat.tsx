@@ -28,7 +28,7 @@ import {
 import { Avatar } from "@/components/village-shell";
 import { getMemberIdentity } from "@/lib/member-session";
 
-const MAX_RECORDING_SECONDS = 45;
+const MAX_RECORDING_SECONDS = 30;
 const PREFERRED_AUDIO_TYPES = [
   "audio/webm;codecs=opus",
   "audio/mp4",
@@ -535,7 +535,7 @@ export default function ChatPage() {
                   <div>
                     <p className="text-xs font-extrabold">Enregistrement…</p>
                     <p className="text-[10px] text-muted-foreground">
-                      {formatDuration(recordingSeconds)} / 0:45
+                      {formatDuration(recordingSeconds)} / 0:30
                     </p>
                   </div>
                 </div>
@@ -594,7 +594,7 @@ export default function ChatPage() {
             )}
             <p className="mt-3 text-[10px] text-muted-foreground">
               Entrée pour envoyer · Maj + Entrée pour aller à la ligne · Vocal
-              limité à 45 secondes
+              limité à 30 secondes
             </p>
           </div>
         </section>

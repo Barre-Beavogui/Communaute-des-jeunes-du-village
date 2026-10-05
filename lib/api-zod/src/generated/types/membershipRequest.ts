@@ -17,7 +17,7 @@ export interface MembershipRequest {
   /** @nullable */
   phone?: string | null;
   /**
-     * @maxLength 500000
+     * @maxLength 220000
      * @nullable
      */
   avatarUrl?: string | null;

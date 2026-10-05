@@ -145,7 +145,7 @@ export interface MembershipRequest {
   /** @nullable */
   phone?: string | null;
   /**
-     * @maxLength 500000
+     * @maxLength 220000
      * @nullable
      */
   avatarUrl?: string | null;
@@ -239,7 +239,7 @@ export interface MembershipRequestCreate {
      */
   phone: string;
   /**
-     * @maxLength 500000
+     * @maxLength 220000
      * @nullable
      */
   avatarUrl?: string | null;
@@ -430,7 +430,7 @@ export interface MemberProfileSettings {
   name: string;
   initials: string;
   /**
-     * @maxLength 500000
+     * @maxLength 220000
      * @nullable
      */
   avatarUrl?: string | null;
@@ -522,7 +522,7 @@ export interface MemberProfileUpdate {
      */
   name: string;
   /**
-     * @maxLength 500000
+     * @maxLength 220000
      * @nullable
      */
   avatarUrl?: string | null;
@@ -647,7 +647,7 @@ export interface AdminProfileUpdate {
      */
   name: string;
   /**
-     * @maxLength 500000
+     * @maxLength 220000
      * @nullable
      */
   avatarUrl?: string | null;
@@ -762,7 +762,7 @@ export interface ChatMessageCreate {
      */
   content?: string | null;
   /**
-     * @maxLength 900000
+     * @maxLength 650000
      * @nullable
      */
   audioData?: string | null;
@@ -773,7 +773,7 @@ export interface ChatMessageCreate {
   audioMimeType?: string | null;
   /**
      * @minimum 1
-     * @maximum 45
+     * @maximum 30
      * @nullable
      */
   durationSeconds?: number | null;
@@ -883,7 +883,7 @@ export interface AnnouncementCreate {
   /** @nullable */
   mediaType?: AnnouncementCreateMediaType;
   /**
-     * @maxLength 500000
+     * @maxLength 320000
      * @nullable
      */
   mediaUrl?: string | null;

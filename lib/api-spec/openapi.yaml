@@ -471,6 +471,35 @@ paths:
                 $ref: "#/components/schemas/MemberPasswordResetCode"
         "404":
           description: Request not found
+  /moderation/chat/messages:
+    get:
+      operationId: listModerationChatMessages
+      tags: [moderation]
+      summary: List the latest group messages for moderation
+      responses:
+        "200":
+          description: Latest group messages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ChatMessage"
+  /moderation/chat/messages/{id}:
+    delete:
+      operationId: deleteModerationChatMessage
+      tags: [moderation]
+      summary: Permanently remove a group message
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "204":
+          description: Message removed
+        "404":
+          description: Message not found
   /moderation/profiles/{id}:
     patch:
       operationId: updateModerationProfile
@@ -736,7 +765,7 @@ components:
         name: { type: string }
         email: { type: string }
         phone: { type: ["string", "null"] }
-        avatarUrl: { type: ["string", "null"], maxLength: 500000 }
+        avatarUrl: { type: ["string", "null"], maxLength: 220000 }
         neighborhood: { type: string }
         profession: { type: string }
         bio: { type: string }
@@ -791,7 +820,7 @@ components:
         name: { type: string, minLength: 2, maxLength: 120 }
         email: { type: string, maxLength: 254 }
         phone: { type: string, minLength: 6, maxLength: 40 }
-        avatarUrl: { type: ["string", "null"], maxLength: 500000 }
+        avatarUrl: { type: ["string", "null"], maxLength: 220000 }
         neighborhood: { type: string, minLength: 2, maxLength: 120 }
         profession: { type: string, minLength: 2, maxLength: 80 }
         bio: { type: string, minLength: 10, maxLength: 500 }
@@ -959,7 +988,7 @@ components:
         id: { type: string }
         name: { type: string }
         initials: { type: string }
-        avatarUrl: { type: ["string", "null"], maxLength: 500000 }
+        avatarUrl: { type: ["string", "null"], maxLength: 220000 }
         neighborhood: { type: string }
         bio: { type: string }
         profession: { type: string }
@@ -984,7 +1013,7 @@ components:
       required: [name, neighborhood, bio, profession, showEmail, showPhone]
       properties:
         name: { type: string, minLength: 2, maxLength: 120 }
-        avatarUrl: { type: ["string", "null"], maxLength: 500000 }
+        avatarUrl: { type: ["string", "null"], maxLength: 220000 }
         neighborhood: { type: string, minLength: 2, maxLength: 120 }
         bio: { type: string, minLength: 10, maxLength: 500 }
         profession: { type: string, minLength: 2, maxLength: 80 }
@@ -1047,7 +1076,7 @@ components:
         ]
       properties:
         name: { type: string, minLength: 2, maxLength: 120 }
-        avatarUrl: { type: ["string", "null"], maxLength: 500000 }
+        avatarUrl: { type: ["string", "null"], maxLength: 220000 }
         neighborhood: { type: string, minLength: 2, maxLength: 120 }
         bio: { type: string, minLength: 10, maxLength: 500 }
         profession: { type: string, minLength: 2, maxLength: 80 }
@@ -1122,9 +1151,9 @@ components:
           type: string
           enum: [text, audio]
         content: { type: ["string", "null"], maxLength: 1000 }
-        audioData: { type: ["string", "null"], maxLength: 900000 }
+        audioData: { type: ["string", "null"], maxLength: 650000 }
         audioMimeType: { type: ["string", "null"], maxLength: 40 }
-        durationSeconds: { type: ["number", "null"], minimum: 1, maximum: 45 }
+        durationSeconds: { type: ["number", "null"], minimum: 1, maximum: 30 }
     ChatPresence:
       type: object
       required: [profileId, memberName, initials, activity]
@@ -1194,7 +1223,7 @@ components:
         mediaType:
           type: ["string", "null"]
           enum: [image, video, null]
-        mediaUrl: { type: ["string", "null"], maxLength: 500000 }
+        mediaUrl: { type: ["string", "null"], maxLength: 320000 }
     AnnouncementReaction:
       type: object
       required: [liked, disliked, likeCount, dislikeCount]

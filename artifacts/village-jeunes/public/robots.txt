@@ -1,2 +1,11 @@
 User-agent: *
 Allow: /
+Disallow: /admin
+Disallow: /connexion-membre
+Disallow: /inscription
+Disallow: /accueil
+Disallow: /membres
+Disallow: /membre
+Disallow: /actualites
+Disallow: /groupe
+Disallow: /zoboroma

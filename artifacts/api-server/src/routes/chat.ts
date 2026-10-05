@@ -16,11 +16,12 @@ import {
   UpdateChatPresenceResponse,
 } from "@workspace/api-zod";
 import { requireMember } from "../lib/member-auth.js";
+import { consumeRateLimit } from "../lib/rate-limit.js";
 
 const router: IRouter = Router();
 const AUDIO_DATA_PATTERN =
   /^data:(audio\/(?:webm|ogg|mp4|mpeg|wav|x-m4a));base64,([A-Za-z0-9+/]+={0,2})$/;
-const MAX_AUDIO_BYTES = 650_000;
+const MAX_AUDIO_BYTES = 450_000;
 const ONLINE_WINDOW_MS = 75_000;
 const ACTIVE_WINDOW_MS = 15_000;
 const MESSAGE_LIMIT = 40;
@@ -109,6 +110,19 @@ router.get("/chat/messages", requireMember, async (_req, res) => {
 
 router.post("/chat/messages", requireMember, async (req, res) => {
   const profileId = res.locals["memberProfileId"] as string;
+  if (
+    !(await consumeRateLimit(
+      "chat-message",
+      profileId,
+      MESSAGE_LIMIT,
+      MESSAGE_WINDOW_MS,
+    ))
+  ) {
+    res.status(429).json({
+      error: "Trop de messages ont été envoyés. Attendez quelques minutes.",
+    });
+    return;
+  }
   const now = Date.now();
   const current = messageSubmissions.get(profileId);
   const entry =
@@ -140,7 +154,7 @@ router.post("/chat/messages", requireMember, async (req, res) => {
     if (
       !audioMatch ||
       duration < 1 ||
-      duration > 45 ||
+      duration > 30 ||
       Buffer.from(audioMatch[2]!, "base64").byteLength > MAX_AUDIO_BYTES
     ) {
       res.status(400).json({
@@ -205,7 +219,10 @@ router.get("/chat/presence", requireMember, async (_req, res) => {
       activityUntil: chatPresenceTable.activityUntil,
     })
     .from(chatPresenceTable)
-    .innerJoin(profilesTable, eq(chatPresenceTable.profileId, profilesTable.id));
+    .innerJoin(
+      profilesTable,
+      eq(chatPresenceTable.profileId, profilesTable.id),
+    );
 
   const result = profiles
     .map((profile) => {

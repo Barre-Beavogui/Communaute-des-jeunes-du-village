@@ -239,7 +239,7 @@ export default function HomePage() {
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {filteredProfiles.map((profile, index) => (
               <Link
-                href={`/membre/${profile.id}`}
+                href={`/membre?id=${encodeURIComponent(profile.id)}`}
                 key={profile.id}
                 className={`group relative overflow-hidden rounded-2xl border border-border bg-card p-5 shadow-sm hover:-translate-y-1 hover:border-primary/40 hover:shadow-md ${index === 0 ? "lg:col-span-2" : ""}`}
                 data-testid={`card-member-${profile.id}`}

@@ -1929,6 +1929,154 @@ export const useCreatePasswordResetCode = <TError = ErrorType<void>,
       return useMutation(getCreatePasswordResetCodeMutationOptions(options));
     }
 
+export const getListModerationChatMessagesUrl = () => {
+
+
+
+
+  return `/api/moderation/chat/messages`
+}
+
+/**
+ * @summary List the latest group messages for moderation
+ */
+export const listModerationChatMessages = async ( options?: Parameters<typeof customFetch>[1]): Promise<ChatMessage[]> => {
+
+  return customFetch<ChatMessage[]>(getListModerationChatMessagesUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListModerationChatMessagesQueryKey = () => {
+    return [
+    `/api/moderation/chat/messages`
+    ] as const;
+    }
+
+
+export const getListModerationChatMessagesQueryOptions = <TData = Awaited<ReturnType<typeof listModerationChatMessages>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listModerationChatMessages>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListModerationChatMessagesQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listModerationChatMessages>>> = ({ signal }) => listModerationChatMessages({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listModerationChatMessages>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListModerationChatMessagesQueryResult = NonNullable<Awaited<ReturnType<typeof listModerationChatMessages>>>
+export type ListModerationChatMessagesQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List the latest group messages for moderation
+ */
+
+export function useListModerationChatMessages<TData = Awaited<ReturnType<typeof listModerationChatMessages>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listModerationChatMessages>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListModerationChatMessagesQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getDeleteModerationChatMessageUrl = (id: string,) => {
+
+
+
+
+  return `/api/moderation/chat/messages/${id}`
+}
+
+/**
+ * @summary Permanently remove a group message
+ */
+export const deleteModerationChatMessage = async (id: string, options?: Parameters<typeof customFetch>[1]): Promise<void> => {
+
+  return customFetch<void>(getDeleteModerationChatMessageUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getDeleteModerationChatMessageMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteModerationChatMessage>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteModerationChatMessage>>, TError,{id: string}, TContext> => {
+
+const mutationKey = ['deleteModerationChatMessage'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteModerationChatMessage>>, {id: string}> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteModerationChatMessage(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteModerationChatMessageMutationResult = NonNullable<Awaited<ReturnType<typeof deleteModerationChatMessage>>>
+
+    export type DeleteModerationChatMessageMutationError = ErrorType<void>
+
+    /**
+ * @summary Permanently remove a group message
+ */
+export const useDeleteModerationChatMessage = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteModerationChatMessage>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteModerationChatMessage>>,
+        TError,
+        {id: string},
+        TContext
+      > => {
+      return useMutation(getDeleteModerationChatMessageMutationOptions(options));
+    }
+
 export const getUpdateModerationProfileUrl = (id: string,) => {
 
 

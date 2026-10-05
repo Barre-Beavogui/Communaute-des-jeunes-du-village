@@ -14,7 +14,7 @@ export function MemberCard({
 }) {
   return (
     <Link
-      href={`/membre/${profile.id}`}
+      href={`/membre?id=${encodeURIComponent(profile.id)}`}
       className={`group relative flex min-h-64 flex-col overflow-hidden rounded-2xl border border-border bg-card p-5 shadow-sm hover:-translate-y-1 hover:border-primary/40 hover:shadow-md ${featured ? "sm:col-span-2" : ""}`}
       data-testid={`card-member-${profile.id}`}
     >

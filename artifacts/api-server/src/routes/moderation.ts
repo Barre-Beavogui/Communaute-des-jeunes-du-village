@@ -5,6 +5,7 @@ import {
   announcementDislikesTable,
   announcementLikesTable,
   chatMessagesTable,
+  chatPresenceTable,
   deletedProfilesTable,
   pollVotesTable,
   membershipRequestsTable,
@@ -14,11 +15,13 @@ import {
 import {
   CreatePasswordResetCodeParams,
   CreatePasswordResetCodeResponse,
+  DeleteModerationChatMessageParams,
   DeleteModerationProfileParams,
   GenerateMemberCodeBody,
   GenerateMemberCodeParams,
   GenerateMemberCodeResponse,
   ListModerationRequestsResponse,
+  ListModerationChatMessagesResponse,
   ListPasswordResetRequestsResponse,
   ReviewModerationRequestParams,
   ReviewModerationRequestBody,
@@ -100,6 +103,52 @@ router.get("/moderation/password-reset-requests", async (_req, res) => {
   );
 });
 
+router.get("/moderation/chat/messages", async (_req, res) => {
+  const rows = await db
+    .select({
+      message: chatMessagesTable,
+      memberName: profilesTable.name,
+      initials: profilesTable.initials,
+      avatarUrl: profilesTable.avatarUrl,
+    })
+    .from(chatMessagesTable)
+    .innerJoin(profilesTable, eq(chatMessagesTable.profileId, profilesTable.id))
+    .orderBy(desc(chatMessagesTable.createdAt))
+    .limit(100);
+
+  res.json(
+    ListModerationChatMessagesResponse.parse(
+      rows.map(({ message, memberName, initials, avatarUrl }) => ({
+        id: message.id,
+        profileId: message.profileId,
+        memberName,
+        initials,
+        avatarUrl,
+        type: message.type,
+        content: message.content,
+        audioData: message.audioData,
+        audioMimeType: message.audioMimeType,
+        durationSeconds: message.durationSeconds,
+        createdAt: message.createdAt.toISOString(),
+      })),
+    ),
+  );
+});
+
+router.delete("/moderation/chat/messages/:id", async (req, res) => {
+  const params = DeleteModerationChatMessageParams.parse(req.params);
+  const [deleted] = await db
+    .delete(chatMessagesTable)
+    .where(eq(chatMessagesTable.id, params.id))
+    .returning({ id: chatMessagesTable.id });
+
+  if (!deleted) {
+    res.status(404).json({ error: "Message introuvable." });
+    return;
+  }
+  res.status(204).send();
+});
+
 router.post(
   "/moderation/password-reset-requests/:id/code",
   async (req, res) => {
@@ -139,8 +188,7 @@ router.post(
         })
         .where(eq(profilesTable.id, profile.id));
       await tx
-        .update(passwordResetRequestsTable)
-        .set({ status: "completed" })
+        .delete(passwordResetRequestsTable)
         .where(eq(passwordResetRequestsTable.id, resetRequest.id));
 
       return {
@@ -245,6 +293,9 @@ router.patch("/moderation/requests/:id", async (req, res) => {
       .set({ status: body.status })
       .where(eq(membershipRequestsTable.id, params.id))
       .returning();
+    await tx
+      .delete(membershipRequestsTable)
+      .where(eq(membershipRequestsTable.id, params.id));
     return { conflict: false as const, request: updated, memberCode };
   });
 
@@ -411,7 +462,7 @@ router.delete("/moderation/profiles/:id", async (req, res) => {
   const params = DeleteModerationProfileParams.parse(req.params);
   const deleted = await db.transaction(async (tx) => {
     const [profile] = await tx
-      .select({ id: profilesTable.id })
+      .select({ id: profilesTable.id, loginEmail: profilesTable.loginEmail })
       .from(profilesTable)
       .where(eq(profilesTable.id, params.id));
 
@@ -436,6 +487,19 @@ router.delete("/moderation/profiles/:id", async (req, res) => {
     await tx
       .delete(chatMessagesTable)
       .where(eq(chatMessagesTable.profileId, profile.id));
+    await tx
+      .delete(chatPresenceTable)
+      .where(eq(chatPresenceTable.profileId, profile.id));
+    if (profile.loginEmail) {
+      await tx
+        .delete(membershipRequestsTable)
+        .where(
+          eq(
+            membershipRequestsTable.email,
+            profile.loginEmail.trim().toLowerCase(),
+          ),
+        );
+    }
     await tx.delete(profilesTable).where(eq(profilesTable.id, profile.id));
     return true;
   });

@@ -15,7 +15,7 @@ export interface ChatMessageCreate {
      */
   content?: string | null;
   /**
-     * @maxLength 900000
+     * @maxLength 650000
      * @nullable
      */
   audioData?: string | null;
@@ -26,7 +26,7 @@ export interface ChatMessageCreate {
   audioMimeType?: string | null;
   /**
      * @minimum 1
-     * @maximum 45
+     * @maximum 30
      * @nullable
      */
   durationSeconds?: number | null;

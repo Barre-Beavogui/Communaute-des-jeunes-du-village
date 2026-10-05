@@ -31,7 +31,7 @@ app.use((_req, res, next) => {
   res.setHeader("Referrer-Policy", "same-origin");
   res.setHeader(
     "Permissions-Policy",
-    "camera=(), microphone=(), geolocation=()",
+    "camera=(), microphone=(self), geolocation=()",
   );
   next();
 });

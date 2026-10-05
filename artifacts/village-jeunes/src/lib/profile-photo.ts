@@ -1,6 +1,7 @@
 const MAX_SOURCE_SIZE = 8 * 1024 * 1024;
-const MAX_DATA_URL_LENGTH = 450_000;
-const MAX_DIMENSION = 512;
+const MAX_PROFILE_DATA_URL_LENGTH = 220_000;
+const MAX_ANNOUNCEMENT_DATA_URL_LENGTH = 320_000;
+const MAX_DIMENSION = 384;
 const SUPPORTED_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 
 function loadImage(file: File) {
@@ -58,7 +59,7 @@ export async function prepareProfilePhoto(file: File) {
 
   for (const quality of [0.82, 0.72, 0.62, 0.52]) {
     const dataUrl = canvas.toDataURL("image/jpeg", quality);
-    if (dataUrl.length <= MAX_DATA_URL_LENGTH) return dataUrl;
+    if (dataUrl.length <= MAX_PROFILE_DATA_URL_LENGTH) return dataUrl;
   }
 
   throw new Error("Cette photo reste trop volumineuse après compression.");
@@ -73,8 +74,8 @@ export async function prepareAnnouncementPhoto(file: File) {
   }
 
   const image = await loadImage(file);
-  const maxWidth = 1200;
-  const maxHeight = 800;
+  const maxWidth = 1000;
+  const maxHeight = 700;
   const scale = Math.min(
     1,
     maxWidth / image.naturalWidth,
@@ -97,7 +98,7 @@ export async function prepareAnnouncementPhoto(file: File) {
 
   for (const quality of [0.82, 0.72, 0.62, 0.52, 0.42]) {
     const dataUrl = canvas.toDataURL("image/jpeg", quality);
-    if (dataUrl.length <= MAX_DATA_URL_LENGTH) return dataUrl;
+    if (dataUrl.length <= MAX_ANNOUNCEMENT_DATA_URL_LENGTH) return dataUrl;
   }
 
   throw new Error("Cette photo reste trop volumineuse après compression.");

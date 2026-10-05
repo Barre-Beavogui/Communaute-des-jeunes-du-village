@@ -16,7 +16,7 @@ export interface AdminProfileUpdate {
      */
   name: string;
   /**
-     * @maxLength 500000
+     * @maxLength 220000
      * @nullable
      */
   avatarUrl?: string | null;

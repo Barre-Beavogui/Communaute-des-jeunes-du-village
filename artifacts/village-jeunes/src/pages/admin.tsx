@@ -25,6 +25,7 @@ import {
   getGetMembersSummaryQueryKey,
   getListAnnouncementsQueryKey,
   getListModerationRequestsQueryKey,
+  getListModerationChatMessagesQueryKey,
   getListPasswordResetRequestsQueryKey,
   getListPollsQueryKey,
   getListProfilesQueryKey,
@@ -38,6 +39,7 @@ import {
   useReviewModerationRequest,
   useUpdateProfileVisibility,
 } from "@workspace/api-client-react";
+import { AdminChatModeration } from "@/components/admin-chat-moderation";
 import { AdminCommunity } from "@/components/admin-community";
 import { AdminProfileEditor } from "@/components/admin-profile-editor";
 import { buildMemberInvitation } from "@/lib/member-invitation";
@@ -236,6 +238,9 @@ export default function AdminPage() {
       queryKey: getListModerationRequestsQueryKey(),
     });
     queryClient.removeQueries({ queryKey: getListProfilesQueryKey() });
+    queryClient.removeQueries({
+      queryKey: getListModerationChatMessagesQueryKey(),
+    });
     queryClient.removeQueries({
       queryKey: getListPasswordResetRequestsQueryKey(),
     });
@@ -682,6 +687,8 @@ export default function AdminPage() {
       </div>
 
       <AdminCommunity />
+
+      <AdminChatModeration />
 
       <section className="vj-enter overflow-hidden rounded-[28px] border border-border bg-card shadow-sm">
         <div className="flex flex-col justify-between gap-3 border-b border-border p-5 sm:flex-row sm:items-center sm:p-6">

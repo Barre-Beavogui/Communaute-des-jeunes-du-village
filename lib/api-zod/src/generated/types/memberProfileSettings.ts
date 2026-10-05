@@ -11,7 +11,7 @@ export interface MemberProfileSettings {
   name: string;
   initials: string;
   /**
-     * @maxLength 500000
+     * @maxLength 220000
      * @nullable
      */
   avatarUrl?: string | null;

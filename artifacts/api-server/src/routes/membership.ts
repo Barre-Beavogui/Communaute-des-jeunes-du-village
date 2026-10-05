@@ -8,6 +8,7 @@ import {
   CreateMembershipRequestResponse,
 } from "@workspace/api-zod";
 import { normalizeLoginPhone } from "../lib/member-auth.js";
+import { consumeRateLimit } from "../lib/rate-limit.js";
 
 const router: IRouter = Router();
 const submissions = new Map<string, { count: number; resetAt: number }>();
@@ -17,6 +18,19 @@ const PROFILE_PHOTO_PATTERN = /^data:image\/jpeg;base64,[A-Za-z0-9+/]+={0,2}$/;
 
 router.post("/membership-requests", async (req, res) => {
   const key = req.ip || "unknown";
+  if (
+    !(await consumeRateLimit(
+      "membership-request",
+      key,
+      SUBMISSION_LIMIT,
+      SUBMISSION_WINDOW_MS,
+    ))
+  ) {
+    res.status(429).json({
+      error: "Trop de demandes ont été envoyées. Réessayez plus tard.",
+    });
+    return;
+  }
   const now = Date.now();
   const current = submissions.get(key);
   const entry =

@@ -31,6 +31,7 @@ import {
   requireMemberSetup,
   verifyMemberPassword,
 } from "../lib/member-auth.js";
+import { clearRateLimit, consumeRateLimit } from "../lib/rate-limit.js";
 
 const router: IRouter = Router();
 const attempts = new Map<string, { count: number; resetAt: number }>();
@@ -88,6 +89,12 @@ router.post("/member/activate", async (req, res) => {
     return;
   }
   const { key, entry } = attemptEntry(req);
+  if (
+    !(await consumeRateLimit("member-activate", key, MAX_ATTEMPTS, WINDOW_MS))
+  ) {
+    res.status(429).json({ error: "Trop de tentatives. Réessayez plus tard." });
+    return;
+  }
   if (entry.count >= MAX_ATTEMPTS) {
     res.status(429).json({ error: "Trop de tentatives. Réessayez plus tard." });
     return;
@@ -133,6 +140,7 @@ router.post("/member/activate", async (req, res) => {
   }
 
   attempts.delete(key);
+  await clearRateLimit("member-activate", key);
   const session = createMemberSetupSession(profile.id);
   res.json(
     MemberActivateResponse.parse({
@@ -157,6 +165,10 @@ router.post("/member/login", async (req, res) => {
     return;
   }
   const { key, entry } = attemptEntry(req);
+  if (!(await consumeRateLimit("member-login", key, MAX_ATTEMPTS, WINDOW_MS))) {
+    res.status(429).json({ error: "Trop de tentatives. Réessayez plus tard." });
+    return;
+  }
   if (entry.count >= MAX_ATTEMPTS) {
     res.status(429).json({ error: "Trop de tentatives. Réessayez plus tard." });
     return;
@@ -199,6 +211,7 @@ router.post("/member/login", async (req, res) => {
   }
 
   attempts.delete(key);
+  await clearRateLimit("member-login", key);
   const session = createMemberSession(profile.id);
   res.json(
     MemberLoginResponse.parse({
@@ -217,6 +230,17 @@ router.post("/member/login", async (req, res) => {
 
 router.post("/member/password-reset-requests", async (req, res) => {
   const key = req.ip || "unknown";
+  if (
+    !(await consumeRateLimit(
+      "member-password-reset",
+      key,
+      MAX_RESET_REQUESTS,
+      RESET_WINDOW_MS,
+    ))
+  ) {
+    res.status(429).json({ error: "Trop de demandes. Réessayez plus tard." });
+    return;
+  }
   const now = Date.now();
   const current = resetRequests.get(key);
   const entry =

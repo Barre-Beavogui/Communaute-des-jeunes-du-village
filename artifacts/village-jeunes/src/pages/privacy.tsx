@@ -1,4 +1,12 @@
-import { Eye, LockKeyhole, ShieldCheck, UserRoundCheck } from "lucide-react";
+import {
+  Clock3,
+  Database,
+  Eye,
+  LockKeyhole,
+  Server,
+  ShieldCheck,
+  UserRoundCheck,
+} from "lucide-react";
 import { Link } from "wouter";
 
 const principles = [
@@ -21,6 +29,29 @@ const principles = [
     icon: ShieldCheck,
     title: "Vos droits",
     text: "Vous pouvez modifier votre profil depuis votre espace membre et demander à l’administrateur de supprimer votre compte et les données associées.",
+  },
+];
+
+const details = [
+  {
+    icon: Database,
+    title: "Données utilisées",
+    text: "Identité, photo, coordonnées, résidence, parcours, présentation et informations nécessaires au fonctionnement du compte. Les messages et votes sont associés au profil du membre connecté.",
+  },
+  {
+    icon: Eye,
+    title: "Finalités",
+    text: "Étudier les inscriptions, publier l’annuaire, permettre la connexion, les annonces, les sondages et les échanges entre membres. Les données ne sont ni vendues ni utilisées pour de la publicité.",
+  },
+  {
+    icon: Server,
+    title: "Hébergement",
+    text: "L’interface est publiée avec GitHub Pages, l’API fonctionne sur Vercel et les données sont conservées dans une base PostgreSQL gérée par Neon.",
+  },
+  {
+    icon: Clock3,
+    title: "Durée de conservation",
+    text: "Une demande est conservée le temps de son traitement. Les informations d’un membre sont conservées tant que son compte est actif, puis supprimées lorsque l’administrateur supprime le profil.",
   },
 ];
 
@@ -58,6 +89,55 @@ export default function PrivacyPage() {
             </p>
           </article>
         ))}
+      </section>
+
+      <section className="rounded-[24px] border border-border bg-card p-6 sm:p-8">
+        <div className="max-w-2xl">
+          <p className="font-mono text-[10px] font-bold uppercase tracking-[.18em] text-primary">
+            Transparence
+          </p>
+          <h2 className="mt-3 text-2xl font-extrabold tracking-[-.04em]">
+            Comment les données sont traitées
+          </h2>
+          <p className="mt-3 text-sm leading-7 text-muted-foreground">
+            Le responsable du traitement est l’administration de Zoboroma
+            Jeunes. L’accès aux informations privées est limité aux personnes
+            chargées de gérer la communauté.
+          </p>
+        </div>
+        <div className="mt-7 grid gap-6 sm:grid-cols-2">
+          {details.map(({ icon: Icon, title, text }) => (
+            <article key={title} className="flex gap-4">
+              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-muted text-primary">
+                <Icon className="h-4 w-4" />
+              </span>
+              <div>
+                <h3 className="text-sm font-extrabold">{title}</h3>
+                <p className="mt-1 text-xs leading-6 text-muted-foreground">
+                  {text}
+                </p>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="rounded-[24px] border border-border bg-card p-6 sm:p-8">
+        <h2 className="text-lg font-extrabold">Sécurité et confidentialité</h2>
+        <p className="mt-3 text-sm leading-7 text-muted-foreground">
+          Les mots de passe et les codes d’activation ne sont pas conservés en
+          clair. Les connexions utilisent HTTPS et les accès administrateur et
+          membre sont séparés. Malgré ces précautions, aucun service en ligne ne
+          peut garantir un risque nul.
+        </p>
+        <p className="mt-3 text-sm leading-7 text-muted-foreground">
+          Vous pouvez demander l’accès, la correction ou la suppression de vos
+          données auprès de l’administrateur. Une demande concernant votre
+          profil peut nécessiter une vérification d’identité.
+        </p>
+        <p className="mt-4 text-[11px] font-semibold text-muted-foreground">
+          Dernière mise à jour : 6 octobre 2026
+        </p>
       </section>
 
       <section className="rounded-[24px] border border-border bg-accent/20 p-6 sm:p-8">

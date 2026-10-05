@@ -21,7 +21,7 @@ export interface AnnouncementCreate {
   /** @nullable */
   mediaType?: AnnouncementCreateMediaType;
   /**
-     * @maxLength 500000
+     * @maxLength 320000
      * @nullable
      */
   mediaUrl?: string | null;
