@@ -15,7 +15,7 @@ import {
   UpdateChatPresenceBody,
   UpdateChatPresenceResponse,
 } from "@workspace/api-zod";
-import { requireMember } from "../lib/member-auth.js";
+import { requireMember } from "../lib/community-access.js";
 import { consumeRateLimit } from "../lib/rate-limit.js";
 
 const router: IRouter = Router();

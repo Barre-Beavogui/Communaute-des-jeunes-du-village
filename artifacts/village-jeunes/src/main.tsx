@@ -2,6 +2,7 @@ import { createRoot } from "react-dom/client";
 import { setAuthTokenGetter, setBaseUrl } from "@workspace/api-client-react";
 
 import App from "./App";
+import { getMemberToken } from "@/lib/member-session";
 import { ErrorBoundary } from "@/components/error-boundary";
 
 import "./index.css";
@@ -10,9 +11,9 @@ const apiBaseUrl = import.meta.env.VITE_API_BASE_URL?.trim();
 setBaseUrl(apiBaseUrl || null);
 setAuthTokenGetter(() => {
   const isAdminPage = /\/admin(?:\/|$)/.test(window.location.pathname);
-  return sessionStorage.getItem(
-    isAdminPage ? "zoboroma_admin_token" : "zoboroma_member_token",
-  );
+  return isAdminPage
+    ? sessionStorage.getItem("zoboroma_admin_token")
+    : getMemberToken();
 });
 
 createRoot(document.getElementById("root")!, {

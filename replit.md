@@ -22,6 +22,7 @@ Une communauté privée où les jeunes de Zoboroma peuvent se présenter, décou
 
 ## Where things live
 
+- Voir aussi `README.md`.
 - `artifacts/village-jeunes` — application React/Vite, navigation et écrans communautaires.
 - `lib/api-spec/openapi.yaml` — contrat source des profils, du résumé communautaire et de la modération.
 - `artifacts/api-server/src/routes` — routes Express branchées sur PostgreSQL.
@@ -29,7 +30,7 @@ Une communauté privée où les jeunes de Zoboroma peuvent se présenter, décou
 
 ## Architecture decisions
 
-- Le profil courant est provisoirement identifié par `mina` pour rendre la première version démontrable ; remplacer ce point par l’identité Clerk/Replit avant une mise en production multi-utilisateur.
+- Les membres se connectent avec email ou téléphone et mot de passe (jeton signé de 30 jours) ; l’administrateur avec un mot de passe dédié. Voir `artifacts/api-server/src/lib`.
 - Les informations de contact sont soumises à un choix de visibilité `community` ou `private`.
 - Les profils publics sont limités aux membres dont le statut est `approved`.
 - Le contrat OpenAPI reste la source unique avant toute modification d’API ou de hooks.
