@@ -23,7 +23,8 @@ import {
 } from "@workspace/api-zod";
 import { loadAnnouncements, loadPolls } from "../lib/community-data.js";
 import { requireCommunityAccess } from "../lib/community-access.js";
-import { optionalMemberProfileId, requireMember } from "../lib/member-auth.js";
+import { optionalMemberProfileId } from "../lib/member-auth.js";
+import { requireMember } from "../lib/community-access.js";
 
 const router: IRouter = Router();
 

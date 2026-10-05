@@ -86,6 +86,23 @@ if (process.env["VERCEL"]) {
   });
 }
 
+// Member data (photos and voice notes included) is polled every few seconds.
+// "no-cache" lets the browser keep the last answer and revalidate it with the
+// ETag Express already computes, so an unchanged list costs a tiny 304 instead
+// of the whole payload. Admin and personal account data are never stored.
+app.use("/api", (req, res, next) => {
+  if (req.method === "GET") {
+    const isSensitive =
+      req.path.startsWith("/moderation") || req.path.startsWith("/member/");
+    res.setHeader(
+      "Cache-Control",
+      isSensitive ? "private, no-store" : "private, no-cache",
+    );
+    res.setHeader("Vary", "Authorization, Origin");
+  }
+  next();
+});
+
 app.use(
   "/api",
   (req, res, next) => {

@@ -1,14 +1,34 @@
-import { lazy, Suspense, type ReactNode, useEffect } from "react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { lazy, Suspense, type ReactNode, useEffect, useState } from "react";
+import {
+  MutationCache,
+  QueryCache,
+  QueryClient,
+  QueryClientProvider,
+} from "@tanstack/react-query";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { VillageShell } from "@/components/village-shell";
 import WelcomePage from "@/pages/welcome";
-import { hasMemberSession } from "@/lib/member-session";
+import { clearMemberSession, hasMemberSession } from "@/lib/member-session";
 import { Route, Switch, useLocation, Router as WouterRouter } from "wouter";
 
-const queryClient = new QueryClient();
+// When the API refuses the member token (expired, account removed or reset by
+// an administrator), forget the local session so the member is sent back to
+// the login page instead of staying on a page full of errors.
+function handleApiError(error: unknown) {
+  const status = (error as { status?: unknown } | null)?.status;
+  const isAdminPage = /\/admin(?:\/|$)/.test(window.location.pathname);
+  if (status === 401 && !isAdminPage && hasMemberSession()) {
+    clearMemberSession();
+    queryClient.clear();
+  }
+}
+
+const queryClient: QueryClient = new QueryClient({
+  queryCache: new QueryCache({ onError: handleApiError }),
+  mutationCache: new MutationCache({ onError: handleApiError }),
+});
 const AdminPage = lazy(() => import("@/pages/admin"));
 const ChatPage = lazy(() => import("@/pages/chat"));
 const GeneralAssemblyReportPage = lazy(
@@ -112,7 +132,7 @@ function RouteMetadata() {
 
 function MemberOnly({ children }: { children: ReactNode }) {
   const [location, navigate] = useLocation();
-  const memberActive = hasMemberSession();
+  const memberActive = useMemberSessionActive();
 
   useEffect(() => {
     if (!memberActive) {
@@ -122,6 +142,22 @@ function MemberOnly({ children }: { children: ReactNode }) {
   }, [location, memberActive, navigate]);
 
   return memberActive ? children : null;
+}
+
+function useMemberSessionActive() {
+  const [active, setActive] = useState(hasMemberSession);
+
+  useEffect(() => {
+    const refresh = () => setActive(hasMemberSession());
+    window.addEventListener("zoboroma-member-session", refresh);
+    window.addEventListener("storage", refresh);
+    return () => {
+      window.removeEventListener("zoboroma-member-session", refresh);
+      window.removeEventListener("storage", refresh);
+    };
+  }, []);
+
+  return active;
 }
 
 function RoutedErrorBoundary({ children }: { children: ReactNode }) {

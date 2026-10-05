@@ -1,7 +1,7 @@
 const MAX_SOURCE_SIZE = 8 * 1024 * 1024;
-const MAX_PROFILE_DATA_URL_LENGTH = 220_000;
+const MAX_PROFILE_DATA_URL_LENGTH = 90_000;
 const MAX_ANNOUNCEMENT_DATA_URL_LENGTH = 320_000;
-const MAX_DIMENSION = 384;
+const MAX_DIMENSION = 256;
 const SUPPORTED_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 
 function loadImage(file: File) {

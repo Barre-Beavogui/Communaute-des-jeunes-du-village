@@ -27,10 +27,10 @@ import {
   memberAuthIsConfigured,
   normalizeLoginEmail,
   normalizeLoginPhone,
-  requireMember,
   requireMemberSetup,
   verifyMemberPassword,
 } from "../lib/member-auth.js";
+import { requireMember } from "../lib/community-access.js";
 import { clearRateLimit, consumeRateLimit } from "../lib/rate-limit.js";
 
 const router: IRouter = Router();

@@ -1,0 +1,36 @@
+name: Vérification des modifications
+
+# Vérifie chaque demande de modification avant la fusion dans main :
+# si le code ne compile plus, la demande s'affiche en rouge et le site
+# en ligne n'est pas touché.
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verification-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verifier:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.19.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Contrôle des types
+        run: pnpm run typecheck
+      - name: Construction du site
+        run: pnpm run build:pages
+      - name: Construction de l'API
+        run: pnpm run build:api

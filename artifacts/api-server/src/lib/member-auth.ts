@@ -74,10 +74,12 @@ function createSignedSession(
   role: "member" | "member-setup",
   durationMs: number,
 ) {
-  const expiresAt = new Date(Date.now() + durationMs);
+  const issuedAt = Date.now();
+  const expiresAt = new Date(issuedAt + durationMs);
   const payload = Buffer.from(
     JSON.stringify({
       exp: expiresAt.getTime(),
+      iat: issuedAt,
       profileId,
       role,
     }),
@@ -107,7 +109,12 @@ function readMemberToken(
   try {
     const decoded = JSON.parse(
       Buffer.from(payload, "base64url").toString("utf8"),
-    ) as { exp?: unknown; profileId?: unknown; role?: unknown };
+    ) as {
+      exp?: unknown;
+      iat?: unknown;
+      profileId?: unknown;
+      role?: unknown;
+    };
 
     if (
       decoded.role !== expectedRole ||
@@ -118,7 +125,11 @@ function readMemberToken(
       return null;
     }
 
-    return decoded.profileId;
+    return {
+      profileId: decoded.profileId,
+      // Les jetons émis avant l’ajout de « iat » sont considérés comme anciens.
+      issuedAt: typeof decoded.iat === "number" ? decoded.iat : 0,
+    };
   } catch {
     return null;
   }
@@ -131,24 +142,19 @@ export function authorizationToken(req: Request) {
     : "";
 }
 
-export function optionalMemberProfileId(req: Request) {
+export function optionalMemberSession(req: Request) {
   return readMemberToken(authorizationToken(req), "member");
 }
 
-export function optionalMemberSetupProfileId(req: Request) {
-  return readMemberToken(authorizationToken(req), "member-setup");
+export function optionalMemberProfileId(req: Request) {
+  return optionalMemberSession(req)?.profileId ?? null;
 }
 
-export const requireMember: RequestHandler = (req, res, next) => {
-  const profileId = optionalMemberProfileId(req);
-  if (!profileId) {
-    res.status(401).json({ error: "Connexion membre requise." });
-    return;
-  }
-
-  res.locals["memberProfileId"] = profileId;
-  next();
-};
+export function optionalMemberSetupProfileId(req: Request) {
+  return (
+    readMemberToken(authorizationToken(req), "member-setup")?.profileId ?? null
+  );
+}
 
 export const requireMemberSetup: RequestHandler = (req, res, next) => {
   const profileId = optionalMemberSetupProfileId(req);
