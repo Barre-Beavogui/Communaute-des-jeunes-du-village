@@ -1,5 +1,6 @@
 import { createRoot } from "react-dom/client";
 import { setAuthTokenGetter, setBaseUrl } from "@workspace/api-client-react";
+import { AuthKitProvider } from "@workos-inc/authkit-react";
 
 import App from "./App";
 import { ErrorBoundary } from "@/components/error-boundary";
@@ -7,6 +8,9 @@ import { ErrorBoundary } from "@/components/error-boundary";
 import "./index.css";
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL?.trim();
+const workosClientId =
+  import.meta.env.VITE_WORKOS_CLIENT_ID?.trim() ||
+  "client_01M4DPNE5HCJZV57ZAKTQH79WR";
 setBaseUrl(apiBaseUrl || null);
 setAuthTokenGetter(() => {
   const isAdminPage = /\/admin(?:\/|$)/.test(window.location.pathname);
@@ -21,9 +25,14 @@ createRoot(document.getElementById("root")!, {
     console.error(error, errorInfo.componentStack);
   },
 }).render(
-  <ErrorBoundary>
-    <App />
-  </ErrorBoundary>,
+  <AuthKitProvider
+    clientId={workosClientId}
+    redirectUri={`${window.location.origin}/connexion-membre`}
+  >
+    <ErrorBoundary>
+      <App />
+    </ErrorBoundary>
+  </AuthKitProvider>,
 );
 
 if ("serviceWorker" in navigator && import.meta.env.PROD) {

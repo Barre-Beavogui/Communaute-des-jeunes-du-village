@@ -97,6 +97,7 @@ app.use(
         "/admin/login",
         "/member/activate",
         "/member/login",
+        "/member/workos/exchange",
         "/member/set-password",
         "/member/password-reset-requests",
         "/membership-requests",
@@ -107,6 +108,8 @@ app.use(
           /^\/announcements\/[^/]+\/dislike$/.test(req.path) ||
           /^\/polls\/[^/]+\/vote$/.test(req.path))) ||
       (req.method === "PATCH" && req.path === "/member/profile");
+    const isWorkosLink =
+      req.method === "POST" && req.path === "/member/workos/link";
     const isChatWrite =
       req.method === "POST" &&
       ["/chat/messages", "/chat/presence"].includes(req.path);
@@ -117,6 +120,7 @@ app.use(
       !isAdminRequest &&
       !isPublicWrite &&
       !isMemberWrite &&
+      !isWorkosLink &&
       !isChatWrite
     ) {
       res

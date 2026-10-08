@@ -70,3 +70,5 @@ export * from './profile';
 export * from './profilePrivacy';
 export * from './profileStatus';
 export * from './profileVisibilityUpdate';
+export * from './workosAccessToken';
+export * from './workosLinkReceipt';

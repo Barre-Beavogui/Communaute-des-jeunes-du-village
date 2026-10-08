@@ -28,6 +28,7 @@ export const profilesTable = pgTable("profiles", {
   memberCodeCreatedAt: timestamp("member_code_created_at"),
   memberPasswordHash: text("member_password_hash"),
   memberPasswordSetAt: timestamp("member_password_set_at"),
+  workosUserId: text("workos_user_id"),
   loginEmail: text("login_email"),
   loginEmailNormalized: text("login_email_normalized"),
   loginPhone: text("login_phone"),

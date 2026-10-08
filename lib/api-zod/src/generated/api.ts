@@ -216,6 +216,48 @@ export const MemberLoginResponse = zod.object({
 
 
 /**
+ * @summary Open a Zoboroma member session from a linked WorkOS session
+ */
+export const exchangeWorkosSessionBodyAccessTokenMin = 20;
+export const exchangeWorkosSessionBodyAccessTokenMax = 8192;
+
+
+
+export const ExchangeWorkosSessionBody = zod.object({
+  "accessToken": zod.string().min(exchangeWorkosSessionBodyAccessTokenMin).max(exchangeWorkosSessionBodyAccessTokenMax)
+})
+
+export const ExchangeWorkosSessionResponse = zod.object({
+  "token": zod.string(),
+  "expiresAt": zod.string(),
+  "requiresPasswordChange": zod.boolean(),
+  "profile": zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "initials": zod.string(),
+  "avatarUrl": zod.string().nullish()
+})
+})
+
+
+/**
+ * @summary Link the authenticated Zoboroma member to a WorkOS user
+ */
+export const linkWorkosAccountBodyAccessTokenMin = 20;
+export const linkWorkosAccountBodyAccessTokenMax = 8192;
+
+
+
+export const LinkWorkosAccountBody = zod.object({
+  "accessToken": zod.string().min(linkWorkosAccountBodyAccessTokenMin).max(linkWorkosAccountBodyAccessTokenMax)
+})
+
+export const LinkWorkosAccountResponse = zod.object({
+  "success": zod.boolean()
+})
+
+
+/**
  * @summary Start first-login activation with a personal code
  */
 export const memberActivateBodyCodeMin = 8;

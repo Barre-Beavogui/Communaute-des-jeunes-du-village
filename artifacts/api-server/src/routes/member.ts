@@ -12,6 +12,9 @@ import {
   MemberActivateResponse,
   MemberLoginBody,
   MemberLoginResponse,
+  ExchangeWorkosSessionBody,
+  LinkWorkosAccountBody,
+  LinkWorkosAccountResponse,
   RequestMemberPasswordResetBody,
   RequestMemberPasswordResetResponse,
   SetMemberPasswordBody,
@@ -32,6 +35,7 @@ import {
   verifyMemberPassword,
 } from "../lib/member-auth.js";
 import { clearRateLimit, consumeRateLimit } from "../lib/rate-limit.js";
+import { verifyWorkosAccessToken } from "../lib/workos-auth.js";
 
 const router: IRouter = Router();
 const attempts = new Map<string, { count: number; resetAt: number }>();
@@ -226,6 +230,108 @@ router.post("/member/login", async (req, res) => {
       },
     }),
   );
+});
+
+router.post("/member/workos/exchange", async (req, res) => {
+  const key = req.ip || "unknown";
+  if (
+    !(await consumeRateLimit("member-workos-exchange", key, 20, WINDOW_MS))
+  ) {
+    res.status(429).json({ error: "Trop de tentatives. Réessayez plus tard." });
+    return;
+  }
+
+  const body = ExchangeWorkosSessionBody.parse(req.body);
+  let workosUserId: string;
+  try {
+    ({ userId: workosUserId } = await verifyWorkosAccessToken(
+      body.accessToken,
+    ));
+  } catch {
+    res.status(401).json({ error: "Session WorkOS invalide ou expirée." });
+    return;
+  }
+
+  const [profile] = await db
+    .select({
+      id: profilesTable.id,
+      name: profilesTable.name,
+      initials: profilesTable.initials,
+      avatarUrl: profilesTable.avatarUrl,
+    })
+    .from(profilesTable)
+    .where(
+      and(
+        eq(profilesTable.workosUserId, workosUserId),
+        eq(profilesTable.status, "approved"),
+      ),
+    );
+
+  if (!profile) {
+    res.status(404).json({
+      error:
+        "Ce compte WorkOS n’est pas encore lié à un membre approuvé de Zoboroma.",
+    });
+    return;
+  }
+
+  const session = createMemberSession(profile.id);
+  res.json(
+    MemberLoginResponse.parse({
+      token: session.token,
+      expiresAt: session.expiresAt.toISOString(),
+      requiresPasswordChange: false,
+      profile,
+    }),
+  );
+});
+
+router.post("/member/workos/link", requireMember, async (req, res) => {
+  const profileId = res.locals["memberProfileId"] as string;
+  const body = LinkWorkosAccountBody.parse(req.body);
+  let workosUserId: string;
+  try {
+    ({ userId: workosUserId } = await verifyWorkosAccessToken(
+      body.accessToken,
+    ));
+  } catch {
+    res.status(401).json({ error: "Session WorkOS invalide ou expirée." });
+    return;
+  }
+
+  const [conflict] = await db
+    .select({ id: profilesTable.id })
+    .from(profilesTable)
+    .where(
+      and(
+        eq(profilesTable.workosUserId, workosUserId),
+        ne(profilesTable.id, profileId),
+      ),
+    );
+  if (conflict) {
+    res.status(409).json({
+      error: "Ce compte WorkOS est déjà lié à un autre membre.",
+    });
+    return;
+  }
+
+  const [updated] = await db
+    .update(profilesTable)
+    .set({ workosUserId })
+    .where(
+      and(
+        eq(profilesTable.id, profileId),
+        eq(profilesTable.status, "approved"),
+      ),
+    )
+    .returning({ id: profilesTable.id });
+
+  if (!updated) {
+    res.status(404).json({ error: "Profil membre introuvable." });
+    return;
+  }
+
+  res.json(LinkWorkosAccountResponse.parse({ success: true }));
 });
 
 router.post("/member/password-reset-requests", async (req, res) => {

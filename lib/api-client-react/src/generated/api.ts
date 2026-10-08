@@ -55,7 +55,9 @@ import type {
   PollStatusUpdate,
   PollVote,
   Profile,
-  ProfileVisibilityUpdate
+  ProfileVisibilityUpdate,
+  WorkosAccessToken,
+  WorkosLinkReceipt
 } from './api.schemas';
 
 import { customFetch } from '../custom-fetch';
@@ -605,6 +607,148 @@ export const useMemberLogin = <TError = ErrorType<void>,
         TContext
       > => {
       return useMutation(getMemberLoginMutationOptions(options));
+    }
+
+export const getExchangeWorkosSessionUrl = () => {
+
+
+
+
+  return `/api/member/workos/exchange`
+}
+
+/**
+ * @summary Open a Zoboroma member session from a linked WorkOS session
+ */
+export const exchangeWorkosSession = async (workosAccessToken: WorkosAccessToken, options?: Parameters<typeof customFetch>[1]): Promise<MemberSession> => {
+
+  return customFetch<MemberSession>(getExchangeWorkosSessionUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(workosAccessToken)
+  }
+);}
+
+
+
+
+
+export const getExchangeWorkosSessionMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof exchangeWorkosSession>>, TError,{data: BodyType<WorkosAccessToken>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof exchangeWorkosSession>>, TError,{data: BodyType<WorkosAccessToken>}, TContext> => {
+
+const mutationKey = ['exchangeWorkosSession'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof exchangeWorkosSession>>, {data: BodyType<WorkosAccessToken>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  exchangeWorkosSession(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ExchangeWorkosSessionMutationResult = NonNullable<Awaited<ReturnType<typeof exchangeWorkosSession>>>
+    export type ExchangeWorkosSessionMutationBody = BodyType<WorkosAccessToken>
+    export type ExchangeWorkosSessionMutationError = ErrorType<void>
+
+    /**
+ * @summary Open a Zoboroma member session from a linked WorkOS session
+ */
+export const useExchangeWorkosSession = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof exchangeWorkosSession>>, TError,{data: BodyType<WorkosAccessToken>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof exchangeWorkosSession>>,
+        TError,
+        {data: BodyType<WorkosAccessToken>},
+        TContext
+      > => {
+      return useMutation(getExchangeWorkosSessionMutationOptions(options));
+    }
+
+export const getLinkWorkosAccountUrl = () => {
+
+
+
+
+  return `/api/member/workos/link`
+}
+
+/**
+ * @summary Link the authenticated Zoboroma member to a WorkOS user
+ */
+export const linkWorkosAccount = async (workosAccessToken: WorkosAccessToken, options?: Parameters<typeof customFetch>[1]): Promise<WorkosLinkReceipt> => {
+
+  return customFetch<WorkosLinkReceipt>(getLinkWorkosAccountUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(workosAccessToken)
+  }
+);}
+
+
+
+
+
+export const getLinkWorkosAccountMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof linkWorkosAccount>>, TError,{data: BodyType<WorkosAccessToken>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof linkWorkosAccount>>, TError,{data: BodyType<WorkosAccessToken>}, TContext> => {
+
+const mutationKey = ['linkWorkosAccount'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof linkWorkosAccount>>, {data: BodyType<WorkosAccessToken>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  linkWorkosAccount(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type LinkWorkosAccountMutationResult = NonNullable<Awaited<ReturnType<typeof linkWorkosAccount>>>
+    export type LinkWorkosAccountMutationBody = BodyType<WorkosAccessToken>
+    export type LinkWorkosAccountMutationError = ErrorType<void>
+
+    /**
+ * @summary Link the authenticated Zoboroma member to a WorkOS user
+ */
+export const useLinkWorkosAccount = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof linkWorkosAccount>>, TError,{data: BodyType<WorkosAccessToken>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof linkWorkosAccount>>,
+        TError,
+        {data: BodyType<WorkosAccessToken>},
+        TContext
+      > => {
+      return useMutation(getLinkWorkosAccountMutationOptions(options));
     }
 
 export const getMemberActivateUrl = () => {

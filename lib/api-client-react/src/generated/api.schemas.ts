@@ -357,6 +357,18 @@ export interface MemberLogin {
   password: string;
 }
 
+export interface WorkosAccessToken {
+  /**
+     * @minLength 20
+     * @maxLength 8192
+     */
+  accessToken: string;
+}
+
+export interface WorkosLinkReceipt {
+  success: boolean;
+}
+
 export interface MemberActivation {
   /**
      * @minLength 8

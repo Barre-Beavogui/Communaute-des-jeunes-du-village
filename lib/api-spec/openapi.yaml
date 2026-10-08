@@ -142,6 +142,52 @@ paths:
                 $ref: "#/components/schemas/MemberSession"
         "401":
           description: Invalid member credentials
+  /member/workos/exchange:
+    post:
+      operationId: exchangeWorkosSession
+      tags: [member]
+      summary: Open a Zoboroma member session from a linked WorkOS session
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkosAccessToken"
+      responses:
+        "200":
+          description: Member session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MemberSession"
+        "401":
+          description: Invalid WorkOS session
+        "404":
+          description: WorkOS account not linked
+  /member/workos/link:
+    post:
+      operationId: linkWorkosAccount
+      tags: [member]
+      summary: Link the authenticated Zoboroma member to a WorkOS user
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkosAccessToken"
+      responses:
+        "200":
+          description: WorkOS account linked
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkosLinkReceipt"
+        "401":
+          description: Invalid member or WorkOS session
+        "409":
+          description: WorkOS account already linked to another member
   /member/activate:
     post:
       operationId: memberActivate
@@ -907,6 +953,16 @@ components:
       properties:
         identifier: { type: string, minLength: 5, maxLength: 254 }
         password: { type: string, minLength: 8, maxLength: 128 }
+    WorkosAccessToken:
+      type: object
+      required: [accessToken]
+      properties:
+        accessToken: { type: string, minLength: 20, maxLength: 8192 }
+    WorkosLinkReceipt:
+      type: object
+      required: [success]
+      properties:
+        success: { type: boolean }
     MemberActivation:
       type: object
       required: [code]

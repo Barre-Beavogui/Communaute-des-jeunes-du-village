@@ -1,4 +1,5 @@
-import { type FormEvent, useState } from "react";
+import { type FormEvent, useEffect, useRef, useState } from "react";
+import { useAuth } from "@workos-inc/authkit-react";
 import {
   CheckCircle2,
   KeyRound,
@@ -10,9 +11,12 @@ import {
 } from "lucide-react";
 import {
   useMemberActivate,
+  exchangeWorkosSession,
+  linkWorkosAccount,
   useMemberLogin,
   useRequestMemberPasswordReset,
   useSetMemberPassword,
+  type MemberSession,
 } from "@workspace/api-client-react";
 import { Link, useLocation } from "wouter";
 import { MemberProfileSettings } from "@/components/member-profile-settings";
@@ -20,12 +24,20 @@ import {
   clearMemberSession,
   getMemberIdentity,
   hasMemberSession,
+  MEMBER_TOKEN_KEY,
   saveMemberSession,
   type MemberIdentity,
 } from "@/lib/member-session";
 
 export default function MemberLoginPage() {
   const [, navigate] = useLocation();
+  const {
+    getAccessToken,
+    isLoading: workosLoading,
+    signIn: signInWithWorkos,
+    signOut: signOutFromWorkos,
+    user: workosUser,
+  } = useAuth();
   const initialCode =
     new URLSearchParams(window.location.search).get("code") ?? "";
   const requestedReturn =
@@ -47,9 +59,12 @@ export default function MemberLoginPage() {
   const [passwordCreated, setPasswordCreated] = useState(false);
   const [resetRequested, setResetRequested] = useState(false);
   const [error, setError] = useState("");
+  const [workosMessage, setWorkosMessage] = useState("");
   const [member, setMember] = useState(() =>
     hasMemberSession() ? getMemberIdentity() : null,
   );
+  const workosExchangeAttempted = useRef(false);
+  const workosLinkAttempted = useRef(false);
   const activate = useMemberActivate();
   const login = useMemberLogin();
   const requestPasswordReset = useRequestMemberPasswordReset();
@@ -59,6 +74,90 @@ export default function MemberLoginPage() {
       : undefined,
   });
 
+  useEffect(() => {
+    if (
+      workosLoading ||
+      !workosUser ||
+      member ||
+      workosExchangeAttempted.current
+    ) {
+      return;
+    }
+
+    workosExchangeAttempted.current = true;
+    setWorkosMessage("Vérification de votre compte WorkOS…");
+    void getAccessToken()
+      .then((accessToken) => exchangeWorkosSession({ accessToken }))
+      .then((session) => {
+        saveMemberSession(session);
+        setMember(session.profile);
+        setWorkosMessage("");
+        navigate(returnTo);
+      })
+      .catch(() => {
+        setWorkosMessage(
+          "Pour la première liaison, connectez-vous ci-dessous avec votre compte Zoboroma. Votre compte WorkOS sera ensuite associé automatiquement.",
+        );
+      });
+  }, [
+    getAccessToken,
+    member,
+    navigate,
+    returnTo,
+    workosLoading,
+    workosUser,
+  ]);
+
+  useEffect(() => {
+    if (
+      workosLoading ||
+      !workosUser ||
+      !member ||
+      workosLinkAttempted.current
+    ) {
+      return;
+    }
+
+    const memberToken = sessionStorage.getItem(MEMBER_TOKEN_KEY);
+    if (!memberToken) return;
+
+    workosLinkAttempted.current = true;
+    void getAccessToken()
+      .then((accessToken) =>
+        linkWorkosAccount(
+          { accessToken },
+          { headers: { Authorization: `Bearer ${memberToken}` } },
+        ),
+      )
+      .then(() => setWorkosMessage("Compte WorkOS lié avec succès."))
+      .catch(() => {
+        setWorkosMessage(
+          "La liaison WorkOS n’a pas pu être terminée. Réessayez depuis cette page.",
+        );
+      });
+  }, [getAccessToken, member, workosLoading, workosUser]);
+
+  const completeMemberLogin = async (session: MemberSession) => {
+    saveMemberSession(session);
+
+    if (workosUser) {
+      try {
+        const accessToken = await getAccessToken();
+        await linkWorkosAccount(
+          { accessToken },
+          { headers: { Authorization: `Bearer ${session.token}` } },
+        );
+        workosLinkAttempted.current = true;
+      } catch {
+        // The member can continue with the existing Zoboroma session and retry
+        // the optional WorkOS link later from this page.
+      }
+    }
+
+    setMember(session.profile);
+    navigate(returnTo);
+  };
+
   const submitLogin = (event: FormEvent) => {
     event.preventDefault();
     setError("");
@@ -66,11 +165,7 @@ export default function MemberLoginPage() {
     login.mutate(
       { data: { identifier: identifier.trim(), password } },
       {
-        onSuccess: (session) => {
-          saveMemberSession(session);
-          setMember(session.profile);
-          navigate(returnTo);
-        },
+        onSuccess: (session) => void completeMemberLogin(session),
         onError: () =>
           setError(
             "Adresse email, numéro de téléphone ou mot de passe incorrect.",
@@ -148,6 +243,9 @@ export default function MemberLoginPage() {
     setMember(null);
     setIdentifier("");
     setPassword("");
+    if (workosUser) {
+      signOutFromWorkos({ returnTo: `${window.location.origin}/` });
+    }
   };
 
   if (member) {
@@ -178,6 +276,31 @@ export default function MemberLoginPage() {
           >
             <LogOut className="h-4 w-4" /> Se déconnecter
           </button>
+          <div className="mx-auto mt-7 max-w-md rounded-2xl border border-border bg-background/70 p-4 text-left">
+            <p className="text-xs font-extrabold text-foreground">
+              Connexion sécurisée WorkOS
+            </p>
+            <p className="mt-1 text-xs leading-5 text-muted-foreground">
+              {workosUser
+                ? `Compte connecté : ${workosUser.email}`
+                : "Liez WorkOS pour simplifier vos prochaines connexions."}
+            </p>
+            {!workosUser && (
+              <button
+                type="button"
+                onClick={() => void signInWithWorkos()}
+                disabled={workosLoading}
+                className="mt-3 inline-flex items-center gap-2 rounded-full border border-primary/30 px-4 py-2 text-[11px] font-extrabold text-primary disabled:opacity-60"
+              >
+                <ShieldCheck className="h-4 w-4" /> Lier mon compte WorkOS
+              </button>
+            )}
+            {workosMessage && (
+              <p className="mt-3 text-[11px] font-semibold leading-5 text-secondary">
+                {workosMessage}
+              </p>
+            )}
+          </div>
         </section>
         <section className="vj-enter vj-enter-delay-1">
           <div className="mb-4">
@@ -405,6 +528,31 @@ export default function MemberLoginPage() {
                 ? "Connexion…"
                 : "Se connecter"}
         </button>
+        {mode === "login" && (
+          <>
+            <div className="my-5 flex items-center gap-3 text-[10px] font-bold uppercase tracking-[.16em] text-muted-foreground">
+              <span className="h-px flex-1 bg-border" /> ou
+              <span className="h-px flex-1 bg-border" />
+            </div>
+            <button
+              type="button"
+              onClick={() => void signInWithWorkos()}
+              disabled={workosLoading}
+              className="flex w-full items-center justify-center gap-2 rounded-full border border-primary/30 bg-primary/5 px-5 py-3.5 text-xs font-extrabold text-primary hover:bg-primary/10 disabled:opacity-60"
+              data-testid="button-workos-login"
+            >
+              <ShieldCheck className="h-4 w-4" />
+              {workosLoading
+                ? "Chargement…"
+                : "Se connecter avec WorkOS"}
+            </button>
+            {workosMessage && (
+              <p className="mt-3 rounded-2xl border border-primary/15 bg-primary/5 p-3 text-xs font-semibold leading-5 text-primary">
+                {workosMessage}
+              </p>
+            )}
+          </>
+        )}
         <div className="mt-5 flex flex-wrap justify-center gap-x-4 gap-y-2 text-[10px] font-bold leading-5 text-primary">
           {mode !== "login" && (
             <button
