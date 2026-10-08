@@ -4,6 +4,7 @@ import {
   Clock3,
   Copy,
   Download,
+  ExternalLink,
   FileSpreadsheet,
   KeyRound,
   LogOut,
@@ -685,6 +686,29 @@ export default function AdminPage() {
         chaque approbation, un code de première connexion est créé
         automatiquement pour que vous puissiez le transmettre.
       </div>
+
+      <section className="vj-enter flex flex-col justify-between gap-4 rounded-[24px] border border-border bg-card p-5 shadow-sm sm:flex-row sm:items-center sm:p-6">
+        <div className="flex items-start gap-3">
+          <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-primary/10 text-primary">
+            <UsersRound className="h-5 w-5" />
+          </span>
+          <div>
+            <h2 className="text-sm font-extrabold">Gestion WorkOS</h2>
+            <p className="mt-1 max-w-xl text-xs leading-5 text-muted-foreground">
+              L’inscription publique WorkOS est désactivée. Seul
+              l’administrateur peut ajouter, inviter et gérer les utilisateurs.
+            </p>
+          </div>
+        </div>
+        <a
+          href="https://dashboard.workos.com/users"
+          target="_blank"
+          rel="noreferrer"
+          className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-full border border-primary/25 bg-primary/5 px-5 py-3 text-xs font-extrabold text-primary hover:bg-primary/10"
+        >
+          Ouvrir WorkOS <ExternalLink className="h-4 w-4" />
+        </a>
+      </section>
 
       <AdminCommunity />
 

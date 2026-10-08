@@ -546,6 +546,9 @@ export default function MemberLoginPage() {
                 ? "Chargement…"
                 : "Se connecter avec WorkOS"}
             </button>
+            <p className="mt-2 text-center text-[10px] font-semibold leading-4 text-muted-foreground">
+              Accès réservé aux comptes ajoutés par l’administrateur.
+            </p>
             {workosMessage && (
               <p className="mt-3 rounded-2xl border border-primary/15 bg-primary/5 p-3 text-xs font-semibold leading-5 text-primary">
                 {workosMessage}
