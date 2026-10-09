@@ -60,9 +60,7 @@ export function toProfile(
 
 router.get("/profiles", requireCommunityAccess, async (req, res) => {
   const includePrivateDetails = isValidAdminToken(authorizationToken(req));
-  if (includePrivateDetails) {
-    res.setHeader("Cache-Control", "private, no-store");
-  }
+  res.setHeader("Cache-Control", "private, no-store");
   const rows = await db
     .select()
     .from(profilesTable)
@@ -76,9 +74,7 @@ router.get("/profiles", requireCommunityAccess, async (req, res) => {
 
 router.get("/profiles/:id", requireCommunityAccess, async (req, res) => {
   const includePrivateDetails = isValidAdminToken(authorizationToken(req));
-  if (includePrivateDetails) {
-    res.setHeader("Cache-Control", "private, no-store");
-  }
+  res.setHeader("Cache-Control", "private, no-store");
   const params = GetProfileParams.parse(req.params);
   const [row] = await db
     .select()
@@ -92,6 +88,7 @@ router.get("/profiles/:id", requireCommunityAccess, async (req, res) => {
 });
 
 router.get("/members/summary", requireCommunityAccess, async (_req, res) => {
+  res.setHeader("Cache-Control", "private, no-store");
   const rows = await db
     .select()
     .from(profilesTable)

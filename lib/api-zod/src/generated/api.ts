@@ -719,8 +719,11 @@ export const ReviewModerationRequestParams = zod.object({
   "id": zod.coerce.string()
 })
 
+export const reviewModerationRequestBodyReplaceExistingDefault = false;
+
 export const ReviewModerationRequestBody = zod.object({
-  "status": zod.enum(['approved', 'rejected'])
+  "status": zod.enum(['approved', 'rejected']),
+  "replaceExisting": zod.boolean().default(reviewModerationRequestBodyReplaceExistingDefault)
 })
 
 export const reviewModerationRequestResponseAvatarUrlMax = 220000;

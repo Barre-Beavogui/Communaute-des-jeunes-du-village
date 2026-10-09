@@ -15,7 +15,6 @@ import {
   useListProfiles,
 } from "@workspace/api-client-react";
 import { MemberCard } from "@/components/member-card";
-import { demoProfiles } from "@/lib/demo-data";
 
 function normalizeText(value: string) {
   return value
@@ -26,7 +25,11 @@ function normalizeText(value: string) {
 
 export default function MembersPage() {
   const profilesQuery = useListProfiles({
-    query: { queryKey: getListProfilesQueryKey() },
+    query: {
+      queryKey: getListProfilesQueryKey(),
+      refetchInterval: 60_000,
+      refetchOnWindowFocus: true,
+    },
   });
   const presenceQuery = useListChatPresence({
     query: {
@@ -35,9 +38,7 @@ export default function MembersPage() {
       refetchIntervalInBackground: false,
     },
   });
-  const profiles = Array.isArray(profilesQuery.data)
-    ? profilesQuery.data
-    : demoProfiles;
+  const profiles = Array.isArray(profilesQuery.data) ? profilesQuery.data : [];
   const [search, setSearch] = useState("");
   const [activity, setActivity] = useState("Toutes");
   const [location, setLocation] = useState("Tous les lieux");
@@ -98,12 +99,12 @@ export default function MembersPage() {
 
   return (
     <div className="space-y-7">
-      <section className="vj-enter grid gap-7 overflow-hidden rounded-[28px] bg-foreground px-6 py-8 text-background sm:px-9 sm:py-10 lg:grid-cols-[1fr_.62fr] lg:items-end">
+      <section className="vj-enter grid gap-7 overflow-hidden rounded-[24px] bg-foreground px-5 py-7 text-background sm:rounded-[28px] sm:px-9 sm:py-10 lg:grid-cols-[1fr_.62fr] lg:items-end">
         <div>
           <p className="font-mono text-[10px] font-bold uppercase tracking-[.18em] text-accent">
             L’annuaire de la communauté
           </p>
-          <h1 className="vj-display mt-3 text-6xl leading-[.86] sm:text-7xl">
+          <h1 className="vj-display mt-3 text-[clamp(3.2rem,16vw,5rem)] leading-[.86]">
             Trouver un
             <br />
             <em className="text-primary">talent.</em>
@@ -141,7 +142,7 @@ export default function MembersPage() {
           <SlidersHorizontal className="h-4 w-4 text-primary" />
           Affiner la recherche
         </div>
-        <div className="mt-4 grid gap-3 lg:grid-cols-[1.6fr_1fr_1fr_.8fr]">
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-[1.6fr_1fr_1fr_.8fr]">
           <label className="relative block">
             <span className="sr-only">Rechercher un membre</span>
             <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />

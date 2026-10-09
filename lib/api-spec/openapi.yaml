@@ -1087,6 +1087,9 @@ components:
         status:
           type: string
           enum: [approved, rejected]
+        replaceExisting:
+          type: boolean
+          default: false
     ProfileVisibilityUpdate:
       type: object
       required: [showGender, showMaritalStatus, showEducationLevel]

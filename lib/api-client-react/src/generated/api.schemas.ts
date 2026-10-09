@@ -336,6 +336,7 @@ export const ModerationReviewStatus = {
 
 export interface ModerationReview {
   status: ModerationReviewStatus;
+  replaceExisting?: boolean;
 }
 
 export interface ProfileVisibilityUpdate {

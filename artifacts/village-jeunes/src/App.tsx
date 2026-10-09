@@ -44,12 +44,12 @@ function Router() {
               <MembersPage />
             </MemberOnly>
           </Route>
-          <Route path="/membre">
+          <Route path="/membre/:id">
             <MemberOnly>
               <MemberPage />
             </MemberOnly>
           </Route>
-          <Route path="/membre/:id">
+          <Route path="/membre">
             <MemberOnly>
               <MemberPage />
             </MemberOnly>

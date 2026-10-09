@@ -14,8 +14,8 @@ export function MemberCard({
 }) {
   return (
     <Link
-      href={`/membre?id=${encodeURIComponent(profile.id)}`}
-      className={`group relative flex min-h-64 flex-col overflow-hidden rounded-2xl border border-border bg-card p-5 shadow-sm hover:-translate-y-1 hover:border-primary/40 hover:shadow-md ${featured ? "sm:col-span-2" : ""}`}
+      href={`/membre/${encodeURIComponent(profile.id)}`}
+      className={`group relative flex min-h-[220px] flex-col overflow-hidden rounded-2xl border border-border bg-card p-4 shadow-sm transition-[transform,box-shadow,border-color] active:scale-[.99] sm:min-h-64 sm:p-5 sm:hover:-translate-y-1 sm:hover:border-primary/40 sm:hover:shadow-md ${featured ? "sm:col-span-2" : ""}`}
       data-testid={`card-member-${profile.id}`}
     >
       <div className="absolute -right-12 -top-12 h-32 w-32 rounded-full bg-accent/20 transition-transform duration-500 group-hover:scale-125" />
@@ -67,7 +67,7 @@ export function MemberCard({
             {profile.phone && (
               <p className="flex items-center gap-2">
                 <Phone className="h-3.5 w-3.5 shrink-0 text-primary" />
-                <span>{profile.phone}</span>
+                <span className="break-all">{profile.phone}</span>
               </p>
             )}
           </div>

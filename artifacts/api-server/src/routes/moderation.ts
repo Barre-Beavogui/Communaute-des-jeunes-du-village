@@ -244,16 +244,29 @@ router.patch("/moderation/requests/:id", async (req, res) => {
           eq(profilesTable.loginPhoneNormalized, normalizedPhone),
         );
       }
-      const [conflictingProfile] = await tx
-        .select({ id: profilesTable.id })
+      const conflictingProfiles = await tx
+        .select({ id: profilesTable.id, name: profilesTable.name })
         .from(profilesTable)
         .where(or(...identifierConditions))
-        .limit(1);
-      if (conflictingProfile) {
-        return { conflict: true as const };
+        .limit(2);
+      const matchingProfile = conflictingProfiles[0];
+      const canMergeExisting = Boolean(
+        matchingProfile &&
+        conflictingProfiles.length === 1 &&
+        (body.replaceExisting ||
+          slugify(matchingProfile.name) === slugify(request.name)),
+      );
+      if (conflictingProfiles.length && !canMergeExisting) {
+        return {
+          conflict: true as const,
+          conflictCount: conflictingProfiles.length,
+          conflictName: matchingProfile?.name ?? null,
+        };
       }
 
-      const profileId = `${slugify(request.name)}-${request.id.slice(0, 8)}`;
+      const profileId =
+        matchingProfile?.id ??
+        `${slugify(request.name)}-${request.id.slice(0, 8)}`;
       memberCode = generateMemberCode();
       const codeCreatedAt = new Date();
       const initials = request.name
@@ -264,39 +277,50 @@ router.patch("/moderation/requests/:id", async (req, res) => {
         .slice(0, 2)
         .toUpperCase();
 
-      await tx
-        .insert(profilesTable)
-        .values({
-          id: profileId,
-          name: request.name,
-          initials,
-          avatarUrl: request.avatarUrl,
-          neighborhood: request.neighborhood,
-          bio: request.bio || `Profession ou statut : ${request.profession}.`,
-          activities: [request.profession],
-          project: request.project,
-          contact: request.phone,
-          instagram: null,
-          privacy: "private",
-          status: "approved",
-          memberCodeHash: hashMemberCode(memberCode),
-          memberCodeCreatedAt: codeCreatedAt,
-          memberPasswordHash: null,
-          memberPasswordSetAt: null,
-          loginEmail: request.email,
-          loginEmailNormalized: normalizedEmail,
-          loginPhone: request.phone,
-          loginPhoneNormalized: normalizedPhone,
-          gender: request.gender,
-          maritalStatus: request.maritalStatus,
-          educationLevel: request.educationLevel,
-          observations: request.observations,
-          emergencyContactName: request.emergencyContactName,
-          emergencyContactPhone: request.emergencyContactPhone,
-          fatherFirstNames: request.fatherFirstNames,
-          motherFullName: request.motherFullName,
-        })
-        .onConflictDoNothing({ target: profilesTable.id });
+      const profileValues = {
+        id: profileId,
+        name: request.name,
+        initials,
+        avatarUrl: request.avatarUrl,
+        neighborhood: request.neighborhood,
+        bio: request.bio || `Profession ou statut : ${request.profession}.`,
+        activities: [request.profession],
+        project: request.project,
+        contact: request.phone,
+        instagram: null,
+        privacy: "private",
+        status: "approved",
+        memberCodeHash: hashMemberCode(memberCode),
+        memberCodeCreatedAt: codeCreatedAt,
+        memberPasswordHash: null,
+        memberPasswordSetAt: null,
+        loginEmail: request.email,
+        loginEmailNormalized: normalizedEmail,
+        loginPhone: request.phone,
+        loginPhoneNormalized: normalizedPhone,
+        gender: request.gender,
+        maritalStatus: request.maritalStatus,
+        educationLevel: request.educationLevel,
+        observations: request.observations,
+        emergencyContactName: request.emergencyContactName,
+        emergencyContactPhone: request.emergencyContactPhone,
+        fatherFirstNames: request.fatherFirstNames,
+        motherFullName: request.motherFullName,
+      };
+
+      if (matchingProfile) {
+        const { id: _profileId, ...profileUpdates } = profileValues;
+        void _profileId;
+        await tx
+          .update(profilesTable)
+          .set(profileUpdates)
+          .where(eq(profilesTable.id, matchingProfile.id));
+        await tx
+          .delete(passwordResetRequestsTable)
+          .where(eq(passwordResetRequestsTable.profileId, matchingProfile.id));
+      } else {
+        await tx.insert(profilesTable).values(profileValues);
+      }
     }
 
     const [updated] = await tx
@@ -316,9 +340,17 @@ router.patch("/moderation/requests/:id", async (req, res) => {
   }
   if (result.conflict) {
     res.status(409).json({
-      error: "Cet email ou ce téléphone appartient déjà à un autre membre.",
+      error:
+        result.conflictCount > 1
+          ? "L’email et le numéro correspondent à deux profils différents. Corrigez les coordonnées avant de valider."
+          : `Ces coordonnées appartiennent déjà au profil de ${result.conflictName ?? "ce membre"}.`,
+      conflictName: result.conflictName,
+      canReplace: result.conflictCount === 1,
     });
     return;
+  }
+  if (body.status === "approved") {
+    await publishChatEvent({ type: "members" });
   }
   res.json(
     ReviewModerationRequestResponse.parse({
@@ -350,6 +382,7 @@ router.patch("/moderation/profiles/:id/visibility", async (req, res) => {
     res.status(404).json({ error: "Profil introuvable." });
     return;
   }
+  await publishChatEvent({ type: "members" });
   res.json(UpdateProfileVisibilityResponse.parse(toProfile(updated, true)));
 });
 
@@ -483,6 +516,7 @@ router.patch("/moderation/profiles/:id", async (req, res) => {
     res.status(404).json({ error: "Profil introuvable." });
     return;
   }
+  await publishChatEvent({ type: "members" });
   res.json(UpdateModerationProfileResponse.parse(toProfile(updated, true)));
 });
 
@@ -558,6 +592,7 @@ router.delete("/moderation/profiles/:id", async (req, res) => {
     return;
   }
 
+  await publishChatEvent({ type: "members" });
   res.status(204).send();
 });
 

@@ -15,34 +15,33 @@ import {
 } from "@workspace/api-client-react";
 import { Avatar } from "@/components/village-shell";
 import { RotatingWords } from "@/components/rotating-words";
-import { demoProfiles } from "@/lib/demo-data";
-
-const fallbackSummary = {
-  totalMembers: demoProfiles.length,
-  activeProjects: 0,
-  topActivities: [
-    { label: "Étudiant", count: 7 },
-    { label: "Salarié", count: 6 },
-    { label: "Autre", count: 4 },
-  ],
-};
 
 export default function HomePage() {
   const profilesQuery = useListProfiles({
-    query: { queryKey: getListProfilesQueryKey() },
+    query: {
+      queryKey: getListProfilesQueryKey(),
+      refetchInterval: 60_000,
+      refetchOnWindowFocus: true,
+    },
   });
   const summaryQuery = useGetMembersSummary({
-    query: { queryKey: getGetMembersSummaryQueryKey() },
+    query: {
+      queryKey: getGetMembersSummaryQueryKey(),
+      refetchInterval: 60_000,
+      refetchOnWindowFocus: true,
+    },
   });
   const [search, setSearch] = useState("");
   const [activity, setActivity] = useState("Tous");
-  const profiles = Array.isArray(profilesQuery.data)
-    ? profilesQuery.data
-    : demoProfiles;
+  const profiles = Array.isArray(profilesQuery.data) ? profilesQuery.data : [];
   const summary =
     summaryQuery.data && typeof summaryQuery.data.totalMembers === "number"
       ? summaryQuery.data
-      : fallbackSummary;
+      : {
+          totalMembers: profiles.length,
+          activeProjects: profiles.filter((profile) => profile.project).length,
+          topActivities: [],
+        };
   const activities = useMemo(
     () => [
       "Tous",
@@ -239,7 +238,7 @@ export default function HomePage() {
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {filteredProfiles.map((profile, index) => (
               <Link
-                href={`/membre?id=${encodeURIComponent(profile.id)}`}
+                href={`/membre/${encodeURIComponent(profile.id)}`}
                 key={profile.id}
                 className={`group relative overflow-hidden rounded-2xl border border-border bg-card p-5 shadow-sm hover:-translate-y-1 hover:border-primary/40 hover:shadow-md ${index === 0 ? "lg:col-span-2" : ""}`}
                 data-testid={`card-member-${profile.id}`}

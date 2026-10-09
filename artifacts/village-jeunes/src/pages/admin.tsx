@@ -74,6 +74,11 @@ export default function AdminPage() {
   );
   const [loginError, setLoginError] = useState("");
   const [reviewingId, setReviewingId] = useState<string | null>(null);
+  const [reviewError, setReviewError] = useState<{
+    requestId: string;
+    message: string;
+    canReplace: boolean;
+  } | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState("");
   const [generatingCodeId, setGeneratingCodeId] = useState<string | null>(null);
@@ -280,10 +285,15 @@ export default function AdminPage() {
     );
   };
 
-  const review = (id: string, status: "approved" | "rejected") => {
+  const review = (
+    id: string,
+    status: "approved" | "rejected",
+    replaceExisting = false,
+  ) => {
     setReviewingId(id);
+    setReviewError(null);
     reviewRequest.mutate(
-      { id, data: { status } },
+      { id, data: { status, replaceExisting } },
       {
         onSuccess: async (result) => {
           if (status === "approved" && result.memberCode) {
@@ -301,7 +311,22 @@ export default function AdminPage() {
             queryClient.invalidateQueries({
               queryKey: getListProfilesQueryKey(),
             }),
+            queryClient.invalidateQueries({
+              queryKey: getGetMembersSummaryQueryKey(),
+            }),
           ]);
+        },
+        onError: (error) => {
+          const details = error as unknown as {
+            data?: { error?: string; canReplace?: boolean };
+          };
+          setReviewError({
+            requestId: id,
+            message:
+              details.data?.error ??
+              "Cette demande n’a pas pu être traitée. Vérifiez les coordonnées puis réessayez.",
+            canReplace: Boolean(details.data?.canReplace),
+          });
         },
         onSettled: () => setReviewingId(null),
       },
@@ -855,6 +880,23 @@ export default function AdminPage() {
                   </button>
                 </div>
               </div>
+              {reviewError?.requestId === request.id && (
+                <div className="mt-4 rounded-2xl border border-destructive/25 bg-destructive/5 p-4">
+                  <p className="text-xs font-semibold leading-5 text-destructive">
+                    {reviewError.message}
+                  </p>
+                  {reviewError.canReplace && (
+                    <button
+                      type="button"
+                      onClick={() => review(request.id, "approved", true)}
+                      disabled={reviewingId === request.id}
+                      className="mt-3 min-h-11 rounded-full bg-foreground px-4 text-xs font-extrabold text-background disabled:opacity-50"
+                    >
+                      Mettre à jour le profil existant et accepter
+                    </button>
+                  )}
+                </div>
+              )}
               <div className="mt-5 grid gap-3 border-t border-border pt-5 md:grid-cols-2">
                 <div className="rounded-xl bg-background p-4">
                   <p className="font-mono text-[9px] font-bold uppercase tracking-[.16em] text-primary">

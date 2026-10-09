@@ -4,7 +4,7 @@ import { pool } from "@workspace/db";
 import { logger } from "./logger.js";
 
 export type ChatRealtimeEvent = {
-  type: "message" | "presence" | "moderation";
+  type: "message" | "presence" | "moderation" | "members";
   profileId?: string;
   messageId?: string;
   at?: string;
@@ -54,7 +54,14 @@ async function ensureListener() {
 
 export async function publishChatEvent(event: ChatRealtimeEvent) {
   const payload = JSON.stringify({ ...event, at: new Date().toISOString() });
-  await pool.query("SELECT pg_notify($1, $2)", [CHANNEL, payload]);
+  try {
+    await pool.query("SELECT pg_notify($1, $2)", [CHANNEL, payload]);
+  } catch (error) {
+    logger.warn(
+      { err: error, eventType: event.type },
+      "Unable to publish realtime event",
+    );
+  }
 }
 
 export async function subscribeToChatEvents(req: Request, res: Response) {

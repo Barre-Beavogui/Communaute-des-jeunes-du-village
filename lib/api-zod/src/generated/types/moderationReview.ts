@@ -9,4 +9,5 @@ import type { ModerationReviewStatus } from './moderationReviewStatus';
 
 export interface ModerationReview {
   status: ModerationReviewStatus;
+  replaceExisting?: boolean;
 }

@@ -44,9 +44,13 @@ const stories = [
 
 export default function ZoboromaPage() {
   const summaryQuery = useGetMembersSummary({
-    query: { queryKey: getGetMembersSummaryQueryKey() },
+    query: {
+      queryKey: getGetMembersSummaryQueryKey(),
+      refetchInterval: 60_000,
+      refetchOnWindowFocus: true,
+    },
   });
-  const memberCount = summaryQuery.data?.totalMembers ?? 21;
+  const memberCount = summaryQuery.data?.totalMembers;
 
   return (
     <div className="space-y-9">
@@ -89,7 +93,9 @@ export default function ZoboromaPage() {
               href="/membres"
               className="inline-flex items-center gap-2 rounded-full border border-secondary-foreground/25 px-5 py-3 text-xs font-extrabold"
             >
-              {memberCount} parcours recensés
+              {memberCount === undefined
+                ? "Annuaire des membres"
+                : `${memberCount} parcours recensés`}
             </Link>
           </div>
         </div>

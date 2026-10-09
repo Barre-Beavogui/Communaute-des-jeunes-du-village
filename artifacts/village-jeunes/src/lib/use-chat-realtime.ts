@@ -2,8 +2,10 @@ import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   getGetChatUnreadCountQueryKey,
+  getGetMembersSummaryQueryKey,
   getListChatMessagesQueryKey,
   getListChatPresenceQueryKey,
+  getListProfilesQueryKey,
 } from "@workspace/api-client-react";
 import { apiUrl } from "@/lib/api-url";
 import { MEMBER_TOKEN_KEY } from "@/lib/member-session";
@@ -37,6 +39,16 @@ export function useChatRealtime(enabled: boolean) {
         tasks.push(
           queryClient.invalidateQueries({
             queryKey: getListChatPresenceQueryKey(),
+          }),
+        );
+      }
+      if (eventName === "members") {
+        tasks.push(
+          queryClient.invalidateQueries({
+            queryKey: getListProfilesQueryKey(),
+          }),
+          queryClient.invalidateQueries({
+            queryKey: getGetMembersSummaryQueryKey(),
           }),
         );
       }

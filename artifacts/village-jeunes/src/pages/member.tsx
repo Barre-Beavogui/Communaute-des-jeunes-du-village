@@ -1,27 +1,42 @@
 import { ArrowLeft, Mail, MapPin, Phone, ShieldCheck } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { Link, useParams } from "wouter";
 import {
   getGetProfileQueryKey,
   getListChatPresenceQueryKey,
   getListProfilesQueryKey,
+  type Profile,
   useGetProfile,
   useListChatPresence,
   useListProfiles,
 } from "@workspace/api-client-react";
 import { MemberCard } from "@/components/member-card";
 import { Avatar } from "@/components/village-shell";
-import { demoProfiles } from "@/lib/demo-data";
 
 export default function MemberPage() {
   const params = useParams<{ id: string }>();
+  const queryClient = useQueryClient();
   const id =
     params.id ?? new URLSearchParams(window.location.search).get("id") ?? "";
+  const cachedProfile = queryClient
+    .getQueryData<Profile[]>(getListProfilesQueryKey())
+    ?.find((item) => item.id === id);
   const profileQuery = useGetProfile(id, {
-    query: { enabled: Boolean(id), queryKey: getGetProfileQueryKey(id) },
+    query: {
+      enabled: Boolean(id),
+      queryKey: getGetProfileQueryKey(id),
+      initialData: cachedProfile,
+      refetchOnWindowFocus: true,
+      retry: 1,
+    },
   });
   const profilesQuery = useListProfiles({
-    query: { queryKey: getListProfilesQueryKey() },
+    query: {
+      queryKey: getListProfilesQueryKey(),
+      refetchInterval: 60_000,
+      refetchOnWindowFocus: true,
+    },
   });
   const presenceQuery = useListChatPresence({
     query: {
@@ -30,22 +45,14 @@ export default function MemberPage() {
       refetchIntervalInBackground: false,
     },
   });
-  const fallback = useMemo(
-    () => demoProfiles.find((profile) => profile.id === id) ?? demoProfiles[0],
-    [id],
-  );
   const profile =
     profileQuery.data && typeof profileQuery.data.name === "string"
       ? profileQuery.data
-      : fallback;
-  const gender = "gender" in profile ? profile.gender : null;
-  const maritalStatus =
-    "maritalStatus" in profile ? profile.maritalStatus : null;
-  const educationLevel =
-    "educationLevel" in profile ? profile.educationLevel : null;
-  const profiles = Array.isArray(profilesQuery.data)
-    ? profilesQuery.data
-    : demoProfiles;
+      : null;
+  const gender = profile?.gender ?? null;
+  const maritalStatus = profile?.maritalStatus ?? null;
+  const educationLevel = profile?.educationLevel ?? null;
+  const profiles = Array.isArray(profilesQuery.data) ? profilesQuery.data : [];
   const presenceByProfile = useMemo(
     () =>
       new Map(
@@ -56,27 +63,28 @@ export default function MemberPage() {
       ),
     [presenceQuery.data],
   );
-  const profileActivity = presenceByProfile.get(profile.id);
-  const relatedProfiles = useMemo(
-    () =>
-      profiles
-        .filter((item) => item.id !== profile.id)
-        .map((item) => ({
-          item,
-          score:
-            (item.neighborhood === profile.neighborhood ? 2 : 0) +
-            item.activities.filter((activity) =>
-              profile.activities.includes(activity),
-            ).length,
-        }))
-        .sort(
-          (a, b) =>
-            b.score - a.score || a.item.name.localeCompare(b.item.name, "fr"),
-        )
-        .slice(0, 3)
-        .map(({ item }) => item),
-    [profile, profiles],
-  );
+  const profileActivity = profile
+    ? presenceByProfile.get(profile.id)
+    : undefined;
+  const relatedProfiles = useMemo(() => {
+    if (!profile) return [];
+    return profiles
+      .filter((item) => item.id !== profile.id)
+      .map((item) => ({
+        item,
+        score:
+          (item.neighborhood === profile.neighborhood ? 2 : 0) +
+          item.activities.filter((activity) =>
+            profile.activities.includes(activity),
+          ).length,
+      }))
+      .sort(
+        (a, b) =>
+          b.score - a.score || a.item.name.localeCompare(b.item.name, "fr"),
+      )
+      .slice(0, 3)
+      .map(({ item }) => item);
+  }, [profile, profiles]);
 
   return (
     <div className="mx-auto max-w-4xl">
@@ -92,10 +100,10 @@ export default function MemberPage() {
           className="mt-8 h-[500px] animate-pulse rounded-[28px] bg-muted"
           data-testid="skeleton-member-detail"
         />
-      ) : (
+      ) : profile ? (
         <article className="vj-enter mt-6 overflow-hidden rounded-[28px] border border-border bg-card shadow-md">
           <div className="relative h-36 bg-foreground sm:h-48">
-            <div className="absolute -bottom-16 left-6 sm:left-10">
+            <div className="absolute -bottom-12 left-5 sm:-bottom-16 sm:left-10">
               <Avatar profile={profile} size="xl" />
             </div>
             <span className="absolute right-6 top-6 flex items-center gap-1.5 rounded-full bg-background/10 px-3 py-2 text-[10px] font-bold text-background backdrop-blur-sm">
@@ -116,11 +124,11 @@ export default function MemberPage() {
               )}
             </span>
           </div>
-          <div className="px-6 pb-8 pt-20 sm:px-10 sm:pb-12">
+          <div className="px-5 pb-8 pt-16 sm:px-10 sm:pb-12 sm:pt-20">
             <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
               <div>
                 <h1
-                  className="vj-display text-5xl leading-none sm:text-6xl"
+                  className="vj-display break-words text-[clamp(2.7rem,13vw,4rem)] leading-[.92]"
                   data-testid="text-member-detail-name"
                 >
                   {profile.name}
@@ -238,7 +246,7 @@ export default function MemberPage() {
                       data-testid="link-member-phone"
                     >
                       <Phone className="mt-0.5 h-4 w-4 shrink-0" />
-                      <span>{profile.phone}</span>
+                      <span className="break-all">{profile.phone}</span>
                     </a>
                   )}
                   {!profile.email && !profile.phone && (
@@ -251,14 +259,19 @@ export default function MemberPage() {
             </div>
           </div>
         </article>
-      )}
-      {profileQuery.isError && (
-        <p
-          className="mt-4 text-xs font-semibold text-muted-foreground"
-          data-testid="status-member-fallback"
-        >
-          Profil de démonstration affiché pendant le réveil du serveur.
-        </p>
+      ) : (
+        <div className="mt-8 rounded-[24px] border border-dashed border-border bg-card px-6 py-14 text-center">
+          <p className="vj-display text-4xl">Profil introuvable.</p>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Ce profil a peut-être été retiré ou son adresse a changé.
+          </p>
+          <Link
+            href="/membres"
+            className="mt-6 inline-flex min-h-11 items-center rounded-full bg-primary px-5 text-xs font-extrabold text-primary-foreground"
+          >
+            Retour à l’annuaire
+          </Link>
+        </div>
       )}
       {relatedProfiles.length > 0 && (
         <section className="mt-10 space-y-5">

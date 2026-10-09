@@ -116,7 +116,7 @@ export function VillageShell({ children }: { children: ReactNode }) {
   return (
     <div className="vj-noise min-h-[100dvh] bg-background text-foreground">
       <header className="sticky top-0 z-40 border-b border-border/70 bg-background/90 backdrop-blur-xl">
-        <div className="mx-auto flex h-[74px] max-w-[1240px] items-center justify-between px-5 sm:px-8">
+        <div className="mx-auto flex h-[68px] max-w-[1240px] items-center justify-between px-4 sm:h-[74px] sm:px-8">
           <Link
             href={homeHref}
             className="group flex items-center gap-3"
@@ -196,7 +196,7 @@ export function VillageShell({ children }: { children: ReactNode }) {
         </div>
       </header>
 
-      <main className="mx-auto max-w-[1240px] px-5 pb-28 pt-8 sm:px-8 md:pb-12">
+      <main className="mx-auto max-w-[1240px] px-4 pb-28 pt-5 sm:px-8 sm:pt-8 md:pb-12">
         {children}
       </main>
 
@@ -306,7 +306,7 @@ export function VillageShell({ children }: { children: ReactNode }) {
                 onClick={() => setMobileMenuOpen(false)}
                 aria-label="Fermer le menu"
               />
-              <div className="fixed bottom-[78px] left-4 right-4 z-50 rounded-[24px] border border-border bg-card p-3 shadow-2xl md:hidden">
+              <div className="fixed bottom-[calc(4.875rem+env(safe-area-inset-bottom))] left-4 right-4 z-50 rounded-[24px] border border-border bg-card p-3 shadow-2xl md:hidden">
                 <p className="px-3 pb-2 pt-1 font-mono text-[9px] font-bold uppercase tracking-[.18em] text-primary">
                   Plus de pages
                 </p>
@@ -354,7 +354,7 @@ export function VillageShell({ children }: { children: ReactNode }) {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`flex min-h-12 flex-col items-center justify-center gap-1 text-[10px] font-bold ${isActive ? "text-primary" : "text-muted-foreground"}`}
+                  className={`relative flex min-h-12 flex-col items-center justify-center gap-1 text-[10px] font-bold ${isActive ? "text-primary" : "text-muted-foreground"}`}
                   data-testid={`link-mobile-${item.label.toLowerCase().replaceAll(" ", "-")}`}
                 >
                   <Icon className="h-5 w-5" />
@@ -402,7 +402,7 @@ export function Avatar({
     sm: "h-9 w-9 text-[11px]",
     md: "h-14 w-14 text-sm",
     lg: "h-24 w-24 text-xl",
-    xl: "h-36 w-36 text-3xl",
+    xl: "h-24 w-24 text-2xl sm:h-36 sm:w-36 sm:text-3xl",
   };
   return profile.avatarUrl ? (
     <img
