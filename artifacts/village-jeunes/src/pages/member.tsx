@@ -1,6 +1,14 @@
-import { ArrowLeft, Mail, MapPin, Phone, ShieldCheck } from "lucide-react";
+import {
+  ArrowLeft,
+  Mail,
+  MapPin,
+  Phone,
+  ShieldCheck,
+  X,
+  ZoomIn,
+} from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "wouter";
 import {
   getGetProfileQueryKey,
@@ -17,6 +25,7 @@ import { Avatar } from "@/components/village-shell";
 export default function MemberPage() {
   const params = useParams<{ id: string }>();
   const queryClient = useQueryClient();
+  const [photoOpen, setPhotoOpen] = useState(false);
   const id =
     params.id ?? new URLSearchParams(window.location.search).get("id") ?? "";
   const cachedProfile = queryClient
@@ -86,6 +95,20 @@ export default function MemberPage() {
       .map(({ item }) => item);
   }, [profile, profiles]);
 
+  useEffect(() => {
+    if (!photoOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setPhotoOpen(false);
+    };
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [photoOpen]);
+
   return (
     <div className="mx-auto max-w-4xl">
       <Link
@@ -104,7 +127,25 @@ export default function MemberPage() {
         <article className="vj-enter mt-6 overflow-hidden rounded-[28px] border border-border bg-card shadow-md">
           <div className="relative h-36 bg-foreground sm:h-48">
             <div className="absolute -bottom-12 left-5 sm:-bottom-16 sm:left-10">
-              <Avatar profile={profile} size="xl" />
+              {profile.avatarUrl ? (
+                <button
+                  type="button"
+                  onClick={() => setPhotoOpen(true)}
+                  className="group/photo relative block rounded-[28%]"
+                  aria-label={`Agrandir la photo de ${profile.name}`}
+                  aria-haspopup="dialog"
+                >
+                  <Avatar profile={profile} size="xl" />
+                  <span className="absolute inset-0 grid place-items-center rounded-[28%] bg-foreground/0 text-background opacity-0 transition group-hover/photo:bg-foreground/35 group-hover/photo:opacity-100 group-focus-visible/photo:bg-foreground/35 group-focus-visible/photo:opacity-100">
+                    <ZoomIn className="h-6 w-6" />
+                  </span>
+                  <span className="absolute -bottom-1 -right-1 grid h-9 w-9 place-items-center rounded-full border-4 border-card bg-primary text-primary-foreground shadow-md sm:h-10 sm:w-10">
+                    <ZoomIn className="h-4 w-4" />
+                  </span>
+                </button>
+              ) : (
+                <Avatar profile={profile} size="xl" />
+              )}
             </div>
             <span className="absolute right-6 top-6 flex items-center gap-1.5 rounded-full bg-background/10 px-3 py-2 text-[10px] font-bold text-background backdrop-blur-sm">
               {profileActivity ? (
@@ -301,6 +342,37 @@ export default function MemberPage() {
             ))}
           </div>
         </section>
+      )}
+      {photoOpen && profile?.avatarUrl && (
+        <div
+          className="fixed inset-0 z-[100] grid place-items-center bg-foreground/92 p-4 backdrop-blur-md sm:p-8"
+          role="dialog"
+          aria-modal="true"
+          aria-label={`Photo de ${profile.name}`}
+          onClick={() => setPhotoOpen(false)}
+        >
+          <button
+            type="button"
+            onClick={() => setPhotoOpen(false)}
+            className="absolute right-4 top-4 grid h-12 w-12 place-items-center rounded-full bg-background text-foreground shadow-lg sm:right-8 sm:top-8"
+            aria-label="Fermer la photo"
+          >
+            <X className="h-5 w-5" />
+          </button>
+          <figure
+            className="flex max-h-[90dvh] max-w-5xl flex-col items-center gap-4"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <img
+              src={profile.avatarUrl}
+              alt={`Portrait agrandi de ${profile.name}`}
+              className="max-h-[80dvh] max-w-full rounded-[24px] object-contain shadow-2xl"
+            />
+            <figcaption className="text-sm font-extrabold text-background">
+              {profile.name}
+            </figcaption>
+          </figure>
+        </div>
       )}
     </div>
   );

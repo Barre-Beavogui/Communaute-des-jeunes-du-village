@@ -5,21 +5,19 @@ import {
   Clock3,
   FolderKanban,
   MapPin,
-  MessageCircleMore,
   Newspaper,
   Sparkles,
-  UserRound,
   UsersRound,
 } from "lucide-react";
 import { useMemo } from "react";
 import { Link } from "wouter";
 import {
-  getGetChatUnreadCountQueryKey,
+  getGetMemberProfileSettingsQueryKey,
   getGetMembersSummaryQueryKey,
   getListAnnouncementsQueryKey,
   getListEventsQueryKey,
   getListProfilesQueryKey,
-  useGetChatUnreadCount,
+  useGetMemberProfileSettings,
   useGetMembersSummary,
   useListAnnouncements,
   useListEvents,
@@ -71,6 +69,12 @@ export default function HomePage() {
       refetchOnWindowFocus: true,
     },
   });
+  const settingsQuery = useGetMemberProfileSettings({
+    query: {
+      queryKey: getGetMemberProfileSettingsQueryKey(),
+      refetchOnWindowFocus: true,
+    },
+  });
   const announcementsQuery = useListAnnouncements({
     query: {
       queryKey: getListAnnouncementsQueryKey(),
@@ -85,22 +89,16 @@ export default function HomePage() {
       refetchOnWindowFocus: true,
     },
   });
-  const unreadQuery = useGetChatUnreadCount({
-    query: {
-      queryKey: getGetChatUnreadCountQueryKey(),
-      refetchInterval: 45_000,
-      refetchOnWindowFocus: true,
-    },
-  });
-
   const profiles = Array.isArray(profilesQuery.data) ? profilesQuery.data : [];
   const summary = summaryQuery.data ?? {
     totalMembers: profiles.length,
     activeProjects: profiles.filter((profile) => profile.project).length,
     topActivities: [],
   };
-  const unreadCount = unreadQuery.data?.count ?? 0;
   const firstName = member?.name.trim().split(/\s+/)[0] || "membre";
+  const gender = settingsQuery.data?.gender ?? member?.gender ?? null;
+  const honorific =
+    gender === "Féminin" ? "Mme" : gender === "Masculin" ? "M." : null;
   const today = useMemo(() => new Date(), []);
   const greeting = today.getHours() >= 18 ? "Bonsoir" : "Bonjour";
   const announcements = announcementsQuery.data ?? [];
@@ -127,42 +125,6 @@ export default function HomePage() {
     .filter((profile) => profile.id !== member?.id)
     .slice(0, 4);
 
-  const shortcuts = [
-    {
-      href: "/groupe",
-      label: "Le groupe",
-      detail:
-        unreadCount > 0
-          ? `${unreadCount} message${unreadCount > 1 ? "s" : ""} non lu${unreadCount > 1 ? "s" : ""}`
-          : "Échanger avec la communauté",
-      icon: MessageCircleMore,
-      style: "bg-primary text-primary-foreground",
-    },
-    {
-      href: "/membres",
-      label: "Les membres",
-      detail: `${summary.totalMembers} profil${summary.totalMembers > 1 ? "s" : ""} dans l’annuaire`,
-      icon: UsersRound,
-      style: "border border-border bg-card text-foreground",
-    },
-    {
-      href: "/actualites",
-      label: "Les actualités",
-      detail: "Annonces, votes et sondages",
-      icon: Newspaper,
-      style: "border border-border bg-accent/35 text-foreground",
-    },
-    {
-      href: "/evenements",
-      label: "L’agenda",
-      detail: nextEvent
-        ? "Un rendez-vous est programmé"
-        : "Réunions et événements",
-      icon: CalendarDays,
-      style: "bg-foreground text-background",
-    },
-  ];
-
   return (
     <div className="space-y-7 sm:space-y-9">
       <section className="vj-enter relative overflow-hidden rounded-[26px] bg-foreground text-background shadow-[0_20px_50px_hsl(300_18%_18%/.16)] sm:rounded-[32px]">
@@ -175,7 +137,8 @@ export default function HomePage() {
               Espace membre · {fullDate(today)}
             </div>
             <h1 className="vj-display mt-5 max-w-3xl text-[clamp(3.1rem,12vw,6rem)] leading-[.86] tracking-[-.055em]">
-              {greeting},
+              {greeting}
+              {honorific ? ` ${honorific}` : ","}
               <br />
               <em className="break-words text-primary">{firstName}.</em>
             </h1>
@@ -183,24 +146,12 @@ export default function HomePage() {
               Retrouvez en un regard les nouvelles, les rendez-vous et les
               échanges qui font vivre la communauté.
             </p>
-            <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-              <Link
-                href="/groupe"
-                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-accent px-5 text-sm font-extrabold text-accent-foreground transition hover:-translate-y-0.5"
-              >
-                <MessageCircleMore className="h-4 w-4" /> Ouvrir le groupe
-                {unreadCount > 0 && (
-                  <span className="rounded-full bg-foreground px-2 py-0.5 text-[9px] text-background">
-                    {unreadCount > 99 ? "99+" : unreadCount}
-                  </span>
-                )}
-              </Link>
-              <Link
-                href="/connexion-membre"
-                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-background/20 bg-background/8 px-5 text-sm font-extrabold backdrop-blur-sm transition hover:bg-background/15"
-              >
-                <UserRound className="h-4 w-4" /> Mon profil
-              </Link>
+            <div className="mt-7 flex max-w-lg items-start gap-3 border-l-2 border-accent pl-4">
+              <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
+              <p className="text-xs font-semibold leading-6 text-background/65">
+                Votre point de repère pour suivre les décisions, les rencontres
+                et les initiatives de Zoboroma.
+              </p>
             </div>
           </div>
 
@@ -235,46 +186,6 @@ export default function HomePage() {
               </div>
             </div>
           </div>
-        </div>
-      </section>
-
-      <section aria-labelledby="shortcuts-title">
-        <div className="mb-4 flex items-end justify-between gap-4">
-          <div>
-            <p className="font-mono text-[9px] font-bold uppercase tracking-[.2em] text-primary">
-              Accès rapide
-            </p>
-            <h2 id="shortcuts-title" className="mt-1 text-xl font-extrabold">
-              Où souhaitez-vous aller ?
-            </h2>
-          </div>
-        </div>
-        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-          {shortcuts.map((shortcut, index) => {
-            const Icon = shortcut.icon;
-            return (
-              <Link
-                key={shortcut.href}
-                href={shortcut.href}
-                className={`vj-enter vj-enter-delay-${Math.min(index + 1, 3)} group flex min-h-40 flex-col justify-between rounded-[22px] p-4 shadow-sm transition active:scale-[.98] sm:min-h-44 sm:p-5 sm:hover:-translate-y-1 ${shortcut.style}`}
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <span className="grid h-10 w-10 place-items-center rounded-2xl bg-current/10">
-                    <Icon className="h-5 w-5" />
-                  </span>
-                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-extrabold sm:text-base">
-                    {shortcut.label}
-                  </h3>
-                  <p className="mt-1 text-[10px] font-semibold leading-4 opacity-65 sm:text-xs sm:leading-5">
-                    {shortcut.detail}
-                  </p>
-                </div>
-              </Link>
-            );
-          })}
         </div>
       </section>
 
@@ -452,7 +363,7 @@ export default function HomePage() {
                 className="group rounded-[22px] border border-border/70 bg-card p-4 shadow-sm transition active:scale-[.98] sm:hover:-translate-y-1 sm:hover:border-primary/35"
               >
                 <div className="flex items-start justify-between gap-2">
-                  <Avatar profile={profile} size="md" />
+                  <Avatar profile={profile} size="lg" />
                   <ChevronRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:text-primary" />
                 </div>
                 <h3 className="mt-5 line-clamp-2 text-sm font-extrabold leading-5">

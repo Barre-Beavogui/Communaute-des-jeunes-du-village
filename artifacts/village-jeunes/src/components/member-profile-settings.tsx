@@ -219,11 +219,15 @@ export function MemberProfileSettings({
       },
       {
         onSuccess: async (updated) => {
-          const identity = {
+          const identity: MemberIdentity = {
             id: updated.id,
             name: updated.name,
             initials: updated.initials,
             avatarUrl: updated.avatarUrl,
+            gender:
+              updated.gender === "Masculin" || updated.gender === "Féminin"
+                ? updated.gender
+                : null,
           };
           updateMemberIdentity(identity);
           onUpdated(identity);

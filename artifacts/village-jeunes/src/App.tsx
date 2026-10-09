@@ -103,6 +103,7 @@ function RouteMetadata() {
   const [location] = useLocation();
 
   useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
     const publicRoutes = new Set(["/", "/confidentialite"]);
     const robots = document.querySelector<HTMLMetaElement>(
       'meta[name="robots"]',

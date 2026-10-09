@@ -5,6 +5,7 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { MemberIdentityGender } from './memberIdentityGender';
 
 export interface MemberIdentity {
   id: string;
@@ -12,4 +13,6 @@ export interface MemberIdentity {
   initials: string;
   /** @nullable */
   avatarUrl?: string | null;
+  /** @nullable */
+  gender: MemberIdentityGender;
 }

@@ -210,7 +210,8 @@ export const MemberLoginResponse = zod.object({
   "id": zod.string(),
   "name": zod.string(),
   "initials": zod.string(),
-  "avatarUrl": zod.string().nullish()
+  "avatarUrl": zod.string().nullish(),
+  "gender": zod.union([zod.literal('Masculin'),zod.literal('Féminin'),zod.literal(null)]).nullable()
 })
 })
 
@@ -235,7 +236,8 @@ export const MemberActivateResponse = zod.object({
   "id": zod.string(),
   "name": zod.string(),
   "initials": zod.string(),
-  "avatarUrl": zod.string().nullish()
+  "avatarUrl": zod.string().nullish(),
+  "gender": zod.union([zod.literal('Masculin'),zod.literal('Féminin'),zod.literal(null)]).nullable()
 })
 })
 

@@ -44,6 +44,7 @@ export * from './memberActivation';
 export * from './memberCode';
 export * from './memberContactUpdate';
 export * from './memberIdentity';
+export * from './memberIdentityGender';
 export * from './memberLogin';
 export * from './memberPasswordResetCode';
 export * from './memberPasswordResetRequest';

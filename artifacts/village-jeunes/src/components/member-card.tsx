@@ -21,7 +21,7 @@ export function MemberCard({
       <div className="absolute -right-12 -top-12 h-32 w-32 rounded-full bg-accent/20 transition-transform duration-500 group-hover:scale-125" />
       <div className="relative flex items-start justify-between">
         <div className="relative">
-          <Avatar profile={profile} size={featured ? "lg" : "md"} />
+          <Avatar profile={profile} size="lg" />
           {presenceActivity && (
             <span
               className="absolute -bottom-1 -right-1 h-4 w-4 rounded-full border-[3px] border-card bg-emerald-500"

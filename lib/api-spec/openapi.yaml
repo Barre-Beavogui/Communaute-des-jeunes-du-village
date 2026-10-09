@@ -1110,12 +1110,15 @@ components:
         code: { type: string, minLength: 8, maxLength: 32 }
     MemberIdentity:
       type: object
-      required: [id, name, initials]
+      required: [id, name, initials, gender]
       properties:
         id: { type: string }
         name: { type: string }
         initials: { type: string }
         avatarUrl: { type: ["string", "null"] }
+        gender:
+          type: ["string", "null"]
+          enum: [Masculin, Féminin, null]
     MemberSession:
       type: object
       required: [token, expiresAt, profile, requiresPasswordChange]

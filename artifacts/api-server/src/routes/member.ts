@@ -109,6 +109,7 @@ router.post("/member/activate", async (req, res) => {
       name: profilesTable.name,
       initials: profilesTable.initials,
       avatarUrl: profilesTable.avatarUrl,
+      gender: profilesTable.gender,
       memberPasswordHash: profilesTable.memberPasswordHash,
       loginEmailNormalized: profilesTable.loginEmailNormalized,
       loginPhoneNormalized: profilesTable.loginPhoneNormalized,
@@ -154,6 +155,7 @@ router.post("/member/activate", async (req, res) => {
         name: profile.name,
         initials: profile.initials,
         avatarUrl: profile.avatarUrl,
+        gender: profile.gender,
       },
     }),
   );
@@ -188,6 +190,7 @@ router.post("/member/login", async (req, res) => {
       name: profilesTable.name,
       initials: profilesTable.initials,
       avatarUrl: profilesTable.avatarUrl,
+      gender: profilesTable.gender,
       memberPasswordHash: profilesTable.memberPasswordHash,
     })
     .from(profilesTable)
@@ -225,6 +228,7 @@ router.post("/member/login", async (req, res) => {
         name: profile.name,
         initials: profile.initials,
         avatarUrl: profile.avatarUrl,
+        gender: profile.gender,
       },
     }),
   );

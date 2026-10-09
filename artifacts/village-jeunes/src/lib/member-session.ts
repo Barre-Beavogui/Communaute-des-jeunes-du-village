@@ -7,6 +7,7 @@ export type MemberIdentity = {
   name: string;
   initials: string;
   avatarUrl?: string | null;
+  gender?: "Masculin" | "Féminin" | null;
 };
 
 export function getMemberIdentity(): MemberIdentity | null {

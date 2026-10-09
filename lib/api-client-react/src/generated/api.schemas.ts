@@ -366,12 +366,25 @@ export interface MemberActivation {
   code: string;
 }
 
+/**
+ * @nullable
+ */
+export type MemberIdentityGender = typeof MemberIdentityGender[keyof typeof MemberIdentityGender] | null;
+
+
+export const MemberIdentityGender = {
+  Masculin: 'Masculin',
+  Féminin: 'Féminin',
+} as const;
+
 export interface MemberIdentity {
   id: string;
   name: string;
   initials: string;
   /** @nullable */
   avatarUrl?: string | null;
+  /** @nullable */
+  gender: MemberIdentityGender;
 }
 
 export interface MemberSession {
