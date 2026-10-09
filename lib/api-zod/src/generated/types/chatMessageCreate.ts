@@ -30,4 +30,6 @@ export interface ChatMessageCreate {
      * @nullable
      */
   durationSeconds?: number | null;
+  /** @nullable */
+  replyToId?: string | null;
 }

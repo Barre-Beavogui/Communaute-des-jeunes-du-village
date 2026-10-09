@@ -23,6 +23,7 @@ import {
 } from "@workspace/api-zod";
 import { loadPolls } from "../lib/community-data.js";
 import { requireAdmin } from "../lib/admin-auth.js";
+import { persistDataUrl } from "../lib/media-storage.js";
 
 const router: IRouter = Router();
 const VIDEO_HOSTS = new Set([
@@ -34,7 +35,7 @@ const VIDEO_HOSTS = new Set([
   "www.vimeo.com",
 ]);
 
-function cleanMedia(
+async function cleanMedia(
   mediaType: "image" | "video" | null | undefined,
   rawMediaUrl: string | null | undefined,
 ) {
@@ -44,8 +45,21 @@ function cleanMedia(
   if (!type || !mediaUrl) return null;
 
   if (type === "image") {
-    if (!/^data:image\/(jpeg|png|webp);base64,/i.test(mediaUrl)) return null;
-    return { mediaType: type, mediaUrl };
+    if (
+      !/^data:image\/(jpeg|png|webp);base64,/i.test(mediaUrl) &&
+      !/^https:\/\//i.test(mediaUrl)
+    )
+      return null;
+    try {
+      const storedUrl = await persistDataUrl(mediaUrl, {
+        folder: "announcements",
+        kind: "image",
+        maxBytes: 1_500_000,
+      });
+      return { mediaType: type, mediaUrl: storedUrl };
+    } catch {
+      return null;
+    }
   }
 
   try {
@@ -62,7 +76,7 @@ router.use("/moderation", requireAdmin);
 
 router.post("/moderation/announcements", async (req, res) => {
   const body = CreateAnnouncementBody.parse(req.body);
-  const media = cleanMedia(body.mediaType, body.mediaUrl);
+  const media = await cleanMedia(body.mediaType, body.mediaUrl);
   if (!media) {
     res.status(400).json({
       error: "Ajoutez une photo valide ou un lien YouTube/Vimeo sécurisé.",

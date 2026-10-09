@@ -216,48 +216,6 @@ export const MemberLoginResponse = zod.object({
 
 
 /**
- * @summary Open a Zoboroma member session from a linked WorkOS session
- */
-export const exchangeWorkosSessionBodyAccessTokenMin = 20;
-export const exchangeWorkosSessionBodyAccessTokenMax = 8192;
-
-
-
-export const ExchangeWorkosSessionBody = zod.object({
-  "accessToken": zod.string().min(exchangeWorkosSessionBodyAccessTokenMin).max(exchangeWorkosSessionBodyAccessTokenMax)
-})
-
-export const ExchangeWorkosSessionResponse = zod.object({
-  "token": zod.string(),
-  "expiresAt": zod.string(),
-  "requiresPasswordChange": zod.boolean(),
-  "profile": zod.object({
-  "id": zod.string(),
-  "name": zod.string(),
-  "initials": zod.string(),
-  "avatarUrl": zod.string().nullish()
-})
-})
-
-
-/**
- * @summary Link the authenticated Zoboroma member to a WorkOS user
- */
-export const linkWorkosAccountBodyAccessTokenMin = 20;
-export const linkWorkosAccountBodyAccessTokenMax = 8192;
-
-
-
-export const LinkWorkosAccountBody = zod.object({
-  "accessToken": zod.string().min(linkWorkosAccountBodyAccessTokenMin).max(linkWorkosAccountBodyAccessTokenMax)
-})
-
-export const LinkWorkosAccountResponse = zod.object({
-  "success": zod.boolean()
-})
-
-
-/**
  * @summary Start first-login activation with a personal code
  */
 export const memberActivateBodyCodeMin = 8;
@@ -449,8 +407,18 @@ export const ListChatMessagesResponseItem = zod.object({
   "type": zod.enum(['text', 'audio']),
   "content": zod.string().nullish(),
   "audioData": zod.string().nullish(),
+  "audioUrl": zod.string().nullish(),
   "audioMimeType": zod.string().nullish(),
   "durationSeconds": zod.number().nullish(),
+  "pinnedAt": zod.string().nullish(),
+  "reportedByMember": zod.boolean(),
+  "reportCount": zod.number(),
+  "replyTo": zod.union([zod.object({
+  "id": zod.string(),
+  "memberName": zod.string(),
+  "type": zod.enum(['text', 'audio']),
+  "content": zod.string().nullish()
+}),zod.null()]).optional(),
   "createdAt": zod.string()
 })
 export const ListChatMessagesResponse = zod.array(ListChatMessagesResponseItem)
@@ -474,7 +442,8 @@ export const SendChatMessageBody = zod.object({
   "content": zod.string().max(sendChatMessageBodyContentMax).nullish(),
   "audioData": zod.string().max(sendChatMessageBodyAudioDataMax).nullish(),
   "audioMimeType": zod.string().max(sendChatMessageBodyAudioMimeTypeMax).nullish(),
-  "durationSeconds": zod.number().min(1).max(sendChatMessageBodyDurationSecondsMax).nullish()
+  "durationSeconds": zod.number().min(1).max(sendChatMessageBodyDurationSecondsMax).nullish(),
+  "replyToId": zod.string().nullish()
 })
 
 export const SendChatMessageResponse = zod.object({
@@ -486,8 +455,18 @@ export const SendChatMessageResponse = zod.object({
   "type": zod.enum(['text', 'audio']),
   "content": zod.string().nullish(),
   "audioData": zod.string().nullish(),
+  "audioUrl": zod.string().nullish(),
   "audioMimeType": zod.string().nullish(),
   "durationSeconds": zod.number().nullish(),
+  "pinnedAt": zod.string().nullish(),
+  "reportedByMember": zod.boolean(),
+  "reportCount": zod.number(),
+  "replyTo": zod.union([zod.object({
+  "id": zod.string(),
+  "memberName": zod.string(),
+  "type": zod.enum(['text', 'audio']),
+  "content": zod.string().nullish()
+}),zod.null()]).optional(),
   "createdAt": zod.string()
 })
 
@@ -514,6 +493,97 @@ export const UpdateChatPresenceBody = zod.object({
 
 export const UpdateChatPresenceResponse = zod.object({
   "success": zod.literal(true)
+})
+
+
+/**
+ * @summary Count unread group messages for the connected member
+ */
+export const getChatUnreadCountResponseCountMin = 0;
+
+
+
+export const GetChatUnreadCountResponse = zod.object({
+  "count": zod.number().min(getChatUnreadCountResponseCountMin)
+})
+
+
+/**
+ * @summary Mark all current group messages as read
+ */
+export const MarkChatReadResponse = zod.object({
+  "success": zod.literal(true),
+  "lastReadAt": zod.string()
+})
+
+
+/**
+ * @summary Report a group message to administrators
+ */
+export const ReportChatMessageParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const reportChatMessageBodyReasonMin = 3;
+export const reportChatMessageBodyReasonMax = 300;
+
+
+
+export const ReportChatMessageBody = zod.object({
+  "reason": zod.string().min(reportChatMessageBodyReasonMin).max(reportChatMessageBodyReasonMax)
+})
+
+export const ReportChatMessageResponse = zod.object({
+  "success": zod.literal(true)
+})
+
+
+/**
+ * @summary List community meetings and events
+ */
+export const ListEventsResponseItem = zod.object({
+  "id": zod.string(),
+  "title": zod.string(),
+  "startsAt": zod.string(),
+  "location": zod.string(),
+  "agenda": zod.string(),
+  "status": zod.enum(['upcoming', 'completed', 'cancelled']),
+  "reportTitle": zod.string().nullish(),
+  "reportContent": zod.string().nullish(),
+  "reportUrl": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "attendingCount": zod.number(),
+  "unavailableCount": zod.number(),
+  "memberResponse": zod.union([zod.literal('attending'),zod.literal('unavailable'),zod.literal(null)]).nullish()
+})
+export const ListEventsResponse = zod.array(ListEventsResponseItem)
+
+
+/**
+ * @summary Confirm availability for a community event
+ */
+export const RespondToEventParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const RespondToEventBody = zod.object({
+  "response": zod.enum(['attending', 'unavailable'])
+})
+
+export const RespondToEventResponse = zod.object({
+  "id": zod.string(),
+  "title": zod.string(),
+  "startsAt": zod.string(),
+  "location": zod.string(),
+  "agenda": zod.string(),
+  "status": zod.enum(['upcoming', 'completed', 'cancelled']),
+  "reportTitle": zod.string().nullish(),
+  "reportContent": zod.string().nullish(),
+  "reportUrl": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "attendingCount": zod.number(),
+  "unavailableCount": zod.number(),
+  "memberResponse": zod.union([zod.literal('attending'),zod.literal('unavailable'),zod.literal(null)]).nullish()
 })
 
 
@@ -723,8 +793,18 @@ export const ListModerationChatMessagesResponseItem = zod.object({
   "type": zod.enum(['text', 'audio']),
   "content": zod.string().nullish(),
   "audioData": zod.string().nullish(),
+  "audioUrl": zod.string().nullish(),
   "audioMimeType": zod.string().nullish(),
   "durationSeconds": zod.number().nullish(),
+  "pinnedAt": zod.string().nullish(),
+  "reportedByMember": zod.boolean(),
+  "reportCount": zod.number(),
+  "replyTo": zod.union([zod.object({
+  "id": zod.string(),
+  "memberName": zod.string(),
+  "type": zod.enum(['text', 'audio']),
+  "content": zod.string().nullish()
+}),zod.null()]).optional(),
   "createdAt": zod.string()
 })
 export const ListModerationChatMessagesResponse = zod.array(ListModerationChatMessagesResponseItem)
@@ -738,6 +818,42 @@ export const DeleteModerationChatMessageParams = zod.object({
 })
 
 export const DeleteModerationChatMessageResponse = zod.void()
+
+
+/**
+ * @summary Pin or unpin a group message
+ */
+export const UpdateModerationChatPinParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const UpdateModerationChatPinBody = zod.object({
+  "pinned": zod.boolean()
+})
+
+export const UpdateModerationChatPinResponse = zod.object({
+  "id": zod.string(),
+  "profileId": zod.string(),
+  "memberName": zod.string(),
+  "initials": zod.string(),
+  "avatarUrl": zod.string().nullish(),
+  "type": zod.enum(['text', 'audio']),
+  "content": zod.string().nullish(),
+  "audioData": zod.string().nullish(),
+  "audioUrl": zod.string().nullish(),
+  "audioMimeType": zod.string().nullish(),
+  "durationSeconds": zod.number().nullish(),
+  "pinnedAt": zod.string().nullish(),
+  "reportedByMember": zod.boolean(),
+  "reportCount": zod.number(),
+  "replyTo": zod.union([zod.object({
+  "id": zod.string(),
+  "memberName": zod.string(),
+  "type": zod.enum(['text', 'audio']),
+  "content": zod.string().nullish()
+}),zod.null()]).optional(),
+  "createdAt": zod.string()
+})
 
 
 /**
@@ -1023,5 +1139,142 @@ export const DeletePollParams = zod.object({
 })
 
 export const DeletePollResponse = zod.void()
+
+
+/**
+ * @summary List community events for administrators
+ */
+export const ListModerationEventsResponseItem = zod.object({
+  "id": zod.string(),
+  "title": zod.string(),
+  "startsAt": zod.string(),
+  "location": zod.string(),
+  "agenda": zod.string(),
+  "status": zod.enum(['upcoming', 'completed', 'cancelled']),
+  "reportTitle": zod.string().nullish(),
+  "reportContent": zod.string().nullish(),
+  "reportUrl": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "attendingCount": zod.number(),
+  "unavailableCount": zod.number(),
+  "memberResponse": zod.union([zod.literal('attending'),zod.literal('unavailable'),zod.literal(null)]).nullish()
+})
+export const ListModerationEventsResponse = zod.array(ListModerationEventsResponseItem)
+
+
+/**
+ * @summary Create a community meeting or event
+ */
+export const createEventBodyTitleMin = 3;
+export const createEventBodyTitleMax = 160;
+
+export const createEventBodyStartsAtMin = 10;
+export const createEventBodyStartsAtMax = 40;
+
+export const createEventBodyLocationMin = 2;
+export const createEventBodyLocationMax = 200;
+
+export const createEventBodyAgendaMin = 3;
+export const createEventBodyAgendaMax = 4000;
+
+export const createEventBodyReportTitleMax = 200;
+
+export const createEventBodyReportContentMax = 12000;
+
+export const createEventBodyReportUrlMax = 1000;
+
+
+
+export const CreateEventBody = zod.object({
+  "title": zod.string().min(createEventBodyTitleMin).max(createEventBodyTitleMax),
+  "startsAt": zod.string().min(createEventBodyStartsAtMin).max(createEventBodyStartsAtMax),
+  "location": zod.string().min(createEventBodyLocationMin).max(createEventBodyLocationMax),
+  "agenda": zod.string().min(createEventBodyAgendaMin).max(createEventBodyAgendaMax),
+  "status": zod.enum(['upcoming', 'completed', 'cancelled']),
+  "reportTitle": zod.string().max(createEventBodyReportTitleMax).nullish(),
+  "reportContent": zod.string().max(createEventBodyReportContentMax).nullish(),
+  "reportUrl": zod.string().max(createEventBodyReportUrlMax).nullish()
+})
+
+export const CreateEventResponse = zod.object({
+  "id": zod.string(),
+  "title": zod.string(),
+  "startsAt": zod.string(),
+  "location": zod.string(),
+  "agenda": zod.string(),
+  "status": zod.enum(['upcoming', 'completed', 'cancelled']),
+  "reportTitle": zod.string().nullish(),
+  "reportContent": zod.string().nullish(),
+  "reportUrl": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "attendingCount": zod.number(),
+  "unavailableCount": zod.number(),
+  "memberResponse": zod.union([zod.literal('attending'),zod.literal('unavailable'),zod.literal(null)]).nullish()
+})
+
+
+/**
+ * @summary Update an event and publish its report
+ */
+export const UpdateEventParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const updateEventBodyTitleMin = 3;
+export const updateEventBodyTitleMax = 160;
+
+export const updateEventBodyStartsAtMin = 10;
+export const updateEventBodyStartsAtMax = 40;
+
+export const updateEventBodyLocationMin = 2;
+export const updateEventBodyLocationMax = 200;
+
+export const updateEventBodyAgendaMin = 3;
+export const updateEventBodyAgendaMax = 4000;
+
+export const updateEventBodyReportTitleMax = 200;
+
+export const updateEventBodyReportContentMax = 12000;
+
+export const updateEventBodyReportUrlMax = 1000;
+
+
+
+export const UpdateEventBody = zod.object({
+  "title": zod.string().min(updateEventBodyTitleMin).max(updateEventBodyTitleMax),
+  "startsAt": zod.string().min(updateEventBodyStartsAtMin).max(updateEventBodyStartsAtMax),
+  "location": zod.string().min(updateEventBodyLocationMin).max(updateEventBodyLocationMax),
+  "agenda": zod.string().min(updateEventBodyAgendaMin).max(updateEventBodyAgendaMax),
+  "status": zod.enum(['upcoming', 'completed', 'cancelled']),
+  "reportTitle": zod.string().max(updateEventBodyReportTitleMax).nullish(),
+  "reportContent": zod.string().max(updateEventBodyReportContentMax).nullish(),
+  "reportUrl": zod.string().max(updateEventBodyReportUrlMax).nullish()
+})
+
+export const UpdateEventResponse = zod.object({
+  "id": zod.string(),
+  "title": zod.string(),
+  "startsAt": zod.string(),
+  "location": zod.string(),
+  "agenda": zod.string(),
+  "status": zod.enum(['upcoming', 'completed', 'cancelled']),
+  "reportTitle": zod.string().nullish(),
+  "reportContent": zod.string().nullish(),
+  "reportUrl": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "attendingCount": zod.number(),
+  "unavailableCount": zod.number(),
+  "memberResponse": zod.union([zod.literal('attending'),zod.literal('unavailable'),zod.literal(null)]).nullish()
+})
+
+
+/**
+ * @summary Delete an event and its responses
+ */
+export const DeleteEventParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const DeleteEventResponse = zod.void()
 
 

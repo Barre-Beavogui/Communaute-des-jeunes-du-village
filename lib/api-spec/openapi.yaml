@@ -142,52 +142,6 @@ paths:
                 $ref: "#/components/schemas/MemberSession"
         "401":
           description: Invalid member credentials
-  /member/workos/exchange:
-    post:
-      operationId: exchangeWorkosSession
-      tags: [member]
-      summary: Open a Zoboroma member session from a linked WorkOS session
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/WorkosAccessToken"
-      responses:
-        "200":
-          description: Member session
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/MemberSession"
-        "401":
-          description: Invalid WorkOS session
-        "404":
-          description: WorkOS account not linked
-  /member/workos/link:
-    post:
-      operationId: linkWorkosAccount
-      tags: [member]
-      summary: Link the authenticated Zoboroma member to a WorkOS user
-      security:
-        - bearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/WorkosAccessToken"
-      responses:
-        "200":
-          description: WorkOS account linked
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/WorkosLinkReceipt"
-        "401":
-          description: Invalid member or WorkOS session
-        "409":
-          description: WorkOS account already linked to another member
   /member/activate:
     post:
       operationId: memberActivate
@@ -353,6 +307,102 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ChatPresenceReceipt"
+        "401":
+          description: Member session required
+  /chat/unread:
+    get:
+      operationId: getChatUnreadCount
+      tags: [chat]
+      summary: Count unread group messages for the connected member
+      responses:
+        "200":
+          description: Unread message count
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChatUnreadCount"
+        "401":
+          description: Member session required
+  /chat/read:
+    post:
+      operationId: markChatRead
+      tags: [chat]
+      summary: Mark all current group messages as read
+      responses:
+        "200":
+          description: Read position updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChatReadReceipt"
+        "401":
+          description: Member session required
+  /chat/messages/{id}/report:
+    post:
+      operationId: reportChatMessage
+      tags: [chat]
+      summary: Report a group message to administrators
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChatMessageReportCreate"
+      responses:
+        "201":
+          description: Report recorded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessReceipt"
+        "401":
+          description: Member session required
+        "404":
+          description: Message not found
+  /events:
+    get:
+      operationId: listEvents
+      tags: [community]
+      summary: List community meetings and events
+      responses:
+        "200":
+          description: Community events
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CommunityEvent"
+        "401":
+          description: Member session required
+  /events/{id}/respond:
+    post:
+      operationId: respondToEvent
+      tags: [community]
+      summary: Confirm availability for a community event
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EventResponseCreate"
+      responses:
+        "200":
+          description: Updated event participation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CommunityEvent"
         "401":
           description: Member session required
   /announcements:
@@ -546,6 +596,31 @@ paths:
           description: Message removed
         "404":
           description: Message not found
+  /moderation/chat/messages/{id}/pin:
+    patch:
+      operationId: updateModerationChatPin
+      tags: [moderation]
+      summary: Pin or unpin a group message
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChatPinUpdate"
+      responses:
+        "200":
+          description: Updated group message
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChatMessage"
+        "404":
+          description: Message not found
   /moderation/profiles/{id}:
     patch:
       operationId: updateModerationProfile
@@ -727,6 +802,78 @@ paths:
           description: Poll removed
         "404":
           description: Poll not found
+  /moderation/events:
+    get:
+      operationId: listModerationEvents
+      tags: [moderation]
+      summary: List community events for administrators
+      responses:
+        "200":
+          description: Community events
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CommunityEvent"
+        "401":
+          description: Administrator session required
+    post:
+      operationId: createEvent
+      tags: [moderation]
+      summary: Create a community meeting or event
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CommunityEventWrite"
+      responses:
+        "201":
+          description: Created event
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CommunityEvent"
+  /moderation/events/{id}:
+    patch:
+      operationId: updateEvent
+      tags: [moderation]
+      summary: Update an event and publish its report
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CommunityEventWrite"
+      responses:
+        "200":
+          description: Updated event
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CommunityEvent"
+        "404":
+          description: Event not found
+    delete:
+      operationId: deleteEvent
+      tags: [moderation]
+      summary: Delete an event and its responses
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "204":
+          description: Event removed
+        "404":
+          description: Event not found
 components:
   schemas:
     HealthStatus:
@@ -953,16 +1100,6 @@ components:
       properties:
         identifier: { type: string, minLength: 5, maxLength: 254 }
         password: { type: string, minLength: 8, maxLength: 128 }
-    WorkosAccessToken:
-      type: object
-      required: [accessToken]
-      properties:
-        accessToken: { type: string, minLength: 20, maxLength: 8192 }
-    WorkosLinkReceipt:
-      type: object
-      required: [success]
-      properties:
-        success: { type: boolean }
     MemberActivation:
       type: object
       required: [code]
@@ -1184,7 +1321,17 @@ components:
         showEducationLevel: { type: boolean }
     ChatMessage:
       type: object
-      required: [id, profileId, memberName, initials, type, createdAt]
+      required:
+        [
+          id,
+          profileId,
+          memberName,
+          initials,
+          type,
+          createdAt,
+          reportedByMember,
+          reportCount,
+        ]
       properties:
         id: { type: string }
         profileId: { type: string }
@@ -1196,9 +1343,25 @@ components:
           enum: [text, audio]
         content: { type: ["string", "null"] }
         audioData: { type: ["string", "null"] }
+        audioUrl: { type: ["string", "null"] }
         audioMimeType: { type: ["string", "null"] }
         durationSeconds: { type: ["number", "null"] }
+        pinnedAt: { type: ["string", "null"] }
+        reportedByMember: { type: boolean }
+        reportCount: { type: number }
+        replyTo:
+          oneOf:
+            - $ref: "#/components/schemas/ChatReplyPreview"
+            - type: "null"
         createdAt: { type: string }
+    ChatReplyPreview:
+      type: object
+      required: [id, memberName, type]
+      properties:
+        id: { type: string }
+        memberName: { type: string }
+        type: { type: string, enum: [text, audio] }
+        content: { type: ["string", "null"] }
     ChatMessageCreate:
       type: object
       required: [type]
@@ -1210,6 +1373,7 @@ components:
         audioData: { type: ["string", "null"], maxLength: 650000 }
         audioMimeType: { type: ["string", "null"], maxLength: 40 }
         durationSeconds: { type: ["number", "null"], minimum: 1, maximum: 30 }
+        replyToId: { type: ["string", "null"] }
     ChatPresence:
       type: object
       required: [profileId, memberName, initials, activity]
@@ -1233,6 +1397,85 @@ components:
       required: [success]
       properties:
         success: { type: boolean, enum: [true] }
+    ChatUnreadCount:
+      type: object
+      required: [count]
+      properties:
+        count: { type: number, minimum: 0 }
+    ChatReadReceipt:
+      type: object
+      required: [success, lastReadAt]
+      properties:
+        success: { type: boolean, enum: [true] }
+        lastReadAt: { type: string }
+    ChatMessageReportCreate:
+      type: object
+      required: [reason]
+      properties:
+        reason: { type: string, minLength: 3, maxLength: 300 }
+    ChatPinUpdate:
+      type: object
+      required: [pinned]
+      properties:
+        pinned: { type: boolean }
+    SuccessReceipt:
+      type: object
+      required: [success]
+      properties:
+        success: { type: boolean, enum: [true] }
+    CommunityEvent:
+      type: object
+      required:
+        [
+          id,
+          title,
+          startsAt,
+          location,
+          agenda,
+          status,
+          createdAt,
+          attendingCount,
+          unavailableCount,
+        ]
+      properties:
+        id: { type: string }
+        title: { type: string }
+        startsAt: { type: string }
+        location: { type: string }
+        agenda: { type: string }
+        status:
+          type: string
+          enum: [upcoming, completed, cancelled]
+        reportTitle: { type: ["string", "null"] }
+        reportContent: { type: ["string", "null"] }
+        reportUrl: { type: ["string", "null"] }
+        createdAt: { type: string }
+        attendingCount: { type: number }
+        unavailableCount: { type: number }
+        memberResponse:
+          type: ["string", "null"]
+          enum: [attending, unavailable, null]
+    CommunityEventWrite:
+      type: object
+      required: [title, startsAt, location, agenda, status]
+      properties:
+        title: { type: string, minLength: 3, maxLength: 160 }
+        startsAt: { type: string, minLength: 10, maxLength: 40 }
+        location: { type: string, minLength: 2, maxLength: 200 }
+        agenda: { type: string, minLength: 3, maxLength: 4000 }
+        status:
+          type: string
+          enum: [upcoming, completed, cancelled]
+        reportTitle: { type: ["string", "null"], maxLength: 200 }
+        reportContent: { type: ["string", "null"], maxLength: 12000 }
+        reportUrl: { type: ["string", "null"], maxLength: 1000 }
+    EventResponseCreate:
+      type: object
+      required: [response]
+      properties:
+        response:
+          type: string
+          enum: [attending, unavailable]
     MemberCode:
       type: object
       required: [code, createdAt]

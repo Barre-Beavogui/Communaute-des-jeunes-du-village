@@ -77,9 +77,6 @@ export async function syncZoboromaMembers() {
     sql`ALTER TABLE profiles ADD COLUMN IF NOT EXISTS member_password_set_at timestamp`,
   );
   await db.execute(
-    sql`ALTER TABLE profiles ADD COLUMN IF NOT EXISTS workos_user_id text`,
-  );
-  await db.execute(
     sql`ALTER TABLE profiles ADD COLUMN IF NOT EXISTS login_email text`,
   );
   await db.execute(
@@ -134,11 +131,6 @@ export async function syncZoboromaMembers() {
     CREATE UNIQUE INDEX IF NOT EXISTS profiles_member_code_hash_unique
     ON profiles (member_code_hash)
     WHERE member_code_hash IS NOT NULL
-  `);
-  await db.execute(sql`
-    CREATE UNIQUE INDEX IF NOT EXISTS profiles_workos_user_id_unique
-    ON profiles (workos_user_id)
-    WHERE workos_user_id IS NOT NULL
   `);
 
   await db.execute(sql`
@@ -227,11 +219,24 @@ export async function syncZoboromaMembers() {
       type text NOT NULL,
       content text,
       audio_data text,
+      audio_url text,
       audio_mime_type text,
       duration_seconds integer,
+      reply_to_id text,
+      pinned_at timestamp,
       created_at timestamp NOT NULL DEFAULT now()
     )
   `);
+
+  await db.execute(
+    sql`ALTER TABLE chat_messages ADD COLUMN IF NOT EXISTS audio_url text`,
+  );
+  await db.execute(
+    sql`ALTER TABLE chat_messages ADD COLUMN IF NOT EXISTS reply_to_id text`,
+  );
+  await db.execute(
+    sql`ALTER TABLE chat_messages ADD COLUMN IF NOT EXISTS pinned_at timestamp`,
+  );
 
   await db.execute(sql`
     CREATE INDEX IF NOT EXISTS chat_messages_created_at_index
@@ -245,6 +250,59 @@ export async function syncZoboromaMembers() {
       activity text NOT NULL DEFAULT 'online',
       activity_until timestamp NOT NULL DEFAULT now()
     )
+  `);
+
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS chat_read_receipts (
+      profile_id text PRIMARY KEY,
+      last_read_at timestamp NOT NULL DEFAULT now()
+    )
+  `);
+
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS chat_message_reports (
+      message_id text NOT NULL,
+      profile_id text NOT NULL,
+      reason text NOT NULL,
+      status text NOT NULL DEFAULT 'pending',
+      created_at timestamp NOT NULL DEFAULT now(),
+      PRIMARY KEY (message_id, profile_id)
+    )
+  `);
+
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS community_events (
+      id text PRIMARY KEY,
+      title text NOT NULL,
+      starts_at timestamp NOT NULL,
+      location text NOT NULL,
+      agenda text NOT NULL,
+      status text NOT NULL DEFAULT 'upcoming',
+      report_title text,
+      report_content text,
+      report_url text,
+      created_at timestamp NOT NULL DEFAULT now()
+    )
+  `);
+
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS event_responses (
+      event_id text NOT NULL,
+      profile_id text NOT NULL,
+      response text NOT NULL,
+      responded_at timestamp NOT NULL DEFAULT now(),
+      PRIMARY KEY (event_id, profile_id)
+    )
+  `);
+
+  await db.execute(sql`
+    CREATE INDEX IF NOT EXISTS community_events_starts_at_index
+    ON community_events (starts_at DESC)
+  `);
+
+  await db.execute(sql`
+    CREATE INDEX IF NOT EXISTS chat_message_reports_status_index
+    ON chat_message_reports (status, created_at DESC)
   `);
 
   await db.execute(sql`

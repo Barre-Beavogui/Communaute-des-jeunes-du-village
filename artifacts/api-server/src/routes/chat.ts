@@ -1,21 +1,34 @@
 import { randomUUID } from "node:crypto";
 import { Router, type IRouter } from "express";
-import { desc, eq, lt } from "drizzle-orm";
+import { and, count, eq, gt, lt, ne } from "drizzle-orm";
 import { db } from "@workspace/db";
 import {
+  chatMessageReportsTable,
   chatMessagesTable,
   chatPresenceTable,
+  chatReadReceiptsTable,
   profilesTable,
 } from "@workspace/db/schema";
 import {
+  GetChatUnreadCountResponse,
   ListChatMessagesResponse,
   ListChatPresenceResponse,
+  MarkChatReadResponse,
+  ReportChatMessageBody,
+  ReportChatMessageParams,
+  ReportChatMessageResponse,
   SendChatMessageBody,
   SendChatMessageResponse,
   UpdateChatPresenceBody,
   UpdateChatPresenceResponse,
 } from "@workspace/api-zod";
+import { loadChatMessages } from "../lib/chat-data.js";
+import {
+  publishChatEvent,
+  subscribeToChatEvents,
+} from "../lib/chat-realtime.js";
 import { requireMember } from "../lib/member-auth.js";
+import { persistDataUrl } from "../lib/media-storage.js";
 import { consumeRateLimit } from "../lib/rate-limit.js";
 
 const router: IRouter = Router();
@@ -28,10 +41,6 @@ const MESSAGE_LIMIT = 40;
 const MESSAGE_WINDOW_MS = 5 * 60 * 1000;
 
 type Activity = "online" | "typing" | "recording";
-const messageSubmissions = new Map<
-  string,
-  { count: number; resetAt: number }
->();
 
 async function touchPresence(profileId: string, activity?: Activity) {
   const now = new Date();
@@ -57,55 +66,17 @@ async function touchPresence(profileId: string, activity?: Activity) {
     });
 }
 
-function messageResponse(
-  message: typeof chatMessagesTable.$inferSelect,
-  profile: Pick<
-    typeof profilesTable.$inferSelect,
-    "name" | "initials" | "avatarUrl"
-  >,
-) {
-  return {
-    id: message.id,
-    profileId: message.profileId,
-    memberName: profile.name,
-    initials: profile.initials,
-    avatarUrl: profile.avatarUrl,
-    type: message.type as "text" | "audio",
-    content: message.content,
-    audioData: message.audioData,
-    audioMimeType: message.audioMimeType,
-    durationSeconds: message.durationSeconds,
-    createdAt: message.createdAt.toISOString(),
-  };
-}
+router.get("/chat/stream", requireMember, async (req, res) => {
+  const profileId = res.locals["memberProfileId"] as string;
+  await touchPresence(profileId);
+  await subscribeToChatEvents(req, res);
+});
 
 router.get("/chat/messages", requireMember, async (_req, res) => {
   const profileId = res.locals["memberProfileId"] as string;
   await touchPresence(profileId);
-
-  const rows = await db
-    .select({
-      message: chatMessagesTable,
-      name: profilesTable.name,
-      initials: profilesTable.initials,
-      avatarUrl: profilesTable.avatarUrl,
-    })
-    .from(chatMessagesTable)
-    .innerJoin(profilesTable, eq(chatMessagesTable.profileId, profilesTable.id))
-    .orderBy(desc(chatMessagesTable.createdAt))
-    .limit(100);
-
-  res.json(
-    ListChatMessagesResponse.parse(
-      rows.reverse().map((row) =>
-        messageResponse(row.message, {
-          name: row.name,
-          initials: row.initials,
-          avatarUrl: row.avatarUrl,
-        }),
-      ),
-    ),
-  );
+  const messages = await loadChatMessages({ memberProfileId: profileId });
+  res.json(ListChatMessagesResponse.parse(messages));
 });
 
 router.post("/chat/messages", requireMember, async (req, res) => {
@@ -123,24 +94,26 @@ router.post("/chat/messages", requireMember, async (req, res) => {
     });
     return;
   }
-  const now = Date.now();
-  const current = messageSubmissions.get(profileId);
-  const entry =
-    !current || current.resetAt <= now
-      ? { count: 0, resetAt: now + MESSAGE_WINDOW_MS }
-      : current;
-  if (entry.count >= MESSAGE_LIMIT) {
-    res.status(429).json({
-      error: "Trop de messages ont été envoyés. Attendez quelques minutes.",
-    });
-    return;
-  }
 
   const body = SendChatMessageBody.parse(req.body);
   let content: string | null = null;
   let audioData: string | null = null;
+  let audioUrl: string | null = null;
   let audioMimeType: string | null = null;
   let durationSeconds: number | null = null;
+
+  if (body.replyToId) {
+    const [replyTarget] = await db
+      .select({ id: chatMessagesTable.id })
+      .from(chatMessagesTable)
+      .where(eq(chatMessagesTable.id, body.replyToId));
+    if (!replyTarget) {
+      res
+        .status(400)
+        .json({ error: "Le message auquel vous répondez n’existe plus." });
+      return;
+    }
+  }
 
   if (body.type === "text") {
     content = body.content?.trim() || null;
@@ -162,7 +135,19 @@ router.post("/chat/messages", requireMember, async (req, res) => {
       });
       return;
     }
-    audioData = body.audioData!;
+    try {
+      audioUrl = await persistDataUrl(body.audioData, {
+        folder: "chat-audio",
+        kind: "audio",
+        maxBytes: MAX_AUDIO_BYTES,
+      });
+    } catch {
+      res.status(400).json({ error: "Le vocal n’a pas pu être enregistré." });
+      return;
+    }
+    // Keep legacy local development working until object storage is connected.
+    audioData = audioUrl?.startsWith("data:") ? audioUrl : null;
+    if (audioData) audioUrl = null;
     audioMimeType = audioMatch[1]!;
     durationSeconds = duration;
   }
@@ -180,24 +165,27 @@ router.post("/chat/messages", requireMember, async (req, res) => {
     return;
   }
 
-  const [message] = await db
-    .insert(chatMessagesTable)
-    .values({
-      id: randomUUID(),
-      profileId,
-      type: body.type,
-      content,
-      audioData,
-      audioMimeType,
-      durationSeconds,
-    })
-    .returning();
-
-  messageSubmissions.set(profileId, { ...entry, count: entry.count + 1 });
+  const messageId = randomUUID();
+  await db.insert(chatMessagesTable).values({
+    id: messageId,
+    profileId,
+    type: body.type,
+    content,
+    audioData,
+    audioUrl,
+    audioMimeType,
+    durationSeconds,
+    replyToId: body.replyToId ?? null,
+  });
   await touchPresence(profileId);
-  res
-    .status(201)
-    .json(SendChatMessageResponse.parse(messageResponse(message!, profile)));
+  await publishChatEvent({ type: "message", profileId, messageId });
+
+  const [message] = await loadChatMessages({
+    limit: 1,
+    memberProfileId: profileId,
+    newestFirst: true,
+  });
+  res.status(201).json(SendChatMessageResponse.parse(message));
 });
 
 router.get("/chat/presence", requireMember, async (_req, res) => {
@@ -225,18 +213,16 @@ router.get("/chat/presence", requireMember, async (_req, res) => {
     );
 
   const result = profiles
-    .map((profile) => {
-      return {
-        profileId: profile.id,
-        memberName: profile.name,
-        initials: profile.initials,
-        avatarUrl: profile.avatarUrl,
-        activity:
-          profile.activityUntil.getTime() > now.getTime()
-            ? (profile.activity as Activity)
-            : ("online" as const),
-      };
-    })
+    .map((profile) => ({
+      profileId: profile.id,
+      memberName: profile.name,
+      initials: profile.initials,
+      avatarUrl: profile.avatarUrl,
+      activity:
+        profile.activityUntil.getTime() > now.getTime()
+          ? (profile.activity as Activity)
+          : ("online" as const),
+    }))
     .sort((a, b) => {
       if (a.activity !== "online" && b.activity === "online") return -1;
       if (a.activity === "online" && b.activity !== "online") return 1;
@@ -250,7 +236,89 @@ router.post("/chat/presence", requireMember, async (req, res) => {
   const profileId = res.locals["memberProfileId"] as string;
   const body = UpdateChatPresenceBody.parse(req.body);
   await touchPresence(profileId, body.activity);
+  await publishChatEvent({ type: "presence", profileId });
   res.json(UpdateChatPresenceResponse.parse({ success: true }));
+});
+
+router.get("/chat/unread", requireMember, async (_req, res) => {
+  const profileId = res.locals["memberProfileId"] as string;
+  const [receipt] = await db
+    .select()
+    .from(chatReadReceiptsTable)
+    .where(eq(chatReadReceiptsTable.profileId, profileId));
+  const filters = [ne(chatMessagesTable.profileId, profileId)];
+  if (receipt)
+    filters.push(gt(chatMessagesTable.createdAt, receipt.lastReadAt));
+  const [result] = await db
+    .select({ value: count() })
+    .from(chatMessagesTable)
+    .where(and(...filters));
+  res.json(GetChatUnreadCountResponse.parse({ count: result?.value ?? 0 }));
+});
+
+router.post("/chat/read", requireMember, async (_req, res) => {
+  const profileId = res.locals["memberProfileId"] as string;
+  const lastReadAt = new Date();
+  await db
+    .insert(chatReadReceiptsTable)
+    .values({ profileId, lastReadAt })
+    .onConflictDoUpdate({
+      target: chatReadReceiptsTable.profileId,
+      set: { lastReadAt },
+    });
+  res.json(
+    MarkChatReadResponse.parse({
+      success: true,
+      lastReadAt: lastReadAt.toISOString(),
+    }),
+  );
+});
+
+router.post("/chat/messages/:id/report", requireMember, async (req, res) => {
+  const profileId = res.locals["memberProfileId"] as string;
+  const params = ReportChatMessageParams.parse(req.params);
+  const body = ReportChatMessageBody.parse(req.body);
+  const [message] = await db
+    .select({
+      id: chatMessagesTable.id,
+      profileId: chatMessagesTable.profileId,
+    })
+    .from(chatMessagesTable)
+    .where(eq(chatMessagesTable.id, params.id));
+  if (!message) {
+    res.status(404).json({ error: "Message introuvable." });
+    return;
+  }
+  if (message.profileId === profileId) {
+    res
+      .status(400)
+      .json({ error: "Vous ne pouvez pas signaler votre propre message." });
+    return;
+  }
+  await db
+    .insert(chatMessageReportsTable)
+    .values({
+      messageId: params.id,
+      profileId,
+      reason: body.reason.trim(),
+    })
+    .onConflictDoUpdate({
+      target: [
+        chatMessageReportsTable.messageId,
+        chatMessageReportsTable.profileId,
+      ],
+      set: {
+        reason: body.reason.trim(),
+        status: "pending",
+        createdAt: new Date(),
+      },
+    });
+  await publishChatEvent({
+    type: "moderation",
+    profileId,
+    messageId: params.id,
+  });
+  res.status(201).json(ReportChatMessageResponse.parse({ success: true }));
 });
 
 export default router;

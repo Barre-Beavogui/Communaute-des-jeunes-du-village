@@ -1,5 +1,6 @@
 import {
   ArrowUpRight,
+  CalendarDays,
   Compass,
   Download,
   KeyRound,
@@ -13,15 +14,19 @@ import {
 import { type ReactNode, useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
 import {
+  getGetChatUnreadCountQueryKey,
   updateChatPresence,
+  useGetChatUnreadCount,
   useHealthCheck,
 } from "@workspace/api-client-react";
 import { hasMemberSession } from "@/lib/member-session";
+import { useChatRealtime } from "@/lib/use-chat-realtime";
 
 const navItems = [
   { href: "/accueil", label: "Accueil", icon: Compass },
   { href: "/membres", label: "Membres", icon: UsersRound },
   { href: "/actualites", label: "Actualités", icon: Newspaper },
+  { href: "/evenements", label: "Événements", icon: CalendarDays },
   { href: "/groupe", label: "Groupe", icon: MessageCircleMore },
   { href: "/zoboroma", label: "Zoboroma", icon: MapPinned },
 ];
@@ -50,6 +55,16 @@ export function VillageShell({ children }: { children: ReactNode }) {
     location.startsWith("/connexion-membre");
   const showPrivateNavigation = memberActive && !isAdminPage && !isEntryPage;
   const homeHref = showPrivateNavigation ? "/accueil" : "/";
+  const unreadQuery = useGetChatUnreadCount({
+    query: {
+      enabled: showPrivateNavigation,
+      retry: false,
+      refetchInterval: 45_000,
+      queryKey: getGetChatUnreadCountQueryKey(),
+    },
+  });
+  const unreadCount = unreadQuery.data?.count ?? 0;
+  useChatRealtime(showPrivateNavigation);
 
   useEffect(() => {
     const refreshSession = () => setMemberActive(hasMemberSession());
@@ -132,6 +147,11 @@ export function VillageShell({ children }: { children: ReactNode }) {
                   >
                     <Icon className="h-4 w-4" strokeWidth={2.2} />
                     {item.label}
+                    {item.href === "/groupe" && unreadCount > 0 && (
+                      <span className="grid min-w-5 place-items-center rounded-full bg-primary px-1.5 py-0.5 text-[9px] font-extrabold text-primary-foreground">
+                        {unreadCount > 99 ? "99+" : unreadCount}
+                      </span>
+                    )}
                   </Link>
                 );
               })}
@@ -239,6 +259,7 @@ export function VillageShell({ children }: { children: ReactNode }) {
                       ["/accueil", "Accueil"],
                       ["/membres", "Les membres"],
                       ["/actualites", "Actualités et sondages"],
+                      ["/evenements", "Réunions et événements"],
                       ["/groupe", "Groupe de communication"],
                       ["/zoboroma", "Le village"],
                       ["/connexion-membre", "Mon espace membre"],
@@ -292,6 +313,7 @@ export function VillageShell({ children }: { children: ReactNode }) {
                 <div className="grid grid-cols-2 gap-2">
                   {[
                     ["/actualites", "Actualités", Newspaper],
+                    ["/evenements", "Événements", CalendarDays],
                     ["/zoboroma", "Zoboroma", MapPinned],
                     ["/connexion-membre", "Mon espace", UserRound],
                     ["/confidentialite", "Confidentialité", KeyRound],
@@ -336,6 +358,11 @@ export function VillageShell({ children }: { children: ReactNode }) {
                   data-testid={`link-mobile-${item.label.toLowerCase().replaceAll(" ", "-")}`}
                 >
                   <Icon className="h-5 w-5" />
+                  {item.href === "/groupe" && unreadCount > 0 && (
+                    <span className="absolute ml-5 -mt-6 grid min-w-4 place-items-center rounded-full bg-primary px-1 text-[8px] font-extrabold text-primary-foreground">
+                      {unreadCount > 9 ? "9+" : unreadCount}
+                    </span>
+                  )}
                   {item.label}
                 </Link>
               );
@@ -346,6 +373,7 @@ export function VillageShell({ children }: { children: ReactNode }) {
               className={`flex min-h-12 flex-col items-center justify-center gap-1 text-[10px] font-bold ${
                 mobileMenuOpen ||
                 location.startsWith("/actualites") ||
+                location.startsWith("/evenements") ||
                 location.startsWith("/zoboroma")
                   ? "text-primary"
                   : "text-muted-foreground"

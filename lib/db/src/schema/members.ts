@@ -2,6 +2,7 @@ import { createInsertSchema } from "drizzle-zod";
 import {
   boolean,
   pgTable,
+  primaryKey,
   text,
   timestamp,
   integer,
@@ -28,7 +29,6 @@ export const profilesTable = pgTable("profiles", {
   memberCodeCreatedAt: timestamp("member_code_created_at"),
   memberPasswordHash: text("member_password_hash"),
   memberPasswordSetAt: timestamp("member_password_set_at"),
-  workosUserId: text("workos_user_id"),
   loginEmail: text("login_email"),
   loginEmailNormalized: text("login_email_normalized"),
   loginPhone: text("login_phone"),
@@ -88,10 +88,30 @@ export const chatMessagesTable = pgTable("chat_messages", {
   type: text("type").notNull(),
   content: text("content"),
   audioData: text("audio_data"),
+  audioUrl: text("audio_url"),
   audioMimeType: text("audio_mime_type"),
   durationSeconds: integer("duration_seconds"),
+  replyToId: text("reply_to_id"),
+  pinnedAt: timestamp("pinned_at"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
+
+export const chatReadReceiptsTable = pgTable("chat_read_receipts", {
+  profileId: text("profile_id").primaryKey(),
+  lastReadAt: timestamp("last_read_at").notNull().defaultNow(),
+});
+
+export const chatMessageReportsTable = pgTable(
+  "chat_message_reports",
+  {
+    messageId: text("message_id").notNull(),
+    profileId: text("profile_id").notNull(),
+    reason: text("reason").notNull(),
+    status: text("status").notNull().default("pending"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (table) => [primaryKey({ columns: [table.messageId, table.profileId] })],
+);
 
 export const securityRateLimitsTable = pgTable("security_rate_limits", {
   key: text("key").primaryKey(),
@@ -109,4 +129,6 @@ export type DeletedProfile = typeof deletedProfilesTable.$inferSelect;
 export type PasswordResetRequest =
   typeof passwordResetRequestsTable.$inferSelect;
 export type ChatMessage = typeof chatMessagesTable.$inferSelect;
+export type ChatReadReceipt = typeof chatReadReceiptsTable.$inferSelect;
+export type ChatMessageReport = typeof chatMessageReportsTable.$inferSelect;
 export type SecurityRateLimit = typeof securityRateLimitsTable.$inferSelect;

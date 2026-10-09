@@ -11,6 +11,7 @@ import { Route, Switch, useLocation, Router as WouterRouter } from "wouter";
 const queryClient = new QueryClient();
 const AdminPage = lazy(() => import("@/pages/admin"));
 const ChatPage = lazy(() => import("@/pages/chat"));
+const EventsPage = lazy(() => import("@/pages/events"));
 const GeneralAssemblyReportPage = lazy(
   () => import("@/pages/general-assembly-report"),
 );
@@ -66,6 +67,11 @@ function Router() {
           <Route path="/groupe">
             <MemberOnly>
               <ChatPage />
+            </MemberOnly>
+          </Route>
+          <Route path="/evenements">
+            <MemberOnly>
+              <EventsPage />
             </MemberOnly>
           </Route>
           <Route path="/connexion-membre" component={MemberLoginPage} />

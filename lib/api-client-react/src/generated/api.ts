@@ -28,9 +28,16 @@ import type {
   AnnouncementReaction,
   ChatMessage,
   ChatMessageCreate,
+  ChatMessageReportCreate,
+  ChatPinUpdate,
   ChatPresence,
   ChatPresenceReceipt,
   ChatPresenceUpdate,
+  ChatReadReceipt,
+  ChatUnreadCount,
+  CommunityEvent,
+  CommunityEventWrite,
+  EventResponseCreate,
   HealthStatus,
   MemberActivation,
   MemberCode,
@@ -56,8 +63,7 @@ import type {
   PollVote,
   Profile,
   ProfileVisibilityUpdate,
-  WorkosAccessToken,
-  WorkosLinkReceipt
+  SuccessReceipt
 } from './api.schemas';
 
 import { customFetch } from '../custom-fetch';
@@ -607,148 +613,6 @@ export const useMemberLogin = <TError = ErrorType<void>,
         TContext
       > => {
       return useMutation(getMemberLoginMutationOptions(options));
-    }
-
-export const getExchangeWorkosSessionUrl = () => {
-
-
-
-
-  return `/api/member/workos/exchange`
-}
-
-/**
- * @summary Open a Zoboroma member session from a linked WorkOS session
- */
-export const exchangeWorkosSession = async (workosAccessToken: WorkosAccessToken, options?: Parameters<typeof customFetch>[1]): Promise<MemberSession> => {
-
-  return customFetch<MemberSession>(getExchangeWorkosSessionUrl(),
-  {
-    ...options,
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(workosAccessToken)
-  }
-);}
-
-
-
-
-
-export const getExchangeWorkosSessionMutationOptions = <TError = ErrorType<void>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof exchangeWorkosSession>>, TError,{data: BodyType<WorkosAccessToken>}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof exchangeWorkosSession>>, TError,{data: BodyType<WorkosAccessToken>}, TContext> => {
-
-const mutationKey = ['exchangeWorkosSession'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof exchangeWorkosSession>>, {data: BodyType<WorkosAccessToken>}> = (props) => {
-          const {data} = props ?? {};
-
-          return  exchangeWorkosSession(data,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type ExchangeWorkosSessionMutationResult = NonNullable<Awaited<ReturnType<typeof exchangeWorkosSession>>>
-    export type ExchangeWorkosSessionMutationBody = BodyType<WorkosAccessToken>
-    export type ExchangeWorkosSessionMutationError = ErrorType<void>
-
-    /**
- * @summary Open a Zoboroma member session from a linked WorkOS session
- */
-export const useExchangeWorkosSession = <TError = ErrorType<void>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof exchangeWorkosSession>>, TError,{data: BodyType<WorkosAccessToken>}, TContext>, request?: SecondParameter<typeof customFetch>}
- ): UseMutationResult<
-        Awaited<ReturnType<typeof exchangeWorkosSession>>,
-        TError,
-        {data: BodyType<WorkosAccessToken>},
-        TContext
-      > => {
-      return useMutation(getExchangeWorkosSessionMutationOptions(options));
-    }
-
-export const getLinkWorkosAccountUrl = () => {
-
-
-
-
-  return `/api/member/workos/link`
-}
-
-/**
- * @summary Link the authenticated Zoboroma member to a WorkOS user
- */
-export const linkWorkosAccount = async (workosAccessToken: WorkosAccessToken, options?: Parameters<typeof customFetch>[1]): Promise<WorkosLinkReceipt> => {
-
-  return customFetch<WorkosLinkReceipt>(getLinkWorkosAccountUrl(),
-  {
-    ...options,
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(workosAccessToken)
-  }
-);}
-
-
-
-
-
-export const getLinkWorkosAccountMutationOptions = <TError = ErrorType<void>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof linkWorkosAccount>>, TError,{data: BodyType<WorkosAccessToken>}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof linkWorkosAccount>>, TError,{data: BodyType<WorkosAccessToken>}, TContext> => {
-
-const mutationKey = ['linkWorkosAccount'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof linkWorkosAccount>>, {data: BodyType<WorkosAccessToken>}> = (props) => {
-          const {data} = props ?? {};
-
-          return  linkWorkosAccount(data,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type LinkWorkosAccountMutationResult = NonNullable<Awaited<ReturnType<typeof linkWorkosAccount>>>
-    export type LinkWorkosAccountMutationBody = BodyType<WorkosAccessToken>
-    export type LinkWorkosAccountMutationError = ErrorType<void>
-
-    /**
- * @summary Link the authenticated Zoboroma member to a WorkOS user
- */
-export const useLinkWorkosAccount = <TError = ErrorType<void>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof linkWorkosAccount>>, TError,{data: BodyType<WorkosAccessToken>}, TContext>, request?: SecondParameter<typeof customFetch>}
- ): UseMutationResult<
-        Awaited<ReturnType<typeof linkWorkosAccount>>,
-        TError,
-        {data: BodyType<WorkosAccessToken>},
-        TContext
-      > => {
-      return useMutation(getLinkWorkosAccountMutationOptions(options));
     }
 
 export const getMemberActivateUrl = () => {
@@ -1406,6 +1270,375 @@ export const useUpdateChatPresence = <TError = ErrorType<void>,
         TContext
       > => {
       return useMutation(getUpdateChatPresenceMutationOptions(options));
+    }
+
+export const getGetChatUnreadCountUrl = () => {
+
+
+
+
+  return `/api/chat/unread`
+}
+
+/**
+ * @summary Count unread group messages for the connected member
+ */
+export const getChatUnreadCount = async ( options?: Parameters<typeof customFetch>[1]): Promise<ChatUnreadCount> => {
+
+  return customFetch<ChatUnreadCount>(getGetChatUnreadCountUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetChatUnreadCountQueryKey = () => {
+    return [
+    `/api/chat/unread`
+    ] as const;
+    }
+
+
+export const getGetChatUnreadCountQueryOptions = <TData = Awaited<ReturnType<typeof getChatUnreadCount>>, TError = ErrorType<void>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getChatUnreadCount>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetChatUnreadCountQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getChatUnreadCount>>> = ({ signal }) => getChatUnreadCount({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getChatUnreadCount>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetChatUnreadCountQueryResult = NonNullable<Awaited<ReturnType<typeof getChatUnreadCount>>>
+export type GetChatUnreadCountQueryError = ErrorType<void>
+
+
+/**
+ * @summary Count unread group messages for the connected member
+ */
+
+export function useGetChatUnreadCount<TData = Awaited<ReturnType<typeof getChatUnreadCount>>, TError = ErrorType<void>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getChatUnreadCount>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetChatUnreadCountQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getMarkChatReadUrl = () => {
+
+
+
+
+  return `/api/chat/read`
+}
+
+/**
+ * @summary Mark all current group messages as read
+ */
+export const markChatRead = async ( options?: Parameters<typeof customFetch>[1]): Promise<ChatReadReceipt> => {
+
+  return customFetch<ChatReadReceipt>(getMarkChatReadUrl(),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getMarkChatReadMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof markChatRead>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof markChatRead>>, TError,void, TContext> => {
+
+const mutationKey = ['markChatRead'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof markChatRead>>, void> = () => {
+
+
+          return  markChatRead(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type MarkChatReadMutationResult = NonNullable<Awaited<ReturnType<typeof markChatRead>>>
+
+    export type MarkChatReadMutationError = ErrorType<void>
+
+    /**
+ * @summary Mark all current group messages as read
+ */
+export const useMarkChatRead = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof markChatRead>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof markChatRead>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getMarkChatReadMutationOptions(options));
+    }
+
+export const getReportChatMessageUrl = (id: string,) => {
+
+
+
+
+  return `/api/chat/messages/${id}/report`
+}
+
+/**
+ * @summary Report a group message to administrators
+ */
+export const reportChatMessage = async (id: string,
+    chatMessageReportCreate: ChatMessageReportCreate, options?: Parameters<typeof customFetch>[1]): Promise<SuccessReceipt> => {
+
+  return customFetch<SuccessReceipt>(getReportChatMessageUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(chatMessageReportCreate)
+  }
+);}
+
+
+
+
+
+export const getReportChatMessageMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof reportChatMessage>>, TError,{id: string;data: BodyType<ChatMessageReportCreate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof reportChatMessage>>, TError,{id: string;data: BodyType<ChatMessageReportCreate>}, TContext> => {
+
+const mutationKey = ['reportChatMessage'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof reportChatMessage>>, {id: string;data: BodyType<ChatMessageReportCreate>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  reportChatMessage(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ReportChatMessageMutationResult = NonNullable<Awaited<ReturnType<typeof reportChatMessage>>>
+    export type ReportChatMessageMutationBody = BodyType<ChatMessageReportCreate>
+    export type ReportChatMessageMutationError = ErrorType<void>
+
+    /**
+ * @summary Report a group message to administrators
+ */
+export const useReportChatMessage = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof reportChatMessage>>, TError,{id: string;data: BodyType<ChatMessageReportCreate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof reportChatMessage>>,
+        TError,
+        {id: string;data: BodyType<ChatMessageReportCreate>},
+        TContext
+      > => {
+      return useMutation(getReportChatMessageMutationOptions(options));
+    }
+
+export const getListEventsUrl = () => {
+
+
+
+
+  return `/api/events`
+}
+
+/**
+ * @summary List community meetings and events
+ */
+export const listEvents = async ( options?: Parameters<typeof customFetch>[1]): Promise<CommunityEvent[]> => {
+
+  return customFetch<CommunityEvent[]>(getListEventsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListEventsQueryKey = () => {
+    return [
+    `/api/events`
+    ] as const;
+    }
+
+
+export const getListEventsQueryOptions = <TData = Awaited<ReturnType<typeof listEvents>>, TError = ErrorType<void>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listEvents>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListEventsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listEvents>>> = ({ signal }) => listEvents({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listEvents>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListEventsQueryResult = NonNullable<Awaited<ReturnType<typeof listEvents>>>
+export type ListEventsQueryError = ErrorType<void>
+
+
+/**
+ * @summary List community meetings and events
+ */
+
+export function useListEvents<TData = Awaited<ReturnType<typeof listEvents>>, TError = ErrorType<void>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listEvents>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListEventsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getRespondToEventUrl = (id: string,) => {
+
+
+
+
+  return `/api/events/${id}/respond`
+}
+
+/**
+ * @summary Confirm availability for a community event
+ */
+export const respondToEvent = async (id: string,
+    eventResponseCreate: EventResponseCreate, options?: Parameters<typeof customFetch>[1]): Promise<CommunityEvent> => {
+
+  return customFetch<CommunityEvent>(getRespondToEventUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(eventResponseCreate)
+  }
+);}
+
+
+
+
+
+export const getRespondToEventMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof respondToEvent>>, TError,{id: string;data: BodyType<EventResponseCreate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof respondToEvent>>, TError,{id: string;data: BodyType<EventResponseCreate>}, TContext> => {
+
+const mutationKey = ['respondToEvent'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof respondToEvent>>, {id: string;data: BodyType<EventResponseCreate>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  respondToEvent(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RespondToEventMutationResult = NonNullable<Awaited<ReturnType<typeof respondToEvent>>>
+    export type RespondToEventMutationBody = BodyType<EventResponseCreate>
+    export type RespondToEventMutationError = ErrorType<void>
+
+    /**
+ * @summary Confirm availability for a community event
+ */
+export const useRespondToEvent = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof respondToEvent>>, TError,{id: string;data: BodyType<EventResponseCreate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof respondToEvent>>,
+        TError,
+        {id: string;data: BodyType<EventResponseCreate>},
+        TContext
+      > => {
+      return useMutation(getRespondToEventMutationOptions(options));
     }
 
 export const getListAnnouncementsUrl = () => {
@@ -2221,6 +2454,78 @@ export const useDeleteModerationChatMessage = <TError = ErrorType<void>,
       return useMutation(getDeleteModerationChatMessageMutationOptions(options));
     }
 
+export const getUpdateModerationChatPinUrl = (id: string,) => {
+
+
+
+
+  return `/api/moderation/chat/messages/${id}/pin`
+}
+
+/**
+ * @summary Pin or unpin a group message
+ */
+export const updateModerationChatPin = async (id: string,
+    chatPinUpdate: ChatPinUpdate, options?: Parameters<typeof customFetch>[1]): Promise<ChatMessage> => {
+
+  return customFetch<ChatMessage>(getUpdateModerationChatPinUrl(id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(chatPinUpdate)
+  }
+);}
+
+
+
+
+
+export const getUpdateModerationChatPinMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateModerationChatPin>>, TError,{id: string;data: BodyType<ChatPinUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateModerationChatPin>>, TError,{id: string;data: BodyType<ChatPinUpdate>}, TContext> => {
+
+const mutationKey = ['updateModerationChatPin'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateModerationChatPin>>, {id: string;data: BodyType<ChatPinUpdate>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updateModerationChatPin(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateModerationChatPinMutationResult = NonNullable<Awaited<ReturnType<typeof updateModerationChatPin>>>
+    export type UpdateModerationChatPinMutationBody = BodyType<ChatPinUpdate>
+    export type UpdateModerationChatPinMutationError = ErrorType<void>
+
+    /**
+ * @summary Pin or unpin a group message
+ */
+export const useUpdateModerationChatPin = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateModerationChatPin>>, TError,{id: string;data: BodyType<ChatPinUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateModerationChatPin>>,
+        TError,
+        {id: string;data: BodyType<ChatPinUpdate>},
+        TContext
+      > => {
+      return useMutation(getUpdateModerationChatPinMutationOptions(options));
+    }
+
 export const getUpdateModerationProfileUrl = (id: string,) => {
 
 
@@ -2862,5 +3167,296 @@ export const useDeletePoll = <TError = ErrorType<void>,
         TContext
       > => {
       return useMutation(getDeletePollMutationOptions(options));
+    }
+
+export const getListModerationEventsUrl = () => {
+
+
+
+
+  return `/api/moderation/events`
+}
+
+/**
+ * @summary List community events for administrators
+ */
+export const listModerationEvents = async ( options?: Parameters<typeof customFetch>[1]): Promise<CommunityEvent[]> => {
+
+  return customFetch<CommunityEvent[]>(getListModerationEventsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListModerationEventsQueryKey = () => {
+    return [
+    `/api/moderation/events`
+    ] as const;
+    }
+
+
+export const getListModerationEventsQueryOptions = <TData = Awaited<ReturnType<typeof listModerationEvents>>, TError = ErrorType<void>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listModerationEvents>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListModerationEventsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listModerationEvents>>> = ({ signal }) => listModerationEvents({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listModerationEvents>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListModerationEventsQueryResult = NonNullable<Awaited<ReturnType<typeof listModerationEvents>>>
+export type ListModerationEventsQueryError = ErrorType<void>
+
+
+/**
+ * @summary List community events for administrators
+ */
+
+export function useListModerationEvents<TData = Awaited<ReturnType<typeof listModerationEvents>>, TError = ErrorType<void>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listModerationEvents>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListModerationEventsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getCreateEventUrl = () => {
+
+
+
+
+  return `/api/moderation/events`
+}
+
+/**
+ * @summary Create a community meeting or event
+ */
+export const createEvent = async (communityEventWrite: CommunityEventWrite, options?: Parameters<typeof customFetch>[1]): Promise<CommunityEvent> => {
+
+  return customFetch<CommunityEvent>(getCreateEventUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(communityEventWrite)
+  }
+);}
+
+
+
+
+
+export const getCreateEventMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createEvent>>, TError,{data: BodyType<CommunityEventWrite>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createEvent>>, TError,{data: BodyType<CommunityEventWrite>}, TContext> => {
+
+const mutationKey = ['createEvent'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createEvent>>, {data: BodyType<CommunityEventWrite>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createEvent(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateEventMutationResult = NonNullable<Awaited<ReturnType<typeof createEvent>>>
+    export type CreateEventMutationBody = BodyType<CommunityEventWrite>
+    export type CreateEventMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Create a community meeting or event
+ */
+export const useCreateEvent = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createEvent>>, TError,{data: BodyType<CommunityEventWrite>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createEvent>>,
+        TError,
+        {data: BodyType<CommunityEventWrite>},
+        TContext
+      > => {
+      return useMutation(getCreateEventMutationOptions(options));
+    }
+
+export const getUpdateEventUrl = (id: string,) => {
+
+
+
+
+  return `/api/moderation/events/${id}`
+}
+
+/**
+ * @summary Update an event and publish its report
+ */
+export const updateEvent = async (id: string,
+    communityEventWrite: CommunityEventWrite, options?: Parameters<typeof customFetch>[1]): Promise<CommunityEvent> => {
+
+  return customFetch<CommunityEvent>(getUpdateEventUrl(id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(communityEventWrite)
+  }
+);}
+
+
+
+
+
+export const getUpdateEventMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateEvent>>, TError,{id: string;data: BodyType<CommunityEventWrite>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateEvent>>, TError,{id: string;data: BodyType<CommunityEventWrite>}, TContext> => {
+
+const mutationKey = ['updateEvent'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateEvent>>, {id: string;data: BodyType<CommunityEventWrite>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updateEvent(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateEventMutationResult = NonNullable<Awaited<ReturnType<typeof updateEvent>>>
+    export type UpdateEventMutationBody = BodyType<CommunityEventWrite>
+    export type UpdateEventMutationError = ErrorType<void>
+
+    /**
+ * @summary Update an event and publish its report
+ */
+export const useUpdateEvent = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateEvent>>, TError,{id: string;data: BodyType<CommunityEventWrite>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateEvent>>,
+        TError,
+        {id: string;data: BodyType<CommunityEventWrite>},
+        TContext
+      > => {
+      return useMutation(getUpdateEventMutationOptions(options));
+    }
+
+export const getDeleteEventUrl = (id: string,) => {
+
+
+
+
+  return `/api/moderation/events/${id}`
+}
+
+/**
+ * @summary Delete an event and its responses
+ */
+export const deleteEvent = async (id: string, options?: Parameters<typeof customFetch>[1]): Promise<void> => {
+
+  return customFetch<void>(getDeleteEventUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getDeleteEventMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteEvent>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteEvent>>, TError,{id: string}, TContext> => {
+
+const mutationKey = ['deleteEvent'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteEvent>>, {id: string}> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteEvent(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteEventMutationResult = NonNullable<Awaited<ReturnType<typeof deleteEvent>>>
+
+    export type DeleteEventMutationError = ErrorType<void>
+
+    /**
+ * @summary Delete an event and its responses
+ */
+export const useDeleteEvent = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteEvent>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteEvent>>,
+        TError,
+        {id: string},
+        TContext
+      > => {
+      return useMutation(getDeleteEventMutationOptions(options));
     }
 

@@ -75,7 +75,6 @@
     "zod": "catalog:"
   },
   "dependencies": {
-    "@workos-inc/authkit-react": "^0.16.3",
     "exceljs": "4.4.0"
   }
 }

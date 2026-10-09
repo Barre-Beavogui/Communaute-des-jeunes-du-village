@@ -1,12 +1,15 @@
 import { Router, type IRouter } from "express";
-import { and, desc, eq, ne, or } from "drizzle-orm";
+import { and, desc, eq, inArray, ne, or } from "drizzle-orm";
 import { db } from "@workspace/db";
 import {
   announcementDislikesTable,
   announcementLikesTable,
+  chatMessageReportsTable,
   chatMessagesTable,
   chatPresenceTable,
+  chatReadReceiptsTable,
   deletedProfilesTable,
+  eventResponsesTable,
   pollVotesTable,
   membershipRequestsTable,
   passwordResetRequestsTable,
@@ -16,6 +19,9 @@ import {
   CreatePasswordResetCodeParams,
   CreatePasswordResetCodeResponse,
   DeleteModerationChatMessageParams,
+  UpdateModerationChatPinBody,
+  UpdateModerationChatPinParams,
+  UpdateModerationChatPinResponse,
   DeleteModerationProfileParams,
   GenerateMemberCodeBody,
   GenerateMemberCodeParams,
@@ -33,6 +39,9 @@ import {
   UpdateProfileVisibilityParams,
   UpdateProfileVisibilityResponse,
 } from "@workspace/api-zod";
+import { loadChatMessages } from "../lib/chat-data.js";
+import { publishChatEvent } from "../lib/chat-realtime.js";
+import { persistDataUrl } from "../lib/media-storage.js";
 import { requireAdmin } from "../lib/admin-auth.js";
 import {
   generateMemberCode,
@@ -104,48 +113,50 @@ router.get("/moderation/password-reset-requests", async (_req, res) => {
 });
 
 router.get("/moderation/chat/messages", async (_req, res) => {
-  const rows = await db
-    .select({
-      message: chatMessagesTable,
-      memberName: profilesTable.name,
-      initials: profilesTable.initials,
-      avatarUrl: profilesTable.avatarUrl,
-    })
-    .from(chatMessagesTable)
-    .innerJoin(profilesTable, eq(chatMessagesTable.profileId, profilesTable.id))
-    .orderBy(desc(chatMessagesTable.createdAt))
-    .limit(100);
-
   res.json(
     ListModerationChatMessagesResponse.parse(
-      rows.map(({ message, memberName, initials, avatarUrl }) => ({
-        id: message.id,
-        profileId: message.profileId,
-        memberName,
-        initials,
-        avatarUrl,
-        type: message.type,
-        content: message.content,
-        audioData: message.audioData,
-        audioMimeType: message.audioMimeType,
-        durationSeconds: message.durationSeconds,
-        createdAt: message.createdAt.toISOString(),
-      })),
+      await loadChatMessages({ limit: 100, newestFirst: true }),
     ),
   );
 });
 
-router.delete("/moderation/chat/messages/:id", async (req, res) => {
-  const params = DeleteModerationChatMessageParams.parse(req.params);
-  const [deleted] = await db
-    .delete(chatMessagesTable)
+router.patch("/moderation/chat/messages/:id/pin", async (req, res) => {
+  const params = UpdateModerationChatPinParams.parse(req.params);
+  const body = UpdateModerationChatPinBody.parse(req.body);
+  const [updated] = await db
+    .update(chatMessagesTable)
+    .set({ pinnedAt: body.pinned ? new Date() : null })
     .where(eq(chatMessagesTable.id, params.id))
     .returning({ id: chatMessagesTable.id });
+  if (!updated) {
+    res.status(404).json({ error: "Message introuvable." });
+    return;
+  }
+  await publishChatEvent({ type: "moderation", messageId: params.id });
+  const selected = (
+    await loadChatMessages({ limit: 100, newestFirst: true })
+  ).find((item) => item.id === params.id);
+  res.json(UpdateModerationChatPinResponse.parse(selected));
+});
+
+router.delete("/moderation/chat/messages/:id", async (req, res) => {
+  const params = DeleteModerationChatMessageParams.parse(req.params);
+  const deleted = await db.transaction(async (tx) => {
+    await tx
+      .delete(chatMessageReportsTable)
+      .where(eq(chatMessageReportsTable.messageId, params.id));
+    const [row] = await tx
+      .delete(chatMessagesTable)
+      .where(eq(chatMessagesTable.id, params.id))
+      .returning({ id: chatMessagesTable.id });
+    return row;
+  });
 
   if (!deleted) {
     res.status(404).json({ error: "Message introuvable." });
     return;
   }
+  await publishChatEvent({ type: "moderation", messageId: params.id });
   res.status(204).send();
 });
 
@@ -358,8 +369,25 @@ router.patch("/moderation/profiles/:id", async (req, res) => {
     res.status(400).json({ error: "Numéro de téléphone invalide." });
     return;
   }
-  if (body.avatarUrl && !PROFILE_PHOTO_PATTERN.test(body.avatarUrl)) {
+  if (
+    body.avatarUrl &&
+    !PROFILE_PHOTO_PATTERN.test(body.avatarUrl) &&
+    !/^https:\/\//i.test(body.avatarUrl)
+  ) {
     res.status(400).json({ error: "La photo de profil est invalide." });
+    return;
+  }
+  let avatarUrl: string | null = null;
+  try {
+    avatarUrl = await persistDataUrl(body.avatarUrl, {
+      folder: "avatars",
+      kind: "image",
+      maxBytes: 165_000,
+    });
+  } catch {
+    res
+      .status(400)
+      .json({ error: "La photo de profil est invalide ou trop volumineuse." });
     return;
   }
   const emergencyPhone = body.emergencyContactPhone?.trim() || null;
@@ -417,7 +445,7 @@ router.patch("/moderation/profiles/:id", async (req, res) => {
     .set({
       name,
       initials,
-      avatarUrl: body.avatarUrl || null,
+      avatarUrl,
       neighborhood: body.neighborhood.trim(),
       bio: body.bio.trim(),
       activities: [body.profession.trim()],
@@ -484,12 +512,33 @@ router.delete("/moderation/profiles/:id", async (req, res) => {
     await tx
       .delete(passwordResetRequestsTable)
       .where(eq(passwordResetRequestsTable.profileId, profile.id));
+    const authoredMessages = await tx
+      .select({ id: chatMessagesTable.id })
+      .from(chatMessagesTable)
+      .where(eq(chatMessagesTable.profileId, profile.id));
+    if (authoredMessages.length) {
+      await tx.delete(chatMessageReportsTable).where(
+        inArray(
+          chatMessageReportsTable.messageId,
+          authoredMessages.map((message) => message.id),
+        ),
+      );
+    }
+    await tx
+      .delete(chatMessageReportsTable)
+      .where(eq(chatMessageReportsTable.profileId, profile.id));
     await tx
       .delete(chatMessagesTable)
       .where(eq(chatMessagesTable.profileId, profile.id));
     await tx
       .delete(chatPresenceTable)
       .where(eq(chatPresenceTable.profileId, profile.id));
+    await tx
+      .delete(chatReadReceiptsTable)
+      .where(eq(chatReadReceiptsTable.profileId, profile.id));
+    await tx
+      .delete(eventResponsesTable)
+      .where(eq(eventResponsesTable.profileId, profile.id));
     if (profile.loginEmail) {
       await tx
         .delete(membershipRequestsTable)

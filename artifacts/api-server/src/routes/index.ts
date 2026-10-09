@@ -8,6 +8,8 @@ import memberRouter from "./member.js";
 import communityRouter from "./community.js";
 import communityModerationRouter from "./community-moderation.js";
 import chatRouter from "./chat.js";
+import eventsRouter from "./events.js";
+import eventModerationRouter from "./event-moderation.js";
 
 const router: IRouter = Router();
 
@@ -16,9 +18,11 @@ router.use(adminRouter);
 router.use(membershipRouter);
 router.use(memberRouter);
 router.use(chatRouter);
+router.use(eventsRouter);
 router.use(profilesRouter);
 router.use(communityRouter);
 router.use(moderationRouter);
 router.use(communityModerationRouter);
+router.use(eventModerationRouter);
 
 export default router;

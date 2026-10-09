@@ -357,18 +357,6 @@ export interface MemberLogin {
   password: string;
 }
 
-export interface WorkosAccessToken {
-  /**
-     * @minLength 20
-     * @maxLength 8192
-     */
-  accessToken: string;
-}
-
-export interface WorkosLinkReceipt {
-  success: boolean;
-}
-
 export interface MemberActivation {
   /**
      * @minLength 8
@@ -739,6 +727,22 @@ export const ChatMessageType = {
   audio: 'audio',
 } as const;
 
+export type ChatReplyPreviewType = typeof ChatReplyPreviewType[keyof typeof ChatReplyPreviewType];
+
+
+export const ChatReplyPreviewType = {
+  text: 'text',
+  audio: 'audio',
+} as const;
+
+export interface ChatReplyPreview {
+  id: string;
+  memberName: string;
+  type: ChatReplyPreviewType;
+  /** @nullable */
+  content?: string | null;
+}
+
 export interface ChatMessage {
   id: string;
   profileId: string;
@@ -752,9 +756,16 @@ export interface ChatMessage {
   /** @nullable */
   audioData?: string | null;
   /** @nullable */
+  audioUrl?: string | null;
+  /** @nullable */
   audioMimeType?: string | null;
   /** @nullable */
   durationSeconds?: number | null;
+  /** @nullable */
+  pinnedAt?: string | null;
+  reportedByMember: boolean;
+  reportCount: number;
+  replyTo?: ChatReplyPreview | null;
   createdAt: string;
 }
 
@@ -789,6 +800,8 @@ export interface ChatMessageCreate {
      * @nullable
      */
   durationSeconds?: number | null;
+  /** @nullable */
+  replyToId?: string | null;
 }
 
 export type ChatPresenceActivity = typeof ChatPresenceActivity[keyof typeof ChatPresenceActivity];
@@ -824,6 +837,132 @@ export interface ChatPresenceUpdate {
 
 export interface ChatPresenceReceipt {
   success: true;
+}
+
+export interface ChatUnreadCount {
+  /** @minimum 0 */
+  count: number;
+}
+
+export interface ChatReadReceipt {
+  success: true;
+  lastReadAt: string;
+}
+
+export interface ChatMessageReportCreate {
+  /**
+     * @minLength 3
+     * @maxLength 300
+     */
+  reason: string;
+}
+
+export interface ChatPinUpdate {
+  pinned: boolean;
+}
+
+export interface SuccessReceipt {
+  success: true;
+}
+
+export type CommunityEventStatus = typeof CommunityEventStatus[keyof typeof CommunityEventStatus];
+
+
+export const CommunityEventStatus = {
+  upcoming: 'upcoming',
+  completed: 'completed',
+  cancelled: 'cancelled',
+} as const;
+
+/**
+ * @nullable
+ */
+export type CommunityEventMemberResponse = typeof CommunityEventMemberResponse[keyof typeof CommunityEventMemberResponse] | null;
+
+
+export const CommunityEventMemberResponse = {
+  attending: 'attending',
+  unavailable: 'unavailable',
+} as const;
+
+export interface CommunityEvent {
+  id: string;
+  title: string;
+  startsAt: string;
+  location: string;
+  agenda: string;
+  status: CommunityEventStatus;
+  /** @nullable */
+  reportTitle?: string | null;
+  /** @nullable */
+  reportContent?: string | null;
+  /** @nullable */
+  reportUrl?: string | null;
+  createdAt: string;
+  attendingCount: number;
+  unavailableCount: number;
+  /** @nullable */
+  memberResponse?: CommunityEventMemberResponse;
+}
+
+export type CommunityEventWriteStatus = typeof CommunityEventWriteStatus[keyof typeof CommunityEventWriteStatus];
+
+
+export const CommunityEventWriteStatus = {
+  upcoming: 'upcoming',
+  completed: 'completed',
+  cancelled: 'cancelled',
+} as const;
+
+export interface CommunityEventWrite {
+  /**
+     * @minLength 3
+     * @maxLength 160
+     */
+  title: string;
+  /**
+     * @minLength 10
+     * @maxLength 40
+     */
+  startsAt: string;
+  /**
+     * @minLength 2
+     * @maxLength 200
+     */
+  location: string;
+  /**
+     * @minLength 3
+     * @maxLength 4000
+     */
+  agenda: string;
+  status: CommunityEventWriteStatus;
+  /**
+     * @maxLength 200
+     * @nullable
+     */
+  reportTitle?: string | null;
+  /**
+     * @maxLength 12000
+     * @nullable
+     */
+  reportContent?: string | null;
+  /**
+     * @maxLength 1000
+     * @nullable
+     */
+  reportUrl?: string | null;
+}
+
+export type EventResponseCreateResponse = typeof EventResponseCreateResponse[keyof typeof EventResponseCreateResponse];
+
+
+export const EventResponseCreateResponse = {
+  attending: 'attending',
+  unavailable: 'unavailable',
+} as const;
+
+export interface EventResponseCreate {
+  response: EventResponseCreateResponse;
 }
 
 export interface MemberCode {

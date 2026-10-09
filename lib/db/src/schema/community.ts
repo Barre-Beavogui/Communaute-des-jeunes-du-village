@@ -67,6 +67,30 @@ export const chatPresenceTable = pgTable("chat_presence", {
   activityUntil: timestamp("activity_until").notNull().defaultNow(),
 });
 
+export const eventsTable = pgTable("community_events", {
+  id: text("id").primaryKey(),
+  title: text("title").notNull(),
+  startsAt: timestamp("starts_at").notNull(),
+  location: text("location").notNull(),
+  agenda: text("agenda").notNull(),
+  status: text("status").notNull().default("upcoming"),
+  reportTitle: text("report_title"),
+  reportContent: text("report_content"),
+  reportUrl: text("report_url"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const eventResponsesTable = pgTable(
+  "event_responses",
+  {
+    eventId: text("event_id").notNull(),
+    profileId: text("profile_id").notNull(),
+    response: text("response").notNull(),
+    respondedAt: timestamp("responded_at").notNull().defaultNow(),
+  },
+  (table) => [primaryKey({ columns: [table.eventId, table.profileId] })],
+);
+
 export type Announcement = typeof announcementsTable.$inferSelect;
 export type AnnouncementLike = typeof announcementLikesTable.$inferSelect;
 export type AnnouncementDislike = typeof announcementDislikesTable.$inferSelect;
@@ -74,3 +98,5 @@ export type Poll = typeof pollsTable.$inferSelect;
 export type PollOption = typeof pollOptionsTable.$inferSelect;
 export type PollVote = typeof pollVotesTable.$inferSelect;
 export type ChatPresence = typeof chatPresenceTable.$inferSelect;
+export type CommunityEvent = typeof eventsTable.$inferSelect;
+export type EventResponse = typeof eventResponsesTable.$inferSelect;

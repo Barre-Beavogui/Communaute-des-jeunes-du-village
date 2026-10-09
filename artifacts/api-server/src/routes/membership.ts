@@ -8,6 +8,7 @@ import {
   CreateMembershipRequestResponse,
 } from "@workspace/api-zod";
 import { normalizeLoginPhone } from "../lib/member-auth.js";
+import { persistDataUrl } from "../lib/media-storage.js";
 import { consumeRateLimit } from "../lib/rate-limit.js";
 
 const router: IRouter = Router();
@@ -69,6 +70,19 @@ router.post("/membership-requests", async (req, res) => {
     res.status(400).json({ error: "La photo de profil est invalide." });
     return;
   }
+  let avatarUrl: string | null = null;
+  try {
+    avatarUrl = await persistDataUrl(data.avatarUrl, {
+      folder: "avatars",
+      kind: "image",
+      maxBytes: 165_000,
+    });
+  } catch {
+    res
+      .status(400)
+      .json({ error: "La photo de profil est invalide ou trop volumineuse." });
+    return;
+  }
   const normalizedEmail = data.email.trim().toLowerCase();
   const [existing] = await db
     .select({ id: membershipRequestsTable.id })
@@ -94,7 +108,7 @@ router.post("/membership-requests", async (req, res) => {
       name: data.name.trim(),
       email: normalizedEmail,
       phone: data.phone?.trim() || null,
-      avatarUrl: data.avatarUrl || null,
+      avatarUrl,
       neighborhood: data.neighborhood.trim(),
       profession: data.profession.trim(),
       bio: data.bio.trim(),

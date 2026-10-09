@@ -9,18 +9,25 @@ import {
 } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
+  type ChatMessage,
+  getGetChatUnreadCountQueryKey,
   getListChatMessagesQueryKey,
   getListChatPresenceQueryKey,
   updateChatPresence,
   useListChatMessages,
   useListChatPresence,
+  useMarkChatRead,
+  useReportChatMessage,
   useSendChatMessage,
 } from "@workspace/api-client-react";
 import {
   CircleStop,
+  Flag,
   MessageCircleMore,
   Mic,
+  Pin,
   Radio,
+  Reply,
   Send,
   Trash2,
   UsersRound,
@@ -80,19 +87,22 @@ export default function ChatPage() {
   const messagesQuery = useListChatMessages({
     query: {
       queryKey: getListChatMessagesQueryKey(),
-      refetchInterval: 10_000,
+      refetchInterval: 60_000,
       refetchIntervalInBackground: false,
     },
   });
   const presenceQuery = useListChatPresence({
     query: {
       queryKey: getListChatPresenceQueryKey(),
-      refetchInterval: 10_000,
+      refetchInterval: 45_000,
       refetchIntervalInBackground: false,
     },
   });
   const sendMessage = useSendChatMessage();
+  const markRead = useMarkChatRead();
+  const reportMessage = useReportChatMessage();
   const [text, setText] = useState("");
+  const [replyingTo, setReplyingTo] = useState<ChatMessage | null>(null);
   const [error, setError] = useState("");
   const [isRecording, setIsRecording] = useState(false);
   const [recordingSeconds, setRecordingSeconds] = useState(0);
@@ -111,6 +121,7 @@ export default function ChatPage() {
   const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
   const messages = messagesQuery.data ?? [];
   const presences = presenceQuery.data ?? [];
+  const pinnedMessages = messages.filter((message) => message.pinnedAt);
 
   const activeDescription = useMemo(() => {
     const writing = presences.filter(
@@ -141,6 +152,16 @@ export default function ChatPage() {
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+  }, [messages.length]);
+
+  useEffect(() => {
+    if (!messages.length || markRead.isPending) return;
+    markRead.mutate(undefined, {
+      onSuccess: () =>
+        queryClient.invalidateQueries({
+          queryKey: getGetChatUnreadCountQueryKey(),
+        }),
+    });
   }, [messages.length]);
 
   useEffect(() => {
@@ -185,10 +206,11 @@ export default function ChatPage() {
     if (!content || sendMessage.isPending) return;
     setError("");
     sendMessage.mutate(
-      { data: { type: "text", content } },
+      { data: { type: "text", content, replyToId: replyingTo?.id ?? null } },
       {
         onSuccess: async () => {
           setText("");
+          setReplyingTo(null);
           if (textAreaRef.current) textAreaRef.current.style.height = "48px";
           pingActivity("online");
           await refreshChat();
@@ -320,15 +342,37 @@ export default function ChatPage() {
           audioData: recordedAudio.data,
           audioMimeType: recordedAudio.mimeType,
           durationSeconds: recordedAudio.durationSeconds,
+          replyToId: replyingTo?.id ?? null,
         },
       },
       {
         onSuccess: async () => {
           setRecordedAudio(null);
+          setReplyingTo(null);
           pingActivity("online");
           await refreshChat();
         },
         onError: () => setError("Le vocal n’a pas pu être envoyé."),
+      },
+    );
+  };
+
+  const report = (message: ChatMessage) => {
+    if (message.reportedByMember || reportMessage.isPending) return;
+    const reason = window.prompt(
+      "Pourquoi souhaitez-vous signaler ce message à l’administrateur ?",
+    );
+    if (!reason?.trim()) return;
+    if (reason.trim().length < 3) {
+      setError("Précisez le motif du signalement.");
+      return;
+    }
+    setError("");
+    reportMessage.mutate(
+      { id: message.id, data: { reason: reason.trim() } },
+      {
+        onSuccess: refreshChat,
+        onError: () => setError("Le signalement n’a pas pu être envoyé."),
       },
     );
   };
@@ -376,6 +420,30 @@ export default function ChatPage() {
             </div>
             <Radio className="h-5 w-5 text-secondary" />
           </div>
+
+          {pinnedMessages.length > 0 && (
+            <div className="flex shrink-0 gap-2 overflow-x-auto border-b border-border bg-accent/15 px-4 py-2.5 sm:px-6">
+              {pinnedMessages.map((message) => (
+                <button
+                  key={message.id}
+                  type="button"
+                  onClick={() =>
+                    document
+                      .getElementById(`chat-message-${message.id}`)
+                      ?.scrollIntoView({ behavior: "smooth", block: "center" })
+                  }
+                  className="flex max-w-72 shrink-0 items-center gap-2 rounded-full border border-accent/50 bg-card px-3 py-2 text-left text-[10px] font-bold"
+                >
+                  <Pin className="h-3.5 w-3.5 shrink-0 text-primary" />
+                  <span className="truncate">
+                    {message.type === "audio"
+                      ? `${message.memberName} · Message vocal`
+                      : `${message.memberName} · ${message.content}`}
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
 
           <div className="flex shrink-0 gap-2 overflow-x-auto border-b border-border px-3 py-2.5 lg:hidden">
             {presences.map((presence) => (
@@ -428,6 +496,7 @@ export default function ChatPage() {
                 return (
                   <article
                     key={message.id}
+                    id={`chat-message-${message.id}`}
                     className={`flex items-end gap-2.5 ${mine ? "flex-row-reverse" : ""}`}
                   >
                     <div className="relative shrink-0">
@@ -456,7 +525,26 @@ export default function ChatPage() {
                             : "rounded-bl-md border border-border bg-card"
                         }`}
                       >
-                        {message.type === "audio" && message.audioData ? (
+                        {message.replyTo && (
+                          <div
+                            className={`mb-2 rounded-xl border-l-2 px-3 py-2 text-[10px] leading-4 ${
+                              mine
+                                ? "border-primary-foreground/60 bg-primary-foreground/10"
+                                : "border-primary bg-muted/70"
+                            }`}
+                          >
+                            <p className="font-extrabold">
+                              {message.replyTo.memberName}
+                            </p>
+                            <p className="truncate opacity-75">
+                              {message.replyTo.type === "audio"
+                                ? "Message vocal"
+                                : message.replyTo.content}
+                            </p>
+                          </div>
+                        )}
+                        {message.type === "audio" &&
+                        (message.audioUrl || message.audioData) ? (
                           <div className="min-w-[220px]">
                             <div className="mb-2 flex items-center gap-2 text-xs font-bold">
                               <Mic className="h-4 w-4" /> Message vocal ·{" "}
@@ -465,7 +553,7 @@ export default function ChatPage() {
                             <audio
                               controls
                               preload="metadata"
-                              src={message.audioData}
+                              src={message.audioUrl ?? message.audioData ?? ""}
                               className="h-9 w-full max-w-[280px]"
                             >
                               Votre navigateur ne peut pas lire ce vocal.
@@ -475,6 +563,36 @@ export default function ChatPage() {
                           <p className="whitespace-pre-wrap break-words">
                             {message.content}
                           </p>
+                        )}
+                      </div>
+                      <div
+                        className={`mt-1 flex items-center gap-3 px-1 text-[9px] font-bold text-muted-foreground ${mine ? "justify-end" : ""}`}
+                      >
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setReplyingTo(message);
+                            textAreaRef.current?.focus();
+                          }}
+                          className="flex items-center gap-1 hover:text-primary"
+                        >
+                          <Reply className="h-3 w-3" /> Répondre
+                        </button>
+                        {!mine && (
+                          <button
+                            type="button"
+                            onClick={() => report(message)}
+                            disabled={message.reportedByMember}
+                            className="flex items-center gap-1 hover:text-destructive disabled:opacity-55"
+                          >
+                            <Flag className="h-3 w-3" />
+                            {message.reportedByMember ? "Signalé" : "Signaler"}
+                          </button>
+                        )}
+                        {message.pinnedAt && (
+                          <span className="flex items-center gap-1 text-primary">
+                            <Pin className="h-3 w-3" /> Épinglé
+                          </span>
                         )}
                       </div>
                     </div>
@@ -498,6 +616,28 @@ export default function ChatPage() {
           </div>
 
           <div className="shrink-0 border-t border-border bg-card p-3 sm:p-5">
+            {replyingTo && (
+              <div className="mb-3 flex items-center justify-between gap-3 rounded-2xl border-l-4 border-primary bg-muted/60 px-4 py-3">
+                <div className="min-w-0">
+                  <p className="text-[10px] font-extrabold text-primary">
+                    Réponse à {replyingTo.memberName}
+                  </p>
+                  <p className="truncate text-xs text-muted-foreground">
+                    {replyingTo.type === "audio"
+                      ? "Message vocal"
+                      : replyingTo.content}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setReplyingTo(null)}
+                  className="grid h-8 w-8 shrink-0 place-items-center rounded-full hover:bg-card"
+                  aria-label="Annuler la réponse"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            )}
             {recordedAudio ? (
               <div className="flex flex-col gap-3 rounded-2xl bg-accent/25 p-4 sm:flex-row sm:items-center">
                 <audio

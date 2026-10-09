@@ -44,7 +44,7 @@ jobs:
       - name: Add SPA routes and fallback
         run: |
           output="artifacts/village-jeunes/dist/public"
-          routes="accueil membres membre actualites actualites/assemblee-generale-13-septembre-2026 groupe connexion-membre zoboroma inscription confidentialite admin"
+          routes="accueil membres membre actualites actualites/assemblee-generale-13-septembre-2026 evenements groupe connexion-membre zoboroma inscription confidentialite admin"
           for route in $routes; do
             mkdir -p "$output/$route"
             cp "$output/index.html" "$output/$route/index.html"

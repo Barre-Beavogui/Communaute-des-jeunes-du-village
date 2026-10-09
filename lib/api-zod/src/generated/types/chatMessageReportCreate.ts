@@ -6,10 +6,10 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface WorkosAccessToken {
+export interface ChatMessageReportCreate {
   /**
-     * @minLength 20
-     * @maxLength 8192
+     * @minLength 3
+     * @maxLength 300
      */
-  accessToken: string;
+  reason: string;
 }

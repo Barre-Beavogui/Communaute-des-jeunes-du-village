@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { ChatMessageType } from './chatMessageType';
+import type { ChatReplyPreview } from './chatReplyPreview';
 
 export interface ChatMessage {
   id: string;
@@ -20,8 +21,15 @@ export interface ChatMessage {
   /** @nullable */
   audioData?: string | null;
   /** @nullable */
+  audioUrl?: string | null;
+  /** @nullable */
   audioMimeType?: string | null;
   /** @nullable */
   durationSeconds?: number | null;
+  /** @nullable */
+  pinnedAt?: string | null;
+  reportedByMember: boolean;
+  reportCount: number;
+  replyTo?: ChatReplyPreview | null;
   createdAt: string;
 }
