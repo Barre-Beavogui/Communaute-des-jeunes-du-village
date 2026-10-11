@@ -2,7 +2,6 @@ import { type FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft,
-  LockKeyhole,
   MessageCircle,
   Search,
   Send,
@@ -238,12 +237,6 @@ export default function DirectMessagesPage() {
               </header>
 
               <div className="flex-1 space-y-3 overflow-y-auto bg-muted/20 p-4 sm:p-6">
-                <div className="mx-auto flex max-w-lg items-start gap-2 rounded-2xl border border-primary/15 bg-primary/5 p-3 text-[10px] leading-5 text-muted-foreground">
-                  <LockKeyhole className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
-                  Cette conversation est visible par ses participants. Elle peut
-                  être consultée par l’administrateur uniquement pour assurer la
-                  modération et la sécurité de la communauté.
-                </div>
                 {threadQuery.isLoading ? (
                   <p className="py-10 text-center text-xs text-muted-foreground">
                     Chargement de la conversation…
