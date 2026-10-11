@@ -21,11 +21,12 @@ import {
 } from "@workspace/api-client-react";
 import { hasMemberSession } from "@/lib/member-session";
 import { useChatRealtime } from "@/lib/use-chat-realtime";
+import { NotificationCenter } from "@/components/notification-center";
 
 const navItems = [
   { href: "/accueil", label: "Accueil", icon: Compass },
   { href: "/membres", label: "Membres", icon: UsersRound },
-  { href: "/actualites", label: "Actualités", icon: Newspaper },
+  { href: "/actualites", label: "Vie du village", icon: Newspaper },
   { href: "/evenements", label: "Événements", icon: CalendarDays },
   { href: "/groupe", label: "Groupe", icon: MessageCircleMore },
   { href: "/zoboroma", label: "Zoboroma", icon: MapPinned },
@@ -168,6 +169,7 @@ export function VillageShell({ children }: { children: ReactNode }) {
               />
               {health.isError ? "Mode aperçu" : "Village en ligne"}
             </div>
+            <NotificationCenter enabled={showPrivateNavigation} />
             {!isAdminPage && (
               <Link
                 href={
@@ -312,7 +314,7 @@ export function VillageShell({ children }: { children: ReactNode }) {
                 </p>
                 <div className="grid grid-cols-2 gap-2">
                   {[
-                    ["/actualites", "Actualités", Newspaper],
+                    ["/actualites", "Vie du village", Newspaper],
                     ["/evenements", "Événements", CalendarDays],
                     ["/zoboroma", "Zoboroma", MapPinned],
                     ["/connexion-membre", "Mon espace", UserRound],

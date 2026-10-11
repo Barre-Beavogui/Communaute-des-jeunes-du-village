@@ -15,9 +15,13 @@ import {
   ArrowRight,
   CalendarDays,
   FileText,
+  Flame,
+  Images,
   KeyRound,
   Megaphone,
+  MessageCircleMore,
   Newspaper,
+  Share2,
   ThumbsDown,
   ThumbsUp,
   Vote,
@@ -32,6 +36,10 @@ export default function NewsPage() {
   const [actionError, setActionError] = useState("");
   const [reactingId, setReactingId] = useState<string | null>(null);
   const [votingPollId, setVotingPollId] = useState<string | null>(null);
+  const [feedFilter, setFeedFilter] = useState<"all" | "media" | "popular">(
+    "all",
+  );
+  const [sharedId, setSharedId] = useState<string | null>(null);
   const member = hasMemberSession() ? getMemberIdentity() : null;
   const announcementsQuery = useListAnnouncements();
   const pollsQuery = useListPolls();
@@ -40,6 +48,21 @@ export default function NewsPage() {
   const vote = useVotePoll();
   const announcements = announcementsQuery.data ?? [];
   const polls = pollsQuery.data ?? [];
+  const visibleAnnouncements = [...announcements]
+    .filter((announcement) => {
+      if (feedFilter === "media") return Boolean(announcement.mediaUrl);
+      if (feedFilter === "popular")
+        return announcement.likeCount + announcement.dislikeCount > 0;
+      return true;
+    })
+    .sort((left, right) =>
+      feedFilter === "popular"
+        ? right.likeCount +
+          right.dislikeCount -
+          (left.likeCount + left.dislikeCount)
+        : new Date(right.createdAt).getTime() -
+          new Date(left.createdAt).getTime(),
+    );
 
   const requireMember = () => {
     if (member) return true;
@@ -105,22 +128,45 @@ export default function NewsPage() {
     );
   };
 
+  const shareAnnouncement = async (
+    announcement: (typeof announcements)[number],
+  ) => {
+    const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
+    const url = `${window.location.origin}${basePath}/actualites#annonce-${announcement.id}`;
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: announcement.title,
+          text: announcement.content.slice(0, 140),
+          url,
+        });
+      } else {
+        await navigator.clipboard.writeText(url);
+      }
+      setSharedId(announcement.id);
+      window.setTimeout(() => setSharedId(null), 2_000);
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") return;
+      setActionError("Le lien n’a pas pu être partagé. Réessayez.");
+    }
+  };
+
   return (
     <div className="space-y-8">
       <section className="vj-enter overflow-hidden rounded-[32px] bg-foreground px-6 py-9 text-background shadow-lg sm:px-10 sm:py-12">
         <div className="grid items-end gap-8 lg:grid-cols-[1fr_.42fr]">
           <div>
             <span className="inline-flex items-center gap-2 rounded-full bg-background/10 px-3 py-2 font-mono text-[9px] font-bold uppercase tracking-[.18em] text-accent">
-              <Newspaper className="h-3.5 w-3.5" /> Actualités de Zoboroma
+              <Newspaper className="h-3.5 w-3.5" /> Vie de Zoboroma
             </span>
             <h1 className="vj-display mt-5 max-w-3xl text-6xl leading-[.86] sm:text-7xl">
-              Les nouvelles,
+              Le village vit,
               <br />
-              <em className="text-accent">les choix, la voix.</em>
+              <em className="text-accent">sa jeunesse partage.</em>
             </h1>
             <p className="mt-6 max-w-xl text-sm leading-7 text-background/65">
-              Retrouvez les annonces de la communauté et participez aux
-              décisions lorsque vous êtes connecté comme membre.
+              Suivez les nouvelles, réagissez aux publications et participez aux
+              décisions de la communauté.
             </p>
           </div>
           <div className="rounded-2xl border border-background/15 bg-background/5 p-5">
@@ -131,9 +177,7 @@ export default function NewsPage() {
                   Connecté : {member.name}
                 </p>
                 <p className="mt-2 text-xs leading-5 text-background/60">
-                  Vous pouvez réagir aux annonces et voter. Un seul vote par
-                  sondage est compté, mais vous pouvez changer votre choix tant
-                  qu’il reste ouvert.
+                  Réagissez, partagez et votez pour faire vivre la communauté.
                 </p>
               </>
             ) : (
@@ -196,18 +240,51 @@ export default function NewsPage() {
 
       <div className="grid items-start gap-7 lg:grid-cols-[1fr_380px]">
         <section className="space-y-5" aria-labelledby="announcements-title">
-          <div className="flex items-center gap-3">
-            <span className="grid h-11 w-11 place-items-center rounded-2xl bg-primary/10 text-primary">
-              <Megaphone className="h-5 w-5" />
-            </span>
-            <div>
-              <p className="font-mono text-[9px] font-bold uppercase tracking-[.18em] text-primary">
-                Informations
-              </p>
-              <h2 id="announcements-title" className="text-xl font-extrabold">
-                Annonces de la communauté
-              </h2>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div className="flex items-center gap-3">
+              <span className="grid h-11 w-11 place-items-center rounded-2xl bg-primary/10 text-primary">
+                <Megaphone className="h-5 w-5" />
+              </span>
+              <div>
+                <p className="font-mono text-[9px] font-bold uppercase tracking-[.18em] text-primary">
+                  Fil communautaire
+                </p>
+                <h2 id="announcements-title" className="text-xl font-extrabold">
+                  Vie du village
+                </h2>
+              </div>
             </div>
+            <p className="rounded-full bg-muted px-3 py-2 text-[10px] font-bold text-muted-foreground">
+              {announcements.length} publication
+              {announcements.length > 1 ? "s" : ""}
+            </p>
+          </div>
+
+          <div
+            className="flex gap-2 overflow-x-auto pb-1"
+            aria-label="Filtrer les publications"
+          >
+            {[
+              ["all", "Tout", Newspaper],
+              ["media", "Photos et vidéos", Images],
+              ["popular", "Populaires", Flame],
+            ].map(([value, label, Icon]) => {
+              const FilterIcon = Icon as typeof Newspaper;
+              const selected = feedFilter === value;
+              return (
+                <button
+                  key={value as string}
+                  type="button"
+                  onClick={() =>
+                    setFeedFilter(value as "all" | "media" | "popular")
+                  }
+                  aria-pressed={selected}
+                  className={`inline-flex shrink-0 items-center gap-2 rounded-full px-4 py-2.5 text-[10px] font-extrabold transition ${selected ? "bg-foreground text-background" : "border border-border bg-card text-muted-foreground hover:text-foreground"}`}
+                >
+                  <FilterIcon className="h-3.5 w-3.5" /> {label as string}
+                </button>
+              );
+            })}
           </div>
 
           {announcementsQuery.isLoading ? (
@@ -219,8 +296,8 @@ export default function NewsPage() {
             ))
           ) : announcementsQuery.isError ? (
             <EmptyState text="Les annonces sont momentanément indisponibles." />
-          ) : announcements.length ? (
-            announcements.map((announcement) => {
+          ) : visibleAnnouncements.length ? (
+            visibleAnnouncements.map((announcement) => {
               const embedUrl =
                 announcement.mediaType === "video" && announcement.mediaUrl
                   ? getVideoEmbedUrl(announcement.mediaUrl)
@@ -228,6 +305,7 @@ export default function NewsPage() {
               return (
                 <article
                   key={announcement.id}
+                  id={`annonce-${announcement.id}`}
                   className="vj-enter overflow-hidden rounded-[28px] border border-border bg-card shadow-sm"
                   data-testid={`announcement-${announcement.id}`}
                 >
@@ -284,13 +362,35 @@ export default function NewsPage() {
                         />
                         {announcement.dislikeCount} Je n’aime pas
                       </button>
+                      <button
+                        type="button"
+                        onClick={() => shareAnnouncement(announcement)}
+                        className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-4 py-2.5 text-xs font-extrabold text-muted-foreground transition hover:border-primary hover:text-primary"
+                      >
+                        <Share2 className="h-4 w-4" />
+                        {sharedId === announcement.id
+                          ? "Lien copié"
+                          : "Partager"}
+                      </button>
+                      <Link
+                        href="/groupe"
+                        className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-4 py-2.5 text-xs font-extrabold text-muted-foreground transition hover:border-primary hover:text-primary"
+                      >
+                        <MessageCircleMore className="h-4 w-4" /> En discuter
+                      </Link>
                     </div>
                   </div>
                 </article>
               );
             })
           ) : (
-            <EmptyState text="La première annonce sera bientôt publiée." />
+            <EmptyState
+              text={
+                announcements.length
+                  ? "Aucune publication ne correspond à ce filtre."
+                  : "La première publication sera bientôt disponible."
+              }
+            />
           )}
         </section>
 
