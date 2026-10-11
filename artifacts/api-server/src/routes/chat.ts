@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { Router, type IRouter } from "express";
-import { and, count, eq, gt, lt, ne } from "drizzle-orm";
+import { and, count, eq, gt, isNull, lt, ne } from "drizzle-orm";
 import { db } from "@workspace/db";
 import {
   chatMessageReportsTable,
@@ -106,7 +106,12 @@ router.post("/chat/messages", requireMember, async (req, res) => {
     const [replyTarget] = await db
       .select({ id: chatMessagesTable.id })
       .from(chatMessagesTable)
-      .where(eq(chatMessagesTable.id, body.replyToId));
+      .where(
+        and(
+          eq(chatMessagesTable.id, body.replyToId),
+          isNull(chatMessagesTable.recipientId),
+        ),
+      );
     if (!replyTarget) {
       res
         .status(400)
@@ -247,6 +252,7 @@ router.get("/chat/unread", requireMember, async (_req, res) => {
     .from(chatReadReceiptsTable)
     .where(eq(chatReadReceiptsTable.profileId, profileId));
   const filters = [ne(chatMessagesTable.profileId, profileId)];
+  filters.push(isNull(chatMessagesTable.recipientId));
   if (receipt)
     filters.push(gt(chatMessagesTable.createdAt, receipt.lastReadAt));
   const [result] = await db
@@ -284,7 +290,12 @@ router.post("/chat/messages/:id/report", requireMember, async (req, res) => {
       profileId: chatMessagesTable.profileId,
     })
     .from(chatMessagesTable)
-    .where(eq(chatMessagesTable.id, params.id));
+    .where(
+      and(
+        eq(chatMessagesTable.id, params.id),
+        isNull(chatMessagesTable.recipientId),
+      ),
+    );
   if (!message) {
     res.status(404).json({ error: "Message introuvable." });
     return;

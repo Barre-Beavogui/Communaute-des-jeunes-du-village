@@ -541,6 +541,105 @@ export const ReportChatMessageResponse = zod.object({
 
 
 /**
+ * @summary List the connected member direct-message conversations
+ */
+export const listDirectMessageConversationsResponseUnreadCountMin = 0;
+
+
+
+export const ListDirectMessageConversationsResponseItem = zod.object({
+  "profileId": zod.string(),
+  "memberName": zod.string(),
+  "initials": zod.string(),
+  "avatarUrl": zod.string().nullish(),
+  "lastMessage": zod.string(),
+  "lastMessageAt": zod.string(),
+  "unreadCount": zod.number().min(listDirectMessageConversationsResponseUnreadCountMin)
+})
+export const ListDirectMessageConversationsResponse = zod.array(ListDirectMessageConversationsResponseItem)
+
+
+/**
+ * @summary Count unread direct messages for the connected member
+ */
+export const getDirectMessageUnreadCountResponseCountMin = 0;
+
+
+
+export const GetDirectMessageUnreadCountResponse = zod.object({
+  "count": zod.number().min(getDirectMessageUnreadCountResponseCountMin)
+})
+
+
+/**
+ * @summary List direct messages exchanged with one member
+ */
+export const GetDirectMessageThreadParams = zod.object({
+  "profileId": zod.coerce.string()
+})
+
+export const GetDirectMessageThreadResponseItem = zod.object({
+  "id": zod.string(),
+  "senderId": zod.string(),
+  "senderName": zod.string(),
+  "senderInitials": zod.string(),
+  "senderAvatarUrl": zod.string().nullish(),
+  "recipientId": zod.string(),
+  "recipientName": zod.string(),
+  "recipientInitials": zod.string(),
+  "recipientAvatarUrl": zod.string().nullish(),
+  "content": zod.string(),
+  "createdAt": zod.string(),
+  "mine": zod.boolean()
+})
+export const GetDirectMessageThreadResponse = zod.array(GetDirectMessageThreadResponseItem)
+
+
+/**
+ * @summary Send a private text message to one member
+ */
+export const SendDirectMessageParams = zod.object({
+  "profileId": zod.coerce.string()
+})
+
+export const sendDirectMessageBodyContentMax = 2000;
+
+
+
+export const SendDirectMessageBody = zod.object({
+  "content": zod.string().min(1).max(sendDirectMessageBodyContentMax)
+})
+
+export const SendDirectMessageResponse = zod.object({
+  "id": zod.string(),
+  "senderId": zod.string(),
+  "senderName": zod.string(),
+  "senderInitials": zod.string(),
+  "senderAvatarUrl": zod.string().nullish(),
+  "recipientId": zod.string(),
+  "recipientName": zod.string(),
+  "recipientInitials": zod.string(),
+  "recipientAvatarUrl": zod.string().nullish(),
+  "content": zod.string(),
+  "createdAt": zod.string(),
+  "mine": zod.boolean()
+})
+
+
+/**
+ * @summary Mark a direct-message conversation as read
+ */
+export const MarkDirectMessageReadParams = zod.object({
+  "profileId": zod.coerce.string()
+})
+
+export const MarkDirectMessageReadResponse = zod.object({
+  "success": zod.literal(true),
+  "lastReadAt": zod.string()
+})
+
+
+/**
  * @summary List community meetings and events
  */
 export const ListEventsResponseItem = zod.object({
@@ -813,6 +912,26 @@ export const ListModerationChatMessagesResponseItem = zod.object({
   "createdAt": zod.string()
 })
 export const ListModerationChatMessagesResponse = zod.array(ListModerationChatMessagesResponseItem)
+
+
+/**
+ * @summary List the latest private messages for administrator moderation
+ */
+export const ListModerationDirectMessagesResponseItem = zod.object({
+  "id": zod.string(),
+  "senderId": zod.string(),
+  "senderName": zod.string(),
+  "senderInitials": zod.string(),
+  "senderAvatarUrl": zod.string().nullish(),
+  "recipientId": zod.string(),
+  "recipientName": zod.string(),
+  "recipientInitials": zod.string(),
+  "recipientAvatarUrl": zod.string().nullish(),
+  "content": zod.string(),
+  "createdAt": zod.string(),
+  "mine": zod.boolean()
+})
+export const ListModerationDirectMessagesResponse = zod.array(ListModerationDirectMessagesResponseItem)
 
 
 /**

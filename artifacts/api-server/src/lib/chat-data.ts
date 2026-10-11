@@ -1,4 +1,4 @@
-import { desc, eq, inArray } from "drizzle-orm";
+import { desc, eq, inArray, isNull } from "drizzle-orm";
 import { db } from "@workspace/db";
 import {
   chatMessageReportsTable,
@@ -20,6 +20,7 @@ export async function loadChatMessages(options?: {
     })
     .from(chatMessagesTable)
     .innerJoin(profilesTable, eq(chatMessagesTable.profileId, profilesTable.id))
+    .where(isNull(chatMessagesTable.recipientId))
     .orderBy(desc(chatMessagesTable.createdAt))
     .limit(options?.limit ?? 100);
 

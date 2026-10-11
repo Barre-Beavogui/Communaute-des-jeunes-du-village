@@ -783,6 +783,48 @@ export interface ChatMessage {
   createdAt: string;
 }
 
+export interface DirectMessage {
+  id: string;
+  senderId: string;
+  senderName: string;
+  senderInitials: string;
+  /** @nullable */
+  senderAvatarUrl?: string | null;
+  recipientId: string;
+  recipientName: string;
+  recipientInitials: string;
+  /** @nullable */
+  recipientAvatarUrl?: string | null;
+  content: string;
+  createdAt: string;
+  mine: boolean;
+}
+
+export interface DirectMessageConversation {
+  profileId: string;
+  memberName: string;
+  initials: string;
+  /** @nullable */
+  avatarUrl?: string | null;
+  lastMessage: string;
+  lastMessageAt: string;
+  /** @minimum 0 */
+  unreadCount: number;
+}
+
+export interface DirectMessageCreate {
+  /**
+     * @minLength 1
+     * @maxLength 2000
+     */
+  content: string;
+}
+
+export interface DirectMessageUnreadCount {
+  /** @minimum 0 */
+  count: number;
+}
+
 export type ChatMessageCreateType = typeof ChatMessageCreateType[keyof typeof ChatMessageCreateType];
 
 

@@ -24,6 +24,8 @@ tags:
     description: Community member authentication
   - name: chat
     description: Member group messages, voice notes, and live presence
+  - name: direct-messages
+    description: Private member-to-member messages
 paths:
   /healthz:
     get:
@@ -364,6 +366,108 @@ paths:
           description: Member session required
         "404":
           description: Message not found
+  /direct-messages/conversations:
+    get:
+      operationId: listDirectMessageConversations
+      tags: [direct-messages]
+      summary: List the connected member direct-message conversations
+      responses:
+        "200":
+          description: Direct-message conversations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DirectMessageConversation"
+        "401":
+          description: Member session required
+  /direct-messages/unread:
+    get:
+      operationId: getDirectMessageUnreadCount
+      tags: [direct-messages]
+      summary: Count unread direct messages for the connected member
+      responses:
+        "200":
+          description: Unread direct-message count
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DirectMessageUnreadCount"
+        "401":
+          description: Member session required
+  /direct-messages/{profileId}:
+    get:
+      operationId: getDirectMessageThread
+      tags: [direct-messages]
+      summary: List direct messages exchanged with one member
+      parameters:
+        - name: profileId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Direct-message thread
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DirectMessage"
+        "401":
+          description: Member session required
+        "404":
+          description: Member not found
+    post:
+      operationId: sendDirectMessage
+      tags: [direct-messages]
+      summary: Send a private text message to one member
+      parameters:
+        - name: profileId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DirectMessageCreate"
+      responses:
+        "201":
+          description: Direct message sent
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DirectMessage"
+        "400":
+          description: Invalid message
+        "401":
+          description: Member session required
+        "404":
+          description: Member not found
+        "429":
+          description: Too many messages
+  /direct-messages/{profileId}/read:
+    post:
+      operationId: markDirectMessageRead
+      tags: [direct-messages]
+      summary: Mark a direct-message conversation as read
+      parameters:
+        - name: profileId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Read position updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChatReadReceipt"
+        "401":
+          description: Member session required
   /events:
     get:
       operationId: listEvents
@@ -581,6 +685,20 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ChatMessage"
+  /moderation/direct-messages:
+    get:
+      operationId: listModerationDirectMessages
+      tags: [moderation]
+      summary: List the latest private messages for administrator moderation
+      responses:
+        "200":
+          description: Latest private messages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DirectMessage"
   /moderation/chat/messages/{id}:
     delete:
       operationId: deleteModerationChatMessage
@@ -1360,6 +1478,63 @@ components:
             - $ref: "#/components/schemas/ChatReplyPreview"
             - type: "null"
         createdAt: { type: string }
+    DirectMessage:
+      type: object
+      required:
+        [
+          id,
+          senderId,
+          senderName,
+          senderInitials,
+          recipientId,
+          recipientName,
+          recipientInitials,
+          content,
+          createdAt,
+          mine,
+        ]
+      properties:
+        id: { type: string }
+        senderId: { type: string }
+        senderName: { type: string }
+        senderInitials: { type: string }
+        senderAvatarUrl: { type: ["string", "null"] }
+        recipientId: { type: string }
+        recipientName: { type: string }
+        recipientInitials: { type: string }
+        recipientAvatarUrl: { type: ["string", "null"] }
+        content: { type: string }
+        createdAt: { type: string }
+        mine: { type: boolean }
+    DirectMessageConversation:
+      type: object
+      required:
+        [
+          profileId,
+          memberName,
+          initials,
+          lastMessage,
+          lastMessageAt,
+          unreadCount,
+        ]
+      properties:
+        profileId: { type: string }
+        memberName: { type: string }
+        initials: { type: string }
+        avatarUrl: { type: ["string", "null"] }
+        lastMessage: { type: string }
+        lastMessageAt: { type: string }
+        unreadCount: { type: number, minimum: 0 }
+    DirectMessageCreate:
+      type: object
+      required: [content]
+      properties:
+        content: { type: string, minLength: 1, maxLength: 2000 }
+    DirectMessageUnreadCount:
+      type: object
+      required: [count]
+      properties:
+        count: { type: number, minimum: 0 }
     ChatReplyPreview:
       type: object
       required: [id, memberName, type]

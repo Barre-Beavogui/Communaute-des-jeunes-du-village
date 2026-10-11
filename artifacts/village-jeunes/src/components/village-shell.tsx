@@ -6,6 +6,7 @@ import {
   KeyRound,
   MapPinned,
   MessageCircleMore,
+  MessagesSquare,
   MoreHorizontal,
   Newspaper,
   UserRound,
@@ -15,8 +16,10 @@ import { type ReactNode, useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
 import {
   getGetChatUnreadCountQueryKey,
+  getGetDirectMessageUnreadCountQueryKey,
   updateChatPresence,
   useGetChatUnreadCount,
+  useGetDirectMessageUnreadCount,
   useHealthCheck,
 } from "@workspace/api-client-react";
 import { hasMemberSession } from "@/lib/member-session";
@@ -26,13 +29,14 @@ import { NotificationCenter } from "@/components/notification-center";
 const navItems = [
   { href: "/accueil", label: "Accueil", icon: Compass },
   { href: "/membres", label: "Membres", icon: UsersRound },
+  { href: "/messages", label: "Messages", icon: MessagesSquare },
   { href: "/actualites", label: "Vie du village", icon: Newspaper },
   { href: "/evenements", label: "Événements", icon: CalendarDays },
   { href: "/groupe", label: "Groupe", icon: MessageCircleMore },
   { href: "/zoboroma", label: "Zoboroma", icon: MapPinned },
 ];
 const mobileNavItems = navItems.filter((item) =>
-  ["/accueil", "/membres", "/groupe"].includes(item.href),
+  ["/accueil", "/membres", "/messages", "/groupe"].includes(item.href),
 );
 
 type InstallPromptEvent = Event & {
@@ -65,6 +69,15 @@ export function VillageShell({ children }: { children: ReactNode }) {
     },
   });
   const unreadCount = unreadQuery.data?.count ?? 0;
+  const directUnreadQuery = useGetDirectMessageUnreadCount({
+    query: {
+      enabled: showPrivateNavigation,
+      retry: false,
+      refetchInterval: 30_000,
+      queryKey: getGetDirectMessageUnreadCountQueryKey(),
+    },
+  });
+  const directUnreadCount = directUnreadQuery.data?.count ?? 0;
   useChatRealtime(showPrivateNavigation);
 
   useEffect(() => {
@@ -151,6 +164,11 @@ export function VillageShell({ children }: { children: ReactNode }) {
                     {item.href === "/groupe" && unreadCount > 0 && (
                       <span className="grid min-w-5 place-items-center rounded-full bg-primary px-1.5 py-0.5 text-[9px] font-extrabold text-primary-foreground">
                         {unreadCount > 99 ? "99+" : unreadCount}
+                      </span>
+                    )}
+                    {item.href === "/messages" && directUnreadCount > 0 && (
+                      <span className="grid min-w-5 place-items-center rounded-full bg-primary px-1.5 py-0.5 text-[9px] font-extrabold text-primary-foreground">
+                        {directUnreadCount > 99 ? "99+" : directUnreadCount}
                       </span>
                     )}
                   </Link>
@@ -260,6 +278,7 @@ export function VillageShell({ children }: { children: ReactNode }) {
                   ? [
                       ["/accueil", "Accueil"],
                       ["/membres", "Les membres"],
+                      ["/messages", "Messages privés"],
                       ["/actualites", "Actualités et sondages"],
                       ["/evenements", "Réunions et événements"],
                       ["/groupe", "Groupe de communication"],
@@ -346,7 +365,7 @@ export function VillageShell({ children }: { children: ReactNode }) {
             </>
           )}
           <nav
-            className="fixed bottom-0 left-0 right-0 z-[60] grid grid-cols-4 border-t border-border/80 bg-background/95 px-2 pb-[max(.5rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur-xl md:hidden"
+            className="fixed bottom-0 left-0 right-0 z-[60] grid grid-cols-5 border-t border-border/80 bg-background/95 px-1 pb-[max(.5rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur-xl md:hidden"
             aria-label="Navigation mobile"
           >
             {mobileNavItems.map((item) => {
@@ -363,6 +382,11 @@ export function VillageShell({ children }: { children: ReactNode }) {
                   {item.href === "/groupe" && unreadCount > 0 && (
                     <span className="absolute ml-5 -mt-6 grid min-w-4 place-items-center rounded-full bg-primary px-1 text-[8px] font-extrabold text-primary-foreground">
                       {unreadCount > 9 ? "9+" : unreadCount}
+                    </span>
+                  )}
+                  {item.href === "/messages" && directUnreadCount > 0 && (
+                    <span className="absolute ml-5 -mt-6 grid min-w-4 place-items-center rounded-full bg-primary px-1 text-[8px] font-extrabold text-primary-foreground">
+                      {directUnreadCount > 9 ? "9+" : directUnreadCount}
                     </span>
                   )}
                   {item.label}

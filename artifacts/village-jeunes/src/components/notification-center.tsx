@@ -11,10 +11,12 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "wouter";
 import {
   getGetChatUnreadCountQueryKey,
+  getGetDirectMessageUnreadCountQueryKey,
   getListAnnouncementsQueryKey,
   getListEventsQueryKey,
   getListPollsQueryKey,
   useGetChatUnreadCount,
+  useGetDirectMessageUnreadCount,
   useListAnnouncements,
   useListEvents,
   useListPolls,
@@ -85,6 +87,15 @@ export function NotificationCenter({ enabled }: { enabled: boolean }) {
       enabled,
       retry: false,
       queryKey: getGetChatUnreadCountQueryKey(),
+      refetchInterval: 30_000,
+      refetchOnWindowFocus: true,
+    },
+  });
+  const directUnreadQuery = useGetDirectMessageUnreadCount({
+    query: {
+      enabled,
+      retry: false,
+      queryKey: getGetDirectMessageUnreadCountQueryKey(),
       refetchInterval: 30_000,
       refetchOnWindowFocus: true,
     },
@@ -164,25 +175,45 @@ export function NotificationCenter({ enabled }: { enabled: boolean }) {
   if (!enabled) return null;
 
   const chatUnread = unreadQuery.data?.count ?? 0;
+  const directUnread = directUnreadQuery.data?.count ?? 0;
   const contentUnread = contentNotifications.filter(
     (notification) => notification.unread,
   ).length;
-  const totalUnread = chatUnread + contentUnread;
-  const notifications: NotificationItem[] = chatUnread
-    ? [
-        {
-          id: "chat-unread",
-          href: "/groupe",
-          title: `${chatUnread} nouveau${chatUnread > 1 ? "x" : ""} message${chatUnread > 1 ? "s" : ""}`,
-          detail: "Dans le groupe de communication",
-          createdAt: new Date().toISOString(),
-          icon: MessageCircleMore,
-          unread: true,
-          accent: "bg-foreground text-background",
-        },
-        ...contentNotifications,
-      ]
-    : contentNotifications;
+  const totalUnread = chatUnread + directUnread + contentUnread;
+  const messageNotifications: NotificationItem[] = [
+    ...(directUnread
+      ? [
+          {
+            id: "direct-unread",
+            href: "/messages",
+            title: `${directUnread} message${directUnread > 1 ? "s" : ""} privé${directUnread > 1 ? "s" : ""}`,
+            detail: "Dans vos conversations individuelles",
+            createdAt: new Date().toISOString(),
+            icon: MessageCircleMore,
+            unread: true,
+            accent: "bg-primary text-primary-foreground",
+          },
+        ]
+      : []),
+    ...(chatUnread
+      ? [
+          {
+            id: "chat-unread",
+            href: "/groupe",
+            title: `${chatUnread} nouveau${chatUnread > 1 ? "x" : ""} message${chatUnread > 1 ? "s" : ""}`,
+            detail: "Dans le groupe de communication",
+            createdAt: new Date().toISOString(),
+            icon: MessageCircleMore,
+            unread: true,
+            accent: "bg-foreground text-background",
+          },
+        ]
+      : []),
+  ];
+  const notifications: NotificationItem[] = [
+    ...messageNotifications,
+    ...contentNotifications,
+  ];
 
   const markContentAsRead = () => {
     const now = new Date();

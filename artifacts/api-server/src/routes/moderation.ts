@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { and, desc, eq, inArray, ne, or } from "drizzle-orm";
+import { and, desc, eq, inArray, isNull, ne, or } from "drizzle-orm";
 import { db } from "@workspace/db";
 import {
   announcementDislikesTable,
@@ -8,6 +8,7 @@ import {
   chatMessagesTable,
   chatPresenceTable,
   chatReadReceiptsTable,
+  directMessageReadReceiptsTable,
   deletedProfilesTable,
   eventResponsesTable,
   pollVotesTable,
@@ -28,6 +29,7 @@ import {
   GenerateMemberCodeResponse,
   ListModerationRequestsResponse,
   ListModerationChatMessagesResponse,
+  ListModerationDirectMessagesResponse,
   ListPasswordResetRequestsResponse,
   ReviewModerationRequestParams,
   ReviewModerationRequestBody,
@@ -40,6 +42,7 @@ import {
   UpdateProfileVisibilityResponse,
 } from "@workspace/api-zod";
 import { loadChatMessages } from "../lib/chat-data.js";
+import { loadDirectMessages } from "../lib/direct-message-data.js";
 import { publishChatEvent } from "../lib/chat-realtime.js";
 import { persistDataUrl } from "../lib/media-storage.js";
 import { requireAdmin } from "../lib/admin-auth.js";
@@ -120,13 +123,26 @@ router.get("/moderation/chat/messages", async (_req, res) => {
   );
 });
 
+router.get("/moderation/direct-messages", async (_req, res) => {
+  res.json(
+    ListModerationDirectMessagesResponse.parse(
+      await loadDirectMessages({ limit: 200, newestFirst: true }),
+    ),
+  );
+});
+
 router.patch("/moderation/chat/messages/:id/pin", async (req, res) => {
   const params = UpdateModerationChatPinParams.parse(req.params);
   const body = UpdateModerationChatPinBody.parse(req.body);
   const [updated] = await db
     .update(chatMessagesTable)
     .set({ pinnedAt: body.pinned ? new Date() : null })
-    .where(eq(chatMessagesTable.id, params.id))
+    .where(
+      and(
+        eq(chatMessagesTable.id, params.id),
+        isNull(chatMessagesTable.recipientId),
+      ),
+    )
     .returning({ id: chatMessagesTable.id });
   if (!updated) {
     res.status(404).json({ error: "Message introuvable." });
@@ -147,7 +163,12 @@ router.delete("/moderation/chat/messages/:id", async (req, res) => {
       .where(eq(chatMessageReportsTable.messageId, params.id));
     const [row] = await tx
       .delete(chatMessagesTable)
-      .where(eq(chatMessagesTable.id, params.id))
+      .where(
+        and(
+          eq(chatMessagesTable.id, params.id),
+          isNull(chatMessagesTable.recipientId),
+        ),
+      )
       .returning({ id: chatMessagesTable.id });
     return row;
   });
@@ -549,7 +570,12 @@ router.delete("/moderation/profiles/:id", async (req, res) => {
     const authoredMessages = await tx
       .select({ id: chatMessagesTable.id })
       .from(chatMessagesTable)
-      .where(eq(chatMessagesTable.profileId, profile.id));
+      .where(
+        or(
+          eq(chatMessagesTable.profileId, profile.id),
+          eq(chatMessagesTable.recipientId, profile.id),
+        ),
+      );
     if (authoredMessages.length) {
       await tx.delete(chatMessageReportsTable).where(
         inArray(
@@ -563,13 +589,26 @@ router.delete("/moderation/profiles/:id", async (req, res) => {
       .where(eq(chatMessageReportsTable.profileId, profile.id));
     await tx
       .delete(chatMessagesTable)
-      .where(eq(chatMessagesTable.profileId, profile.id));
+      .where(
+        or(
+          eq(chatMessagesTable.profileId, profile.id),
+          eq(chatMessagesTable.recipientId, profile.id),
+        ),
+      );
     await tx
       .delete(chatPresenceTable)
       .where(eq(chatPresenceTable.profileId, profile.id));
     await tx
       .delete(chatReadReceiptsTable)
       .where(eq(chatReadReceiptsTable.profileId, profile.id));
+    await tx
+      .delete(directMessageReadReceiptsTable)
+      .where(
+        or(
+          eq(directMessageReadReceiptsTable.profileId, profile.id),
+          eq(directMessageReadReceiptsTable.contactProfileId, profile.id),
+        ),
+      );
     await tx
       .delete(eventResponsesTable)
       .where(eq(eventResponsesTable.profileId, profile.id));

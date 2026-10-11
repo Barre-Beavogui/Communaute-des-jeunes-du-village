@@ -111,7 +111,9 @@ app.use(
     const isChatWrite =
       req.method === "POST" &&
       (["/chat/messages", "/chat/presence", "/chat/read"].includes(req.path) ||
-        /^\/chat\/messages\/[^/]+\/report$/.test(req.path));
+        /^\/chat\/messages\/[^/]+\/report$/.test(req.path) ||
+        /^\/direct-messages\/[^/]+$/.test(req.path) ||
+        /^\/direct-messages\/[^/]+\/read$/.test(req.path));
 
     if (
       publicReadOnly &&

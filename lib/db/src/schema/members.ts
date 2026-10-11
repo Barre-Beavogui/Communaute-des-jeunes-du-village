@@ -85,6 +85,7 @@ export const passwordResetRequestsTable = pgTable("password_reset_requests", {
 export const chatMessagesTable = pgTable("chat_messages", {
   id: text("id").primaryKey(),
   profileId: text("profile_id").notNull(),
+  recipientId: text("recipient_id"),
   type: text("type").notNull(),
   content: text("content"),
   audioData: text("audio_data"),
@@ -95,6 +96,18 @@ export const chatMessagesTable = pgTable("chat_messages", {
   pinnedAt: timestamp("pinned_at"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
+
+export const directMessageReadReceiptsTable = pgTable(
+  "direct_message_read_receipts",
+  {
+    profileId: text("profile_id").notNull(),
+    contactProfileId: text("contact_profile_id").notNull(),
+    lastReadAt: timestamp("last_read_at").notNull().defaultNow(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.profileId, table.contactProfileId] }),
+  ],
+);
 
 export const chatReadReceiptsTable = pgTable("chat_read_receipts", {
   profileId: text("profile_id").primaryKey(),
@@ -129,6 +142,8 @@ export type DeletedProfile = typeof deletedProfilesTable.$inferSelect;
 export type PasswordResetRequest =
   typeof passwordResetRequestsTable.$inferSelect;
 export type ChatMessage = typeof chatMessagesTable.$inferSelect;
+export type DirectMessageReadReceipt =
+  typeof directMessageReadReceiptsTable.$inferSelect;
 export type ChatReadReceipt = typeof chatReadReceiptsTable.$inferSelect;
 export type ChatMessageReport = typeof chatMessageReportsTable.$inferSelect;
 export type SecurityRateLimit = typeof securityRateLimitsTable.$inferSelect;

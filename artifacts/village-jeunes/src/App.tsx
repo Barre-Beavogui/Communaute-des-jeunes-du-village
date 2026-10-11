@@ -12,6 +12,7 @@ const queryClient = new QueryClient();
 const AdminPage = lazy(() => import("@/pages/admin"));
 const ChatPage = lazy(() => import("@/pages/chat"));
 const EventsPage = lazy(() => import("@/pages/events"));
+const DirectMessagesPage = lazy(() => import("@/pages/direct-messages"));
 const GeneralAssemblyReportPage = lazy(
   () => import("@/pages/general-assembly-report"),
 );
@@ -67,6 +68,16 @@ function Router() {
           <Route path="/groupe">
             <MemberOnly>
               <ChatPage />
+            </MemberOnly>
+          </Route>
+          <Route path="/messages/:profileId">
+            <MemberOnly>
+              <DirectMessagesPage />
+            </MemberOnly>
+          </Route>
+          <Route path="/messages">
+            <MemberOnly>
+              <DirectMessagesPage />
             </MemberOnly>
           </Route>
           <Route path="/evenements">

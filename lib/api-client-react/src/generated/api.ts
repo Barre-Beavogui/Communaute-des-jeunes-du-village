@@ -37,6 +37,10 @@ import type {
   ChatUnreadCount,
   CommunityEvent,
   CommunityEventWrite,
+  DirectMessage,
+  DirectMessageConversation,
+  DirectMessageCreate,
+  DirectMessageUnreadCount,
   EventResponseCreate,
   HealthStatus,
   MemberActivation,
@@ -1492,6 +1496,380 @@ export const useReportChatMessage = <TError = ErrorType<void>,
       return useMutation(getReportChatMessageMutationOptions(options));
     }
 
+export const getListDirectMessageConversationsUrl = () => {
+
+
+
+
+  return `/api/direct-messages/conversations`
+}
+
+/**
+ * @summary List the connected member direct-message conversations
+ */
+export const listDirectMessageConversations = async ( options?: Parameters<typeof customFetch>[1]): Promise<DirectMessageConversation[]> => {
+
+  return customFetch<DirectMessageConversation[]>(getListDirectMessageConversationsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListDirectMessageConversationsQueryKey = () => {
+    return [
+    `/api/direct-messages/conversations`
+    ] as const;
+    }
+
+
+export const getListDirectMessageConversationsQueryOptions = <TData = Awaited<ReturnType<typeof listDirectMessageConversations>>, TError = ErrorType<void>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listDirectMessageConversations>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListDirectMessageConversationsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listDirectMessageConversations>>> = ({ signal }) => listDirectMessageConversations({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listDirectMessageConversations>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListDirectMessageConversationsQueryResult = NonNullable<Awaited<ReturnType<typeof listDirectMessageConversations>>>
+export type ListDirectMessageConversationsQueryError = ErrorType<void>
+
+
+/**
+ * @summary List the connected member direct-message conversations
+ */
+
+export function useListDirectMessageConversations<TData = Awaited<ReturnType<typeof listDirectMessageConversations>>, TError = ErrorType<void>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listDirectMessageConversations>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListDirectMessageConversationsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetDirectMessageUnreadCountUrl = () => {
+
+
+
+
+  return `/api/direct-messages/unread`
+}
+
+/**
+ * @summary Count unread direct messages for the connected member
+ */
+export const getDirectMessageUnreadCount = async ( options?: Parameters<typeof customFetch>[1]): Promise<DirectMessageUnreadCount> => {
+
+  return customFetch<DirectMessageUnreadCount>(getGetDirectMessageUnreadCountUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetDirectMessageUnreadCountQueryKey = () => {
+    return [
+    `/api/direct-messages/unread`
+    ] as const;
+    }
+
+
+export const getGetDirectMessageUnreadCountQueryOptions = <TData = Awaited<ReturnType<typeof getDirectMessageUnreadCount>>, TError = ErrorType<void>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDirectMessageUnreadCount>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetDirectMessageUnreadCountQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDirectMessageUnreadCount>>> = ({ signal }) => getDirectMessageUnreadCount({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getDirectMessageUnreadCount>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetDirectMessageUnreadCountQueryResult = NonNullable<Awaited<ReturnType<typeof getDirectMessageUnreadCount>>>
+export type GetDirectMessageUnreadCountQueryError = ErrorType<void>
+
+
+/**
+ * @summary Count unread direct messages for the connected member
+ */
+
+export function useGetDirectMessageUnreadCount<TData = Awaited<ReturnType<typeof getDirectMessageUnreadCount>>, TError = ErrorType<void>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDirectMessageUnreadCount>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetDirectMessageUnreadCountQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetDirectMessageThreadUrl = (profileId: string,) => {
+
+
+
+
+  return `/api/direct-messages/${profileId}`
+}
+
+/**
+ * @summary List direct messages exchanged with one member
+ */
+export const getDirectMessageThread = async (profileId: string, options?: Parameters<typeof customFetch>[1]): Promise<DirectMessage[]> => {
+
+  return customFetch<DirectMessage[]>(getGetDirectMessageThreadUrl(profileId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetDirectMessageThreadQueryKey = (profileId: string,) => {
+    return [
+    `/api/direct-messages/${profileId}`
+    ] as const;
+    }
+
+
+export const getGetDirectMessageThreadQueryOptions = <TData = Awaited<ReturnType<typeof getDirectMessageThread>>, TError = ErrorType<void>>(profileId: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDirectMessageThread>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetDirectMessageThreadQueryKey(profileId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDirectMessageThread>>> = ({ signal }) => getDirectMessageThread(profileId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: profileId !== null && profileId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getDirectMessageThread>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetDirectMessageThreadQueryResult = NonNullable<Awaited<ReturnType<typeof getDirectMessageThread>>>
+export type GetDirectMessageThreadQueryError = ErrorType<void>
+
+
+/**
+ * @summary List direct messages exchanged with one member
+ */
+
+export function useGetDirectMessageThread<TData = Awaited<ReturnType<typeof getDirectMessageThread>>, TError = ErrorType<void>>(
+ profileId: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDirectMessageThread>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetDirectMessageThreadQueryOptions(profileId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getSendDirectMessageUrl = (profileId: string,) => {
+
+
+
+
+  return `/api/direct-messages/${profileId}`
+}
+
+/**
+ * @summary Send a private text message to one member
+ */
+export const sendDirectMessage = async (profileId: string,
+    directMessageCreate: DirectMessageCreate, options?: Parameters<typeof customFetch>[1]): Promise<DirectMessage> => {
+
+  return customFetch<DirectMessage>(getSendDirectMessageUrl(profileId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(directMessageCreate)
+  }
+);}
+
+
+
+
+
+export const getSendDirectMessageMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof sendDirectMessage>>, TError,{profileId: string;data: BodyType<DirectMessageCreate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof sendDirectMessage>>, TError,{profileId: string;data: BodyType<DirectMessageCreate>}, TContext> => {
+
+const mutationKey = ['sendDirectMessage'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof sendDirectMessage>>, {profileId: string;data: BodyType<DirectMessageCreate>}> = (props) => {
+          const {profileId,data} = props ?? {};
+
+          return  sendDirectMessage(profileId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SendDirectMessageMutationResult = NonNullable<Awaited<ReturnType<typeof sendDirectMessage>>>
+    export type SendDirectMessageMutationBody = BodyType<DirectMessageCreate>
+    export type SendDirectMessageMutationError = ErrorType<void>
+
+    /**
+ * @summary Send a private text message to one member
+ */
+export const useSendDirectMessage = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof sendDirectMessage>>, TError,{profileId: string;data: BodyType<DirectMessageCreate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof sendDirectMessage>>,
+        TError,
+        {profileId: string;data: BodyType<DirectMessageCreate>},
+        TContext
+      > => {
+      return useMutation(getSendDirectMessageMutationOptions(options));
+    }
+
+export const getMarkDirectMessageReadUrl = (profileId: string,) => {
+
+
+
+
+  return `/api/direct-messages/${profileId}/read`
+}
+
+/**
+ * @summary Mark a direct-message conversation as read
+ */
+export const markDirectMessageRead = async (profileId: string, options?: Parameters<typeof customFetch>[1]): Promise<ChatReadReceipt> => {
+
+  return customFetch<ChatReadReceipt>(getMarkDirectMessageReadUrl(profileId),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getMarkDirectMessageReadMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof markDirectMessageRead>>, TError,{profileId: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof markDirectMessageRead>>, TError,{profileId: string}, TContext> => {
+
+const mutationKey = ['markDirectMessageRead'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof markDirectMessageRead>>, {profileId: string}> = (props) => {
+          const {profileId} = props ?? {};
+
+          return  markDirectMessageRead(profileId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type MarkDirectMessageReadMutationResult = NonNullable<Awaited<ReturnType<typeof markDirectMessageRead>>>
+
+    export type MarkDirectMessageReadMutationError = ErrorType<void>
+
+    /**
+ * @summary Mark a direct-message conversation as read
+ */
+export const useMarkDirectMessageRead = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof markDirectMessageRead>>, TError,{profileId: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof markDirectMessageRead>>,
+        TError,
+        {profileId: string},
+        TContext
+      > => {
+      return useMutation(getMarkDirectMessageReadMutationOptions(options));
+    }
+
 export const getListEventsUrl = () => {
 
 
@@ -2371,6 +2749,83 @@ export function useListModerationChatMessages<TData = Awaited<ReturnType<typeof 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getListModerationChatMessagesQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getListModerationDirectMessagesUrl = () => {
+
+
+
+
+  return `/api/moderation/direct-messages`
+}
+
+/**
+ * @summary List the latest private messages for administrator moderation
+ */
+export const listModerationDirectMessages = async ( options?: Parameters<typeof customFetch>[1]): Promise<DirectMessage[]> => {
+
+  return customFetch<DirectMessage[]>(getListModerationDirectMessagesUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListModerationDirectMessagesQueryKey = () => {
+    return [
+    `/api/moderation/direct-messages`
+    ] as const;
+    }
+
+
+export const getListModerationDirectMessagesQueryOptions = <TData = Awaited<ReturnType<typeof listModerationDirectMessages>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listModerationDirectMessages>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListModerationDirectMessagesQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listModerationDirectMessages>>> = ({ signal }) => listModerationDirectMessages({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listModerationDirectMessages>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListModerationDirectMessagesQueryResult = NonNullable<Awaited<ReturnType<typeof listModerationDirectMessages>>>
+export type ListModerationDirectMessagesQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List the latest private messages for administrator moderation
+ */
+
+export function useListModerationDirectMessages<TData = Awaited<ReturnType<typeof listModerationDirectMessages>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listModerationDirectMessages>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListModerationDirectMessagesQueryOptions(options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 

@@ -2,6 +2,7 @@ import {
   ArrowLeft,
   Mail,
   MapPin,
+  MessageCircle,
   Phone,
   ShieldCheck,
   X,
@@ -21,9 +22,11 @@ import {
 } from "@workspace/api-client-react";
 import { MemberCard } from "@/components/member-card";
 import { Avatar } from "@/components/village-shell";
+import { getMemberIdentity } from "@/lib/member-session";
 
 export default function MemberPage() {
   const params = useParams<{ id: string }>();
+  const connectedMember = getMemberIdentity();
   const queryClient = useQueryClient();
   const [photoOpen, setPhotoOpen] = useState(false);
   const id =
@@ -270,6 +273,14 @@ export default function MemberPage() {
                   Contacter ce membre
                 </p>
                 <div className="mt-4 space-y-3">
+                  {profile.id !== connectedMember?.id && (
+                    <Link
+                      href={`/messages/${profile.id}`}
+                      className="flex items-center justify-center gap-2 rounded-xl bg-primary p-3 text-xs font-extrabold text-primary-foreground"
+                    >
+                      <MessageCircle className="h-4 w-4" /> Envoyer un message
+                    </Link>
+                  )}
                   {profile.email && (
                     <a
                       href={`mailto:${profile.email}`}

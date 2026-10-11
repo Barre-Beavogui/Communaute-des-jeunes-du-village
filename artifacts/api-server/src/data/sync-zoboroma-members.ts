@@ -237,10 +237,27 @@ export async function syncZoboromaMembers() {
   await db.execute(
     sql`ALTER TABLE chat_messages ADD COLUMN IF NOT EXISTS pinned_at timestamp`,
   );
+  await db.execute(
+    sql`ALTER TABLE chat_messages ADD COLUMN IF NOT EXISTS recipient_id text`,
+  );
 
   await db.execute(sql`
     CREATE INDEX IF NOT EXISTS chat_messages_created_at_index
     ON chat_messages (created_at DESC)
+  `);
+
+  await db.execute(sql`
+    CREATE INDEX IF NOT EXISTS chat_messages_recipient_index
+    ON chat_messages (recipient_id, created_at DESC)
+  `);
+
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS direct_message_read_receipts (
+      profile_id text NOT NULL,
+      contact_profile_id text NOT NULL,
+      last_read_at timestamp NOT NULL DEFAULT now(),
+      PRIMARY KEY (profile_id, contact_profile_id)
+    )
   `);
 
   await db.execute(sql`

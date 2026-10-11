@@ -10,6 +10,7 @@ import communityModerationRouter from "./community-moderation.js";
 import chatRouter from "./chat.js";
 import eventsRouter from "./events.js";
 import eventModerationRouter from "./event-moderation.js";
+import directMessagesRouter from "./direct-messages.js";
 
 const router: IRouter = Router();
 
@@ -18,6 +19,7 @@ router.use(adminRouter);
 router.use(membershipRouter);
 router.use(memberRouter);
 router.use(chatRouter);
+router.use(directMessagesRouter);
 router.use(eventsRouter);
 router.use(profilesRouter);
 router.use(communityRouter);

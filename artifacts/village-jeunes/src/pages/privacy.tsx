@@ -23,7 +23,7 @@ const principles = [
   {
     icon: LockKeyhole,
     title: "Les données sensibles protégées",
-    text: "La filiation, le contact d’urgence et les observations restent uniquement accessibles à l’administration et ne sont jamais publiés dans l’annuaire.",
+    text: "La filiation, le contact d’urgence et les observations restent uniquement accessibles à l’administration et ne sont jamais publiés dans l’annuaire. Les messages privés sont visibles par leurs participants et peuvent être consultés par l’administrateur à des fins de modération et de sécurité.",
   },
   {
     icon: ShieldCheck,
@@ -136,7 +136,7 @@ export default function PrivacyPage() {
           profil peut nécessiter une vérification d’identité.
         </p>
         <p className="mt-4 text-[11px] font-semibold text-muted-foreground">
-          Dernière mise à jour : 6 octobre 2026
+          Dernière mise à jour : 11 octobre 2026
         </p>
       </section>
 
