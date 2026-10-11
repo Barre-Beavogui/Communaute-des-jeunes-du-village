@@ -1,26 +1,38 @@
 import {
   ArrowRight,
+  BellRing,
   CalendarDays,
+  CheckCircle2,
   ChevronRight,
   Clock3,
   FolderKanban,
   MapPin,
+  MessageCircleMore,
   Newspaper,
+  Radio,
   Sparkles,
+  UserRoundCheck,
   UsersRound,
+  Vote,
 } from "lucide-react";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "wouter";
 import {
+  getGetChatUnreadCountQueryKey,
   getGetMemberProfileSettingsQueryKey,
   getGetMembersSummaryQueryKey,
   getListAnnouncementsQueryKey,
+  getListChatPresenceQueryKey,
   getListEventsQueryKey,
+  getListPollsQueryKey,
   getListProfilesQueryKey,
+  useGetChatUnreadCount,
   useGetMemberProfileSettings,
   useGetMembersSummary,
   useListAnnouncements,
+  useListChatPresence,
   useListEvents,
+  useListPolls,
   useListProfiles,
 } from "@workspace/api-client-react";
 import { Avatar } from "@/components/village-shell";
@@ -51,6 +63,17 @@ function announcementDate(value: string) {
     month: "long",
     year: "numeric",
   }).format(new Date(value));
+}
+
+function previousVisitLabel(value: number | null) {
+  if (!value) return "Première visite";
+  const date = new Date(value);
+  const today = new Date();
+  if (date.toDateString() === today.toDateString()) return "Aujourd’hui";
+  return new Intl.DateTimeFormat("fr-FR", {
+    day: "numeric",
+    month: "short",
+  }).format(date);
 }
 
 export default function HomePage() {
@@ -89,6 +112,39 @@ export default function HomePage() {
       refetchOnWindowFocus: true,
     },
   });
+  const pollsQuery = useListPolls({
+    query: {
+      queryKey: getListPollsQueryKey(),
+      refetchInterval: 60_000,
+      refetchOnWindowFocus: true,
+    },
+  });
+  const presenceQuery = useListChatPresence({
+    query: {
+      queryKey: getListChatPresenceQueryKey(),
+      refetchInterval: 45_000,
+      refetchOnWindowFocus: true,
+    },
+  });
+  const unreadQuery = useGetChatUnreadCount({
+    query: {
+      queryKey: getGetChatUnreadCountQueryKey(),
+      refetchInterval: 45_000,
+      refetchOnWindowFocus: true,
+    },
+  });
+  const visitStorageKey = `zoboroma_last_dashboard_visit_${member?.id ?? "member"}`;
+  const [previousVisit] = useState<number | null>(() => {
+    const stored = localStorage.getItem(visitStorageKey);
+    if (!stored) return null;
+    const timestamp = Date.parse(stored);
+    return Number.isFinite(timestamp) ? timestamp : null;
+  });
+
+  useEffect(() => {
+    localStorage.setItem(visitStorageKey, new Date().toISOString());
+  }, [visitStorageKey]);
+
   const profiles = Array.isArray(profilesQuery.data) ? profilesQuery.data : [];
   const summary = summaryQuery.data ?? {
     totalMembers: profiles.length,
@@ -103,6 +159,20 @@ export default function HomePage() {
   const greeting = today.getHours() >= 18 ? "Bonsoir" : "Bonjour";
   const announcements = announcementsQuery.data ?? [];
   const events = eventsQuery.data ?? [];
+  const polls = pollsQuery.data ?? [];
+  const presences = presenceQuery.data ?? [];
+  const unreadCount = unreadQuery.data?.count ?? 0;
+  const newAnnouncements = previousVisit
+    ? announcements.filter(
+        (announcement) =>
+          new Date(announcement.createdAt).getTime() > previousVisit,
+      ).length
+    : 0;
+  const newEvents = previousVisit
+    ? events.filter(
+        (event) => new Date(event.createdAt).getTime() > previousVisit,
+      ).length
+    : 0;
   const latestAnnouncement = useMemo(
     () =>
       [...announcements].sort(
@@ -124,6 +194,42 @@ export default function HomePage() {
   const featuredProfiles = profiles
     .filter((profile) => profile.id !== member?.id)
     .slice(0, 4);
+  const activeMembers = presences
+    .filter((presence) => presence.profileId !== member?.id)
+    .slice(0, 6);
+  const unansweredPoll = polls.find(
+    (poll) => poll.status === "open" && !poll.selectedOptionId,
+  );
+  const unansweredEvent = events.find(
+    (event) => event.status === "upcoming" && !event.memberResponse,
+  );
+  const todoItems = [
+    unansweredEvent
+      ? {
+          href: "/evenements",
+          label: `Répondre à « ${unansweredEvent.title} »`,
+          icon: CalendarDays,
+        }
+      : null,
+    unansweredPoll
+      ? {
+          href: "/actualites",
+          label: `Voter : ${unansweredPoll.question}`,
+          icon: Vote,
+        }
+      : null,
+    !settingsQuery.isLoading && !settingsQuery.data?.avatarUrl
+      ? {
+          href: "/connexion-membre",
+          label: "Ajouter une photo reconnaissable",
+          icon: UserRoundCheck,
+        }
+      : null,
+  ].filter(Boolean) as Array<{
+    href: string;
+    label: string;
+    icon: typeof CalendarDays;
+  }>;
 
   return (
     <div className="space-y-7 sm:space-y-9">
@@ -187,6 +293,169 @@ export default function HomePage() {
             </div>
           </div>
         </div>
+      </section>
+
+      <section className="grid gap-4 lg:grid-cols-[1.05fr_1fr_.82fr]">
+        <article className="overflow-hidden rounded-[26px] bg-primary p-5 text-primary-foreground shadow-sm sm:p-6">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="font-mono text-[9px] font-bold uppercase tracking-[.18em] text-primary-foreground/65">
+                Depuis votre dernière visite
+              </p>
+              <p className="mt-2 text-xs font-semibold text-primary-foreground/60">
+                {previousVisitLabel(previousVisit)}
+              </p>
+            </div>
+            <span className="grid h-10 w-10 place-items-center rounded-2xl bg-primary-foreground/10">
+              <BellRing className="h-5 w-5" />
+            </span>
+          </div>
+          <div className="mt-6 grid grid-cols-3 gap-2">
+            <Link
+              href="/actualites"
+              className="rounded-2xl bg-primary-foreground/10 p-3 transition hover:bg-primary-foreground/15"
+            >
+              <p className="text-2xl font-extrabold tracking-[-.06em]">
+                {newAnnouncements}
+              </p>
+              <p className="mt-1 text-[9px] font-bold leading-4 text-primary-foreground/65">
+                annonce{newAnnouncements > 1 ? "s" : ""}
+              </p>
+            </Link>
+            <Link
+              href="/evenements"
+              className="rounded-2xl bg-primary-foreground/10 p-3 transition hover:bg-primary-foreground/15"
+            >
+              <p className="text-2xl font-extrabold tracking-[-.06em]">
+                {newEvents}
+              </p>
+              <p className="mt-1 text-[9px] font-bold leading-4 text-primary-foreground/65">
+                événement{newEvents > 1 ? "s" : ""}
+              </p>
+            </Link>
+            <Link
+              href="/groupe"
+              className="rounded-2xl bg-primary-foreground/10 p-3 transition hover:bg-primary-foreground/15"
+            >
+              <p className="text-2xl font-extrabold tracking-[-.06em]">
+                {unreadCount}
+              </p>
+              <p className="mt-1 text-[9px] font-bold leading-4 text-primary-foreground/65">
+                message{unreadCount > 1 ? "s" : ""}
+              </p>
+            </Link>
+          </div>
+        </article>
+
+        <article className="rounded-[26px] border border-border bg-card p-5 shadow-sm sm:p-6">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className="font-mono text-[9px] font-bold uppercase tracking-[.18em] text-primary">
+                À faire pour moi
+              </p>
+              <h2 className="mt-2 text-lg font-extrabold tracking-[-.03em]">
+                Mes prochaines actions
+              </h2>
+            </div>
+            <span className="grid h-10 w-10 place-items-center rounded-2xl bg-accent text-accent-foreground">
+              <CheckCircle2 className="h-5 w-5" />
+            </span>
+          </div>
+          {todoItems.length ? (
+            <div className="mt-5 space-y-2">
+              {todoItems.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <Link
+                    key={`${item.href}-${item.label}`}
+                    href={item.href}
+                    className="group flex min-h-12 items-center gap-3 rounded-2xl bg-muted/60 px-3.5 py-2.5 text-xs font-extrabold hover:bg-muted"
+                  >
+                    <Icon className="h-4 w-4 shrink-0 text-primary" />
+                    <span className="line-clamp-2 flex-1">{item.label}</span>
+                    <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-1" />
+                  </Link>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="mt-5 flex items-center gap-3 rounded-2xl bg-secondary/10 p-4 text-secondary">
+              <CheckCircle2 className="h-5 w-5 shrink-0" />
+              <p className="text-xs font-extrabold">
+                Tout est à jour. Profitez du village.
+              </p>
+            </div>
+          )}
+        </article>
+
+        <article className="rounded-[26px] border border-border bg-accent/25 p-5 sm:p-6">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className="font-mono text-[9px] font-bold uppercase tracking-[.18em] text-primary">
+                En ce moment
+              </p>
+              <h2 className="mt-2 text-lg font-extrabold tracking-[-.03em]">
+                Le village en ligne
+              </h2>
+            </div>
+            <span className="relative grid h-10 w-10 place-items-center rounded-2xl bg-card text-primary">
+              <Radio className="h-5 w-5" />
+              {activeMembers.length > 0 && (
+                <span className="absolute -right-1 -top-1 h-3 w-3 rounded-full border-2 border-accent bg-emerald-500" />
+              )}
+            </span>
+          </div>
+          {activeMembers.length ? (
+            <div className="mt-5 space-y-2.5">
+              {activeMembers.slice(0, 3).map((presence) => (
+                <div
+                  key={presence.profileId}
+                  className="flex items-center gap-3 rounded-2xl bg-card/80 p-2.5"
+                >
+                  <div className="relative">
+                    <Avatar
+                      profile={{
+                        initials: presence.initials,
+                        name: presence.memberName,
+                        avatarUrl: presence.avatarUrl,
+                      }}
+                      size="sm"
+                    />
+                    <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-card bg-emerald-500" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="truncate text-xs font-extrabold">
+                      {presence.memberName}
+                    </p>
+                    <p className="mt-0.5 text-[9px] font-semibold text-muted-foreground">
+                      {presence.activity === "typing"
+                        ? "écrit…"
+                        : presence.activity === "recording"
+                          ? "enregistre un vocal…"
+                          : "en ligne"}
+                    </p>
+                  </div>
+                </div>
+              ))}
+              {activeMembers.length > 3 && (
+                <p className="px-1 text-[9px] font-bold text-muted-foreground">
+                  + {activeMembers.length - 3} autre
+                  {activeMembers.length - 3 > 1 ? "s" : ""} en ligne
+                </p>
+              )}
+            </div>
+          ) : (
+            <div className="mt-5 rounded-2xl bg-card/70 p-4">
+              <MessageCircleMore className="h-5 w-5 text-primary" />
+              <p className="mt-3 text-xs font-extrabold">
+                La communauté est calme.
+              </p>
+              <p className="mt-1 text-[10px] leading-4 text-muted-foreground">
+                Les membres actifs apparaîtront ici.
+              </p>
+            </div>
+          )}
+        </article>
       </section>
 
       <section className="grid gap-4 lg:grid-cols-[1.08fr_.92fr]">
