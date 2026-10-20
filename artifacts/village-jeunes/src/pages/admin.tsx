@@ -49,6 +49,13 @@ import { AdminEvents } from "@/components/admin-events";
 import { AdminProfileEditor } from "@/components/admin-profile-editor";
 import { AdminRoles } from "@/components/admin-roles";
 import { AdminFinance } from "@/components/admin-finance";
+import {
+  AdminDashboardNavigation,
+  AdminDashboardOverview,
+  AdminSectionHeader,
+  type AdminSection,
+  isAdminSection,
+} from "@/components/admin-dashboard-navigation";
 import { buildMemberInvitation } from "@/lib/member-invitation";
 import {
   AlertDialog,
@@ -63,6 +70,11 @@ import {
 } from "@/components/ui/alert-dialog";
 
 const TOKEN_KEY = "zoboroma_admin_token";
+
+function readSectionFromUrl(): AdminSection {
+  const section = new URLSearchParams(window.location.search).get("section");
+  return isAdminSection(section) ? section : "overview";
+}
 
 function normalizeSearchValue(value: string | null | undefined) {
   return (value ?? "")
@@ -79,6 +91,8 @@ export default function AdminPage() {
     Boolean(sessionStorage.getItem(TOKEN_KEY)),
   );
   const [loginError, setLoginError] = useState("");
+  const [activeSection, setActiveSection] =
+    useState<AdminSection>(readSectionFromUrl);
   const [reviewingId, setReviewingId] = useState<string | null>(null);
   const [reviewError, setReviewError] = useState<{
     requestId: string;
@@ -214,6 +228,15 @@ export default function AdminPage() {
     memberActivity !== "all" ||
     memberProject !== "all",
   );
+
+  const changeSection = (section: AdminSection) => {
+    setActiveSection(section);
+    const url = new URL(window.location.href);
+    if (section === "overview") url.searchParams.delete("section");
+    else url.searchParams.set("section", section);
+    window.history.replaceState(window.history.state, "", url);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   const openSession = (event: FormEvent) => {
     event.preventDefault();
@@ -686,927 +709,1007 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="mx-auto max-w-5xl space-y-8">
-      <div className="vj-enter flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
+    <div className="mx-auto max-w-6xl space-y-6">
+      <div className="vj-enter flex flex-col justify-between gap-5 rounded-[28px] border border-border bg-card p-5 shadow-sm sm:flex-row sm:items-center sm:p-6">
         <div>
           <p className="font-mono text-[10px] font-bold uppercase tracking-[.18em] text-primary">
             Administration Zoboroma
           </p>
-          <h1 className="vj-display mt-2 text-5xl leading-[.9] sm:text-6xl">
-            Contenus, inscriptions et membres.
+          <h1 className="vj-display mt-2 text-4xl leading-[.95] sm:text-5xl">
+            Tableau de bord
           </h1>
-          <p className="mt-4 max-w-lg text-sm leading-6 text-muted-foreground">
-            Publiez les informations, organisez les votes, validez les nouvelles
-            inscriptions et gérez les profils.
+          <p className="mt-3 max-w-lg text-sm leading-6 text-muted-foreground">
+            Choisissez une rubrique pour traiter les inscriptions, gérer les
+            membres, publier des contenus ou suivre les finances.
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2.5 text-xs font-bold shadow-sm">
+          <button
+            type="button"
+            onClick={() => changeSection("registrations")}
+            className="flex items-center gap-2 rounded-full border border-border bg-background px-4 py-2.5 text-xs font-bold shadow-sm hover:border-primary"
+          >
             <span className="grid h-6 w-6 place-items-center rounded-full bg-accent/60 text-primary">
-              {requests.length}
+              {requests.length + passwordResetRequests.length}
             </span>
             en attente
-          </div>
+          </button>
           <button
             type="button"
             onClick={logout}
-            className="grid h-11 w-11 place-items-center rounded-full border border-border bg-card text-muted-foreground hover:border-primary hover:text-primary"
-            aria-label="Se déconnecter"
+            className="inline-flex h-11 items-center gap-2 rounded-full border border-border bg-background px-4 text-xs font-bold text-muted-foreground hover:border-primary hover:text-primary"
           >
             <LogOut className="h-4 w-4" />
+            <span className="hidden sm:inline">Déconnexion</span>
           </button>
         </div>
       </div>
 
-      <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4 text-xs leading-5 text-muted-foreground">
-        <ShieldCheck className="mr-2 inline h-4 w-4 text-primary" />
-        Chaque membre choisit si son email et son téléphone sont visibles. À
-        chaque approbation, un code de première connexion est créé
-        automatiquement pour que vous puissiez le transmettre.
-      </div>
+      <div className="grid gap-6 lg:grid-cols-[250px_minmax(0,1fr)] lg:items-start">
+        <AdminDashboardNavigation
+          activeSection={activeSection}
+          pendingRegistrations={requests.length}
+          pendingResets={passwordResetRequests.length}
+          memberCount={members.length}
+          onChange={changeSection}
+        />
 
-      <AdminCommunity />
+        <div className="min-w-0 space-y-6">
+          {activeSection !== "overview" && (
+            <AdminSectionHeader section={activeSection} />
+          )}
 
-      <AdminRoles />
+          {codeError && (
+            <p className="rounded-2xl border border-destructive/25 bg-destructive/5 px-5 py-3 text-xs font-semibold text-destructive sm:px-6">
+              {codeError}
+            </p>
+          )}
 
-      <AdminFinance />
-
-      <AdminEvents />
-
-      <AdminChatModeration />
-
-      <AdminDirectMessages />
-
-      <section className="vj-enter overflow-hidden rounded-[28px] border border-border bg-card shadow-sm">
-        <div className="flex flex-col justify-between gap-3 border-b border-border p-5 sm:flex-row sm:items-center sm:p-6">
-          <div className="flex items-center gap-3">
-            <span className="grid h-11 w-11 place-items-center rounded-2xl bg-accent/50 text-primary">
-              <KeyRound className="h-5 w-5" />
-            </span>
-            <div>
-              <h2 className="text-lg font-extrabold tracking-[-.03em]">
-                Mots de passe oubliés
-              </h2>
-              <p className="text-xs text-muted-foreground">
-                {passwordResetRequests.length} demande
-                {passwordResetRequests.length > 1 ? "s" : ""} en attente
-              </p>
-            </div>
-          </div>
-          <p className="max-w-sm text-xs leading-5 text-muted-foreground">
-            Créez un nouveau code, puis utilisez le message préparé pour
-            l’envoyer par email ou WhatsApp.
-          </p>
-        </div>
-        {passwordResetRequestsQuery.isLoading ? (
-          <div className="h-24 animate-pulse bg-muted" />
-        ) : passwordResetRequests.length ? (
-          <div className="divide-y divide-border">
-            {passwordResetRequests.map((resetRequest) => (
-              <article
-                key={resetRequest.id}
-                className="flex flex-col justify-between gap-4 p-5 sm:flex-row sm:items-center sm:px-6"
-              >
+          {generatedCode && invitation && (
+            <div className="vj-enter rounded-[24px] border border-secondary/25 bg-secondary/5 p-5 shadow-sm sm:p-6">
+              <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
                 <div>
-                  <p className="text-sm font-extrabold">
-                    {resetRequest.memberName}
+                  <p className="text-xs font-extrabold text-secondary">
+                    Invitation de {generatedCode.memberName}
                   </p>
-                  <p className="mt-1 text-[11px] text-muted-foreground">
-                    {resetRequest.email || resetRequest.phone} · demandée le{" "}
-                    {new Date(resetRequest.requestedAt).toLocaleDateString(
-                      "fr-FR",
-                    )}
+                  <p className="mt-2 font-mono text-xl font-bold tracking-[.12em]">
+                    {generatedCode.code}
+                  </p>
+                  <p className="mt-2 text-[10px] leading-4 text-muted-foreground">
+                    Le code et le lien sont déjà insérés dans le message
+                    ci-dessous.
                   </p>
                 </div>
                 <button
                   type="button"
-                  disabled={resettingRequestId === resetRequest.id}
-                  onClick={() => preparePasswordReset(resetRequest.id)}
-                  className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-4 py-2.5 text-xs font-bold text-primary-foreground disabled:opacity-50"
+                  onClick={() => setGeneratedCode(null)}
+                  className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-border text-muted-foreground"
+                  aria-label="Fermer l’invitation"
                 >
-                  <KeyRound className="h-4 w-4" />
-                  {resettingRequestId === resetRequest.id
-                    ? "Création…"
-                    : "Créer le nouveau code"}
+                  <X className="h-4 w-4" />
                 </button>
-              </article>
-            ))}
-          </div>
-        ) : (
-          <p className="px-6 py-8 text-center text-xs text-muted-foreground">
-            Aucune demande de réinitialisation.
-          </p>
-        )}
-      </section>
+              </div>
 
-      {requestsQuery.isLoading ? (
-        <div className="space-y-3">
-          {[1, 2, 3].map((item) => (
-            <div
-              className="h-48 animate-pulse rounded-2xl bg-muted"
-              key={item}
+              <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                <label className="block space-y-2 text-[10px] font-bold">
+                  Adresse email du membre
+                  <input
+                    type="email"
+                    value={generatedCode.email}
+                    onChange={(event) =>
+                      setGeneratedCode((current) =>
+                        current
+                          ? { ...current, email: event.target.value }
+                          : current,
+                      )
+                    }
+                    className="field"
+                    placeholder="membre@exemple.com"
+                  />
+                </label>
+                <label className="block space-y-2 text-[10px] font-bold">
+                  Numéro WhatsApp
+                  <input
+                    type="tel"
+                    value={generatedCode.phone}
+                    onChange={(event) =>
+                      setGeneratedCode((current) =>
+                        current
+                          ? { ...current, phone: event.target.value }
+                          : current,
+                      )
+                    }
+                    className="field"
+                    placeholder="+224…"
+                  />
+                </label>
+              </div>
+
+              <div className="mt-4 rounded-2xl border border-border bg-card p-4">
+                <p className="text-[10px] font-bold uppercase tracking-[.12em] text-muted-foreground">
+                  Objet : {invitation.subject}
+                </p>
+                <pre className="mt-3 whitespace-pre-wrap font-sans text-xs leading-6 text-foreground/75">
+                  {invitation.message}
+                </pre>
+              </div>
+
+              <div className="mt-4 flex flex-wrap gap-2">
+                {invitation.emailHref ? (
+                  <a
+                    href={invitation.emailHref}
+                    className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-4 py-2.5 text-xs font-bold text-primary-foreground"
+                  >
+                    <Mail className="h-4 w-4" /> Envoyer par email
+                  </a>
+                ) : (
+                  <span className="inline-flex cursor-not-allowed items-center gap-2 rounded-full bg-muted px-4 py-2.5 text-xs font-bold text-muted-foreground">
+                    <Mail className="h-4 w-4" /> Email manquant
+                  </span>
+                )}
+                {invitation.whatsappHref ? (
+                  <a
+                    href={invitation.whatsappHref}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center justify-center gap-2 rounded-full bg-secondary px-4 py-2.5 text-xs font-bold text-secondary-foreground"
+                  >
+                    <MessageCircle className="h-4 w-4" /> Envoyer sur WhatsApp
+                  </a>
+                ) : (
+                  <span className="inline-flex cursor-not-allowed items-center gap-2 rounded-full bg-muted px-4 py-2.5 text-xs font-bold text-muted-foreground">
+                    <MessageCircle className="h-4 w-4" /> WhatsApp manquant
+                  </span>
+                )}
+                <button
+                  type="button"
+                  onClick={() =>
+                    navigator.clipboard.writeText(invitation.message)
+                  }
+                  className="inline-flex items-center justify-center gap-2 rounded-full border border-border bg-card px-4 py-2.5 text-xs font-bold text-muted-foreground"
+                >
+                  <Copy className="h-4 w-4" /> Copier le message
+                </button>
+              </div>
+            </div>
+          )}
+
+          {activeSection === "overview" && (
+            <AdminDashboardOverview
+              pendingRegistrations={requests.length}
+              pendingResets={passwordResetRequests.length}
+              memberCount={members.length}
+              onChange={changeSection}
             />
-          ))}
-        </div>
-      ) : requestsQuery.isError ? (
-        <div className="rounded-2xl border border-destructive/30 bg-destructive/5 px-6 py-10 text-center">
-          <p className="font-bold text-destructive">
-            La session a peut-être expiré.
-          </p>
-          <button
-            type="button"
-            onClick={logout}
-            className="mt-4 rounded-full bg-foreground px-4 py-2.5 text-xs font-bold text-background"
-          >
-            Se reconnecter
-          </button>
-        </div>
-      ) : requests.length ? (
-        <div className="space-y-4">
-          {requests.map((request) => (
-            <article
-              key={request.id}
-              className="vj-enter rounded-[24px] border border-border bg-card p-5 shadow-sm sm:p-6"
-              data-testid={`row-request-${request.id}`}
-            >
-              <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-start">
-                <div className="flex min-w-0 items-start gap-4">
-                  {request.avatarUrl ? (
-                    <img
-                      src={request.avatarUrl}
-                      alt={`Photo proposée par ${request.name}`}
-                      className="h-12 w-12 shrink-0 rounded-2xl object-cover ring-2 ring-background"
-                      data-testid={`img-request-avatar-${request.id}`}
-                    />
-                  ) : (
-                    <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-muted text-sm font-extrabold text-secondary">
-                      {request.name
-                        .split(" ")
-                        .map((part) => part[0])
-                        .join("")
-                        .slice(0, 2)}
-                    </div>
-                  )}
-                  <div className="min-w-0">
-                    <h2 className="text-lg font-extrabold tracking-[-.03em]">
-                      {request.name}
-                    </h2>
-                    <div className="mt-2 flex flex-wrap gap-x-4 gap-y-2 text-[11px] font-semibold text-muted-foreground">
-                      <span className="flex items-center gap-1">
-                        <Mail className="h-3.5 w-3.5" />
-                        {request.email}
-                      </span>
-                      {request.phone && (
-                        <span className="flex items-center gap-1">
-                          <Phone className="h-3.5 w-3.5" />
-                          {request.phone}
-                        </span>
-                      )}
-                      <span className="flex items-center gap-1">
-                        <MapPin className="h-3.5 w-3.5" />
-                        {request.neighborhood}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <BriefcaseBusiness className="h-3.5 w-3.5" />
-                        {request.profession}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Clock3 className="h-3.5 w-3.5" />
-                        {new Date(request.submittedAt).toLocaleDateString(
-                          "fr-FR",
-                          { day: "numeric", month: "short", year: "numeric" },
-                        )}
-                      </span>
+          )}
+
+          {activeSection === "registrations" && (
+            <>
+              <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4 text-xs leading-5 text-muted-foreground">
+                <ShieldCheck className="mr-2 inline h-4 w-4 text-primary" />
+                Chaque membre choisit si son email et son téléphone sont
+                visibles. À chaque approbation, un code de première connexion
+                est créé automatiquement pour que vous puissiez le transmettre.
+              </div>
+
+              <section className="vj-enter overflow-hidden rounded-[28px] border border-border bg-card shadow-sm">
+                <div className="flex flex-col justify-between gap-3 border-b border-border p-5 sm:flex-row sm:items-center sm:p-6">
+                  <div className="flex items-center gap-3">
+                    <span className="grid h-11 w-11 place-items-center rounded-2xl bg-accent/50 text-primary">
+                      <KeyRound className="h-5 w-5" />
+                    </span>
+                    <div>
+                      <h2 className="text-lg font-extrabold tracking-[-.03em]">
+                        Mots de passe oubliés
+                      </h2>
+                      <p className="text-xs text-muted-foreground">
+                        {passwordResetRequests.length} demande
+                        {passwordResetRequests.length > 1 ? "s" : ""} en attente
+                      </p>
                     </div>
                   </div>
-                </div>
-                <div className="flex gap-2 sm:shrink-0">
-                  <button
-                    type="button"
-                    onClick={() => review(request.id, "rejected")}
-                    disabled={reviewingId === request.id}
-                    className="flex flex-1 items-center justify-center gap-2 rounded-full border border-border px-4 py-2.5 text-xs font-bold text-muted-foreground hover:border-destructive hover:text-destructive disabled:opacity-50"
-                  >
-                    <X className="h-4 w-4" /> Refuser
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => review(request.id, "approved")}
-                    disabled={reviewingId === request.id}
-                    className="flex flex-1 items-center justify-center gap-2 rounded-full bg-secondary px-4 py-2.5 text-xs font-bold text-secondary-foreground hover:-translate-y-0.5 hover:shadow-md disabled:opacity-50"
-                  >
-                    <Check className="h-4 w-4" /> Accepter
-                  </button>
-                </div>
-              </div>
-              {reviewError?.requestId === request.id && (
-                <div className="mt-4 rounded-2xl border border-destructive/25 bg-destructive/5 p-4">
-                  <p className="text-xs font-semibold leading-5 text-destructive">
-                    {reviewError.message}
+                  <p className="max-w-sm text-xs leading-5 text-muted-foreground">
+                    Créez un nouveau code, puis utilisez le message préparé pour
+                    l’envoyer par email ou WhatsApp.
                   </p>
-                  {reviewError.canReplace && (
-                    <button
-                      type="button"
-                      onClick={() => review(request.id, "approved", true)}
-                      disabled={reviewingId === request.id}
-                      className="mt-3 min-h-11 rounded-full bg-foreground px-4 text-xs font-extrabold text-background disabled:opacity-50"
+                </div>
+                {passwordResetRequestsQuery.isLoading ? (
+                  <div className="h-24 animate-pulse bg-muted" />
+                ) : passwordResetRequests.length ? (
+                  <div className="divide-y divide-border">
+                    {passwordResetRequests.map((resetRequest) => (
+                      <article
+                        key={resetRequest.id}
+                        className="flex flex-col justify-between gap-4 p-5 sm:flex-row sm:items-center sm:px-6"
+                      >
+                        <div>
+                          <p className="text-sm font-extrabold">
+                            {resetRequest.memberName}
+                          </p>
+                          <p className="mt-1 text-[11px] text-muted-foreground">
+                            {resetRequest.email || resetRequest.phone} ·
+                            demandée le{" "}
+                            {new Date(
+                              resetRequest.requestedAt,
+                            ).toLocaleDateString("fr-FR")}
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          disabled={resettingRequestId === resetRequest.id}
+                          onClick={() => preparePasswordReset(resetRequest.id)}
+                          className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-4 py-2.5 text-xs font-bold text-primary-foreground disabled:opacity-50"
+                        >
+                          <KeyRound className="h-4 w-4" />
+                          {resettingRequestId === resetRequest.id
+                            ? "Création…"
+                            : "Créer le nouveau code"}
+                        </button>
+                      </article>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="px-6 py-8 text-center text-xs text-muted-foreground">
+                    Aucune demande de réinitialisation.
+                  </p>
+                )}
+              </section>
+
+              {requestsQuery.isLoading ? (
+                <div className="space-y-3">
+                  {[1, 2, 3].map((item) => (
+                    <div
+                      className="h-48 animate-pulse rounded-2xl bg-muted"
+                      key={item}
+                    />
+                  ))}
+                </div>
+              ) : requestsQuery.isError ? (
+                <div className="rounded-2xl border border-destructive/30 bg-destructive/5 px-6 py-10 text-center">
+                  <p className="font-bold text-destructive">
+                    La session a peut-être expiré.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={logout}
+                    className="mt-4 rounded-full bg-foreground px-4 py-2.5 text-xs font-bold text-background"
+                  >
+                    Se reconnecter
+                  </button>
+                </div>
+              ) : requests.length ? (
+                <div className="space-y-4">
+                  {requests.map((request) => (
+                    <article
+                      key={request.id}
+                      className="vj-enter rounded-[24px] border border-border bg-card p-5 shadow-sm sm:p-6"
+                      data-testid={`row-request-${request.id}`}
                     >
-                      Mettre à jour le profil existant et accepter
-                    </button>
-                  )}
+                      <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-start">
+                        <div className="flex min-w-0 items-start gap-4">
+                          {request.avatarUrl ? (
+                            <img
+                              src={request.avatarUrl}
+                              alt={`Photo proposée par ${request.name}`}
+                              className="h-12 w-12 shrink-0 rounded-2xl object-cover ring-2 ring-background"
+                              data-testid={`img-request-avatar-${request.id}`}
+                            />
+                          ) : (
+                            <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-muted text-sm font-extrabold text-secondary">
+                              {request.name
+                                .split(" ")
+                                .map((part) => part[0])
+                                .join("")
+                                .slice(0, 2)}
+                            </div>
+                          )}
+                          <div className="min-w-0">
+                            <h2 className="text-lg font-extrabold tracking-[-.03em]">
+                              {request.name}
+                            </h2>
+                            <div className="mt-2 flex flex-wrap gap-x-4 gap-y-2 text-[11px] font-semibold text-muted-foreground">
+                              <span className="flex items-center gap-1">
+                                <Mail className="h-3.5 w-3.5" />
+                                {request.email}
+                              </span>
+                              {request.phone && (
+                                <span className="flex items-center gap-1">
+                                  <Phone className="h-3.5 w-3.5" />
+                                  {request.phone}
+                                </span>
+                              )}
+                              <span className="flex items-center gap-1">
+                                <MapPin className="h-3.5 w-3.5" />
+                                {request.neighborhood}
+                              </span>
+                              <span className="flex items-center gap-1">
+                                <BriefcaseBusiness className="h-3.5 w-3.5" />
+                                {request.profession}
+                              </span>
+                              <span className="flex items-center gap-1">
+                                <Clock3 className="h-3.5 w-3.5" />
+                                {new Date(
+                                  request.submittedAt,
+                                ).toLocaleDateString("fr-FR", {
+                                  day: "numeric",
+                                  month: "short",
+                                  year: "numeric",
+                                })}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex gap-2 sm:shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => review(request.id, "rejected")}
+                            disabled={reviewingId === request.id}
+                            className="flex flex-1 items-center justify-center gap-2 rounded-full border border-border px-4 py-2.5 text-xs font-bold text-muted-foreground hover:border-destructive hover:text-destructive disabled:opacity-50"
+                          >
+                            <X className="h-4 w-4" /> Refuser
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => review(request.id, "approved")}
+                            disabled={reviewingId === request.id}
+                            className="flex flex-1 items-center justify-center gap-2 rounded-full bg-secondary px-4 py-2.5 text-xs font-bold text-secondary-foreground hover:-translate-y-0.5 hover:shadow-md disabled:opacity-50"
+                          >
+                            <Check className="h-4 w-4" /> Accepter
+                          </button>
+                        </div>
+                      </div>
+                      {reviewError?.requestId === request.id && (
+                        <div className="mt-4 rounded-2xl border border-destructive/25 bg-destructive/5 p-4">
+                          <p className="text-xs font-semibold leading-5 text-destructive">
+                            {reviewError.message}
+                          </p>
+                          {reviewError.canReplace && (
+                            <button
+                              type="button"
+                              onClick={() =>
+                                review(request.id, "approved", true)
+                              }
+                              disabled={reviewingId === request.id}
+                              className="mt-3 min-h-11 rounded-full bg-foreground px-4 text-xs font-extrabold text-background disabled:opacity-50"
+                            >
+                              Mettre à jour le profil existant et accepter
+                            </button>
+                          )}
+                        </div>
+                      )}
+                      <div className="mt-5 grid gap-3 border-t border-border pt-5 md:grid-cols-2">
+                        <div className="rounded-xl bg-background p-4">
+                          <p className="font-mono text-[9px] font-bold uppercase tracking-[.16em] text-primary">
+                            Présentation
+                          </p>
+                          <p className="mt-2 text-sm leading-6 text-foreground/80">
+                            {request.bio}
+                          </p>
+                        </div>
+                        <div className="rounded-xl bg-background p-4">
+                          <p className="font-mono text-[9px] font-bold uppercase tracking-[.16em] text-secondary">
+                            Projet ou envie
+                          </p>
+                          <p className="mt-2 text-sm leading-6 text-foreground/80">
+                            {request.project ||
+                              "Aucun projet indiqué pour le moment."}
+                          </p>
+                        </div>
+                        <div className="rounded-xl border border-primary/15 bg-primary/5 p-4 md:col-span-2">
+                          <div className="flex items-center gap-2">
+                            <ShieldCheck className="h-4 w-4 text-primary" />
+                            <p className="font-mono text-[9px] font-bold uppercase tracking-[.16em] text-primary">
+                              Informations administratives
+                            </p>
+                          </div>
+                          <dl className="mt-4 grid gap-x-6 gap-y-3 text-xs sm:grid-cols-2 lg:grid-cols-3">
+                            <div>
+                              <dt className="font-bold text-muted-foreground">
+                                Sexe
+                              </dt>
+                              <dd className="mt-1">
+                                {request.gender || "Non renseigné"}
+                              </dd>
+                            </div>
+                            <div>
+                              <dt className="font-bold text-muted-foreground">
+                                Situation matrimoniale
+                              </dt>
+                              <dd className="mt-1">
+                                {request.maritalStatus || "Non renseignée"}
+                              </dd>
+                            </div>
+                            <div>
+                              <dt className="font-bold text-muted-foreground">
+                                Niveau d’études
+                              </dt>
+                              <dd className="mt-1">
+                                {request.educationLevel || "Non renseigné"}
+                              </dd>
+                            </div>
+                            <div>
+                              <dt className="font-bold text-muted-foreground">
+                                Prénoms du père
+                              </dt>
+                              <dd className="mt-1">
+                                {request.fatherFirstNames || "Non renseigné"}
+                              </dd>
+                            </div>
+                            <div>
+                              <dt className="font-bold text-muted-foreground">
+                                Mère
+                              </dt>
+                              <dd className="mt-1">
+                                {request.motherFullName || "Non renseignée"}
+                              </dd>
+                            </div>
+                            <div>
+                              <dt className="font-bold text-muted-foreground">
+                                Contact d’urgence
+                              </dt>
+                              <dd className="mt-1">
+                                {request.emergencyContactName ||
+                                  "Non renseigné"}
+                                {request.emergencyContactPhone
+                                  ? ` · ${request.emergencyContactPhone}`
+                                  : ""}
+                              </dd>
+                            </div>
+                          </dl>
+                          <div className="mt-4 border-t border-primary/10 pt-4">
+                            <p className="text-[10px] font-bold uppercase tracking-[.12em] text-muted-foreground">
+                              Observations et recommandations
+                            </p>
+                            <p className="mt-2 text-xs leading-6 text-foreground/80">
+                              {request.observations ||
+                                "Aucune observation transmise."}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              ) : (
+                <div
+                  className="rounded-[28px] border border-dashed border-border bg-card px-6 py-20 text-center"
+                  data-testid="empty-moderation"
+                >
+                  <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-accent/50 text-primary">
+                    <UserRound className="h-6 w-6" />
+                  </div>
+                  <h2 className="vj-display mt-5 text-4xl">Tout est à jour.</h2>
+                  <p className="mx-auto mt-2 max-w-sm text-sm text-muted-foreground">
+                    Aucune demande n’attend votre validation.
+                  </p>
                 </div>
               )}
-              <div className="mt-5 grid gap-3 border-t border-border pt-5 md:grid-cols-2">
-                <div className="rounded-xl bg-background p-4">
-                  <p className="font-mono text-[9px] font-bold uppercase tracking-[.16em] text-primary">
-                    Présentation
-                  </p>
-                  <p className="mt-2 text-sm leading-6 text-foreground/80">
-                    {request.bio}
-                  </p>
-                </div>
-                <div className="rounded-xl bg-background p-4">
-                  <p className="font-mono text-[9px] font-bold uppercase tracking-[.16em] text-secondary">
-                    Projet ou envie
-                  </p>
-                  <p className="mt-2 text-sm leading-6 text-foreground/80">
-                    {request.project || "Aucun projet indiqué pour le moment."}
-                  </p>
-                </div>
-                <div className="rounded-xl border border-primary/15 bg-primary/5 p-4 md:col-span-2">
-                  <div className="flex items-center gap-2">
-                    <ShieldCheck className="h-4 w-4 text-primary" />
-                    <p className="font-mono text-[9px] font-bold uppercase tracking-[.16em] text-primary">
-                      Informations administratives
-                    </p>
-                  </div>
-                  <dl className="mt-4 grid gap-x-6 gap-y-3 text-xs sm:grid-cols-2 lg:grid-cols-3">
-                    <div>
-                      <dt className="font-bold text-muted-foreground">Sexe</dt>
-                      <dd className="mt-1">
-                        {request.gender || "Non renseigné"}
-                      </dd>
-                    </div>
-                    <div>
-                      <dt className="font-bold text-muted-foreground">
-                        Situation matrimoniale
-                      </dt>
-                      <dd className="mt-1">
-                        {request.maritalStatus || "Non renseignée"}
-                      </dd>
-                    </div>
-                    <div>
-                      <dt className="font-bold text-muted-foreground">
-                        Niveau d’études
-                      </dt>
-                      <dd className="mt-1">
-                        {request.educationLevel || "Non renseigné"}
-                      </dd>
-                    </div>
-                    <div>
-                      <dt className="font-bold text-muted-foreground">
-                        Prénoms du père
-                      </dt>
-                      <dd className="mt-1">
-                        {request.fatherFirstNames || "Non renseigné"}
-                      </dd>
-                    </div>
-                    <div>
-                      <dt className="font-bold text-muted-foreground">Mère</dt>
-                      <dd className="mt-1">
-                        {request.motherFullName || "Non renseignée"}
-                      </dd>
-                    </div>
-                    <div>
-                      <dt className="font-bold text-muted-foreground">
-                        Contact d’urgence
-                      </dt>
-                      <dd className="mt-1">
-                        {request.emergencyContactName || "Non renseigné"}
-                        {request.emergencyContactPhone
-                          ? ` · ${request.emergencyContactPhone}`
-                          : ""}
-                      </dd>
-                    </div>
-                  </dl>
-                  <div className="mt-4 border-t border-primary/10 pt-4">
-                    <p className="text-[10px] font-bold uppercase tracking-[.12em] text-muted-foreground">
-                      Observations et recommandations
-                    </p>
-                    <p className="mt-2 text-xs leading-6 text-foreground/80">
-                      {request.observations || "Aucune observation transmise."}
+            </>
+          )}
+
+          {activeSection === "members" && (
+            <section className="vj-enter overflow-hidden rounded-[28px] border border-border bg-card shadow-sm">
+              <div className="flex flex-col justify-between gap-4 border-b border-border p-5 sm:flex-row sm:items-center sm:p-6">
+                <div className="flex items-center gap-3">
+                  <span className="grid h-11 w-11 place-items-center rounded-2xl bg-secondary/10 text-secondary">
+                    <UsersRound className="h-5 w-5" />
+                  </span>
+                  <div>
+                    <h2 className="text-lg font-extrabold tracking-[-.03em]">
+                      Membres publiés
+                    </h2>
+                    <p className="text-xs text-muted-foreground">
+                      {filteredMembers.length} sur {members.length} profil
+                      {members.length === 1 ? "" : "s"} affiché
+                      {filteredMembers.length === 1 ? "" : "s"}
                     </p>
                   </div>
                 </div>
-              </div>
-            </article>
-          ))}
-        </div>
-      ) : (
-        <div
-          className="rounded-[28px] border border-dashed border-border bg-card px-6 py-20 text-center"
-          data-testid="empty-moderation"
-        >
-          <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-accent/50 text-primary">
-            <UserRound className="h-6 w-6" />
-          </div>
-          <h2 className="vj-display mt-5 text-4xl">Tout est à jour.</h2>
-          <p className="mx-auto mt-2 max-w-sm text-sm text-muted-foreground">
-            Aucune demande n’attend votre validation.
-          </p>
-        </div>
-      )}
-
-      <section className="vj-enter overflow-hidden rounded-[28px] border border-border bg-card shadow-sm">
-        <div className="flex flex-col justify-between gap-4 border-b border-border p-5 sm:flex-row sm:items-center sm:p-6">
-          <div className="flex items-center gap-3">
-            <span className="grid h-11 w-11 place-items-center rounded-2xl bg-secondary/10 text-secondary">
-              <UsersRound className="h-5 w-5" />
-            </span>
-            <div>
-              <h2 className="text-lg font-extrabold tracking-[-.03em]">
-                Membres publiés
-              </h2>
-              <p className="text-xs text-muted-foreground">
-                {filteredMembers.length} sur {members.length} profil
-                {members.length === 1 ? "" : "s"} affiché
-                {filteredMembers.length === 1 ? "" : "s"}
-              </p>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={exportMembersToExcel}
-            disabled={!filteredMembers.length || exportingMembers}
-            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-secondary px-5 py-3 text-xs font-extrabold text-secondary-foreground transition hover:-translate-y-0.5 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50"
-            data-testid="button-export-members"
-          >
-            {exportingMembers ? (
-              <FileSpreadsheet className="h-4 w-4 animate-pulse" />
-            ) : (
-              <Download className="h-4 w-4" />
-            )}
-            {exportingMembers
-              ? "Création du fichier…"
-              : `Télécharger Excel (${filteredMembers.length})`}
-          </button>
-        </div>
-
-        {deleteError && (
-          <p className="border-b border-destructive/20 bg-destructive/5 px-5 py-3 text-xs font-semibold text-destructive sm:px-6">
-            {deleteError}
-          </p>
-        )}
-
-        {codeError && (
-          <p className="border-b border-destructive/20 bg-destructive/5 px-5 py-3 text-xs font-semibold text-destructive sm:px-6">
-            {codeError}
-          </p>
-        )}
-
-        {exportError && (
-          <p className="border-b border-destructive/20 bg-destructive/5 px-5 py-3 text-xs font-semibold text-destructive sm:px-6">
-            {exportError}
-          </p>
-        )}
-
-        {visibilityError && (
-          <p className="border-b border-destructive/20 bg-destructive/5 px-5 py-3 text-xs font-semibold text-destructive sm:px-6">
-            {visibilityError}
-          </p>
-        )}
-
-        <div className="border-b border-border bg-muted/25 p-5 sm:p-6">
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <label className="text-[10px] font-bold uppercase tracking-[.08em] text-muted-foreground lg:col-span-2">
-              Rechercher un membre
-              <span className="relative mt-2 block">
-                <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <input
-                  type="search"
-                  value={memberSearch}
-                  onChange={(event) => setMemberSearch(event.target.value)}
-                  placeholder="Nom, email, téléphone, activité…"
-                  className="field mt-0 pl-10"
-                  data-testid="input-member-search"
-                />
-              </span>
-            </label>
-            <label className="text-[10px] font-bold uppercase tracking-[.08em] text-muted-foreground">
-              Zone / Quartier
-              <select
-                value={memberNeighborhood}
-                onChange={(event) => setMemberNeighborhood(event.target.value)}
-                className="field mt-2"
-                data-testid="select-member-neighborhood"
-              >
-                <option value="all">Toutes les zones</option>
-                {neighborhoodOptions.map((neighborhood) => (
-                  <option key={neighborhood} value={neighborhood}>
-                    {neighborhood}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="text-[10px] font-bold uppercase tracking-[.08em] text-muted-foreground">
-              Situation / Activité
-              <select
-                value={memberActivity}
-                onChange={(event) => setMemberActivity(event.target.value)}
-                className="field mt-2"
-                data-testid="select-member-activity"
-              >
-                <option value="all">Toutes les activités</option>
-                {activityOptions.map((activity) => (
-                  <option key={activity} value={activity}>
-                    {activity}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
-          <div className="mt-3 flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
-            <label className="w-full text-[10px] font-bold uppercase tracking-[.08em] text-muted-foreground sm:max-w-xs">
-              Projet renseigné
-              <select
-                value={memberProject}
-                onChange={(event) =>
-                  setMemberProject(
-                    event.target.value as "all" | "with" | "without",
-                  )
-                }
-                className="field mt-2"
-                data-testid="select-member-project"
-              >
-                <option value="all">Tous les membres</option>
-                <option value="with">Avec un projet</option>
-                <option value="without">Sans projet</option>
-              </select>
-            </label>
-            <div className="flex flex-wrap items-center gap-3">
-              <p className="text-xs font-semibold text-muted-foreground">
-                Le fichier Excel contiendra les {filteredMembers.length}{" "}
-                résultat
-                {filteredMembers.length === 1 ? "" : "s"} affiché
-                {filteredMembers.length === 1 ? "" : "s"}.
-              </p>
-              {filtersAreActive && (
                 <button
                   type="button"
-                  onClick={resetMemberFilters}
-                  className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2.5 text-xs font-bold text-muted-foreground hover:border-primary hover:text-primary"
+                  onClick={exportMembersToExcel}
+                  disabled={!filteredMembers.length || exportingMembers}
+                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-secondary px-5 py-3 text-xs font-extrabold text-secondary-foreground transition hover:-translate-y-0.5 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50"
+                  data-testid="button-export-members"
                 >
-                  <RotateCcw className="h-3.5 w-3.5" /> Effacer les filtres
+                  {exportingMembers ? (
+                    <FileSpreadsheet className="h-4 w-4 animate-pulse" />
+                  ) : (
+                    <Download className="h-4 w-4" />
+                  )}
+                  {exportingMembers
+                    ? "Création du fichier…"
+                    : `Télécharger Excel (${filteredMembers.length})`}
                 </button>
-              )}
-            </div>
-          </div>
-          <p className="mt-4 flex items-start gap-2 rounded-xl border border-secondary/15 bg-secondary/5 px-4 py-3 text-[10px] font-semibold leading-5 text-muted-foreground">
-            <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-secondary" />
-            Cet export administratif contient toutes les informations, y compris
-            celles qui sont masquées dans l’annuaire.
-          </p>
-        </div>
+              </div>
 
-        {generatedCode && invitation && (
-          <div className="border-b border-secondary/20 bg-secondary/8 px-5 py-5 sm:px-6">
-            <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
-              <div>
-                <p className="text-xs font-extrabold text-secondary">
-                  Invitation de {generatedCode.memberName}
+              {deleteError && (
+                <p className="border-b border-destructive/20 bg-destructive/5 px-5 py-3 text-xs font-semibold text-destructive sm:px-6">
+                  {deleteError}
                 </p>
-                <p className="mt-2 font-mono text-xl font-bold tracking-[.12em]">
-                  {generatedCode.code}
+              )}
+
+              {exportError && (
+                <p className="border-b border-destructive/20 bg-destructive/5 px-5 py-3 text-xs font-semibold text-destructive sm:px-6">
+                  {exportError}
                 </p>
-                <p className="mt-2 text-[10px] leading-4 text-muted-foreground">
-                  Le code et le lien sont déjà insérés dans le message
-                  ci-dessous.
+              )}
+
+              {visibilityError && (
+                <p className="border-b border-destructive/20 bg-destructive/5 px-5 py-3 text-xs font-semibold text-destructive sm:px-6">
+                  {visibilityError}
+                </p>
+              )}
+
+              <div className="border-b border-border bg-muted/25 p-5 sm:p-6">
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                  <label className="text-[10px] font-bold uppercase tracking-[.08em] text-muted-foreground lg:col-span-2">
+                    Rechercher un membre
+                    <span className="relative mt-2 block">
+                      <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                      <input
+                        type="search"
+                        value={memberSearch}
+                        onChange={(event) =>
+                          setMemberSearch(event.target.value)
+                        }
+                        placeholder="Nom, email, téléphone, activité…"
+                        className="field mt-0 pl-10"
+                        data-testid="input-member-search"
+                      />
+                    </span>
+                  </label>
+                  <label className="text-[10px] font-bold uppercase tracking-[.08em] text-muted-foreground">
+                    Zone / Quartier
+                    <select
+                      value={memberNeighborhood}
+                      onChange={(event) =>
+                        setMemberNeighborhood(event.target.value)
+                      }
+                      className="field mt-2"
+                      data-testid="select-member-neighborhood"
+                    >
+                      <option value="all">Toutes les zones</option>
+                      {neighborhoodOptions.map((neighborhood) => (
+                        <option key={neighborhood} value={neighborhood}>
+                          {neighborhood}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="text-[10px] font-bold uppercase tracking-[.08em] text-muted-foreground">
+                    Situation / Activité
+                    <select
+                      value={memberActivity}
+                      onChange={(event) =>
+                        setMemberActivity(event.target.value)
+                      }
+                      className="field mt-2"
+                      data-testid="select-member-activity"
+                    >
+                      <option value="all">Toutes les activités</option>
+                      {activityOptions.map((activity) => (
+                        <option key={activity} value={activity}>
+                          {activity}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                </div>
+                <div className="mt-3 flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
+                  <label className="w-full text-[10px] font-bold uppercase tracking-[.08em] text-muted-foreground sm:max-w-xs">
+                    Projet renseigné
+                    <select
+                      value={memberProject}
+                      onChange={(event) =>
+                        setMemberProject(
+                          event.target.value as "all" | "with" | "without",
+                        )
+                      }
+                      className="field mt-2"
+                      data-testid="select-member-project"
+                    >
+                      <option value="all">Tous les membres</option>
+                      <option value="with">Avec un projet</option>
+                      <option value="without">Sans projet</option>
+                    </select>
+                  </label>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <p className="text-xs font-semibold text-muted-foreground">
+                      Le fichier Excel contiendra les {filteredMembers.length}{" "}
+                      résultat
+                      {filteredMembers.length === 1 ? "" : "s"} affiché
+                      {filteredMembers.length === 1 ? "" : "s"}.
+                    </p>
+                    {filtersAreActive && (
+                      <button
+                        type="button"
+                        onClick={resetMemberFilters}
+                        className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2.5 text-xs font-bold text-muted-foreground hover:border-primary hover:text-primary"
+                      >
+                        <RotateCcw className="h-3.5 w-3.5" /> Effacer les
+                        filtres
+                      </button>
+                    )}
+                  </div>
+                </div>
+                <p className="mt-4 flex items-start gap-2 rounded-xl border border-secondary/15 bg-secondary/5 px-4 py-3 text-[10px] font-semibold leading-5 text-muted-foreground">
+                  <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-secondary" />
+                  Cet export administratif contient toutes les informations, y
+                  compris celles qui sont masquées dans l’annuaire.
                 </p>
               </div>
-              <button
-                type="button"
-                onClick={() => setGeneratedCode(null)}
-                className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-border text-muted-foreground"
-                aria-label="Fermer l’invitation"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
 
-            <div className="mt-5 grid gap-3 sm:grid-cols-2">
-              <label className="block space-y-2 text-[10px] font-bold">
-                Adresse email du membre
-                <input
-                  type="email"
-                  value={generatedCode.email}
-                  onChange={(event) =>
-                    setGeneratedCode((current) =>
-                      current
-                        ? { ...current, email: event.target.value }
-                        : current,
-                    )
-                  }
-                  className="field"
-                  placeholder="membre@exemple.com"
-                />
-              </label>
-              <label className="block space-y-2 text-[10px] font-bold">
-                Numéro WhatsApp
-                <input
-                  type="tel"
-                  value={generatedCode.phone}
-                  onChange={(event) =>
-                    setGeneratedCode((current) =>
-                      current
-                        ? { ...current, phone: event.target.value }
-                        : current,
-                    )
-                  }
-                  className="field"
-                  placeholder="+224…"
-                />
-              </label>
-            </div>
-
-            <div className="mt-4 rounded-2xl border border-border bg-card p-4">
-              <p className="text-[10px] font-bold uppercase tracking-[.12em] text-muted-foreground">
-                Objet : {invitation.subject}
-              </p>
-              <pre className="mt-3 whitespace-pre-wrap font-sans text-xs leading-6 text-foreground/75">
-                {invitation.message}
-              </pre>
-            </div>
-
-            <div className="mt-4 flex flex-wrap gap-2">
-              {invitation.emailHref ? (
-                <a
-                  href={invitation.emailHref}
-                  className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-4 py-2.5 text-xs font-bold text-primary-foreground"
-                >
-                  <Mail className="h-4 w-4" /> Envoyer par email
-                </a>
-              ) : (
-                <span className="inline-flex cursor-not-allowed items-center gap-2 rounded-full bg-muted px-4 py-2.5 text-xs font-bold text-muted-foreground">
-                  <Mail className="h-4 w-4" /> Email manquant
-                </span>
-              )}
-              {invitation.whatsappHref ? (
-                <a
-                  href={invitation.whatsappHref}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center justify-center gap-2 rounded-full bg-secondary px-4 py-2.5 text-xs font-bold text-secondary-foreground"
-                >
-                  <MessageCircle className="h-4 w-4" /> Envoyer sur WhatsApp
-                </a>
-              ) : (
-                <span className="inline-flex cursor-not-allowed items-center gap-2 rounded-full bg-muted px-4 py-2.5 text-xs font-bold text-muted-foreground">
-                  <MessageCircle className="h-4 w-4" /> WhatsApp manquant
-                </span>
-              )}
-              <button
-                type="button"
-                onClick={() =>
-                  navigator.clipboard.writeText(invitation.message)
-                }
-                className="inline-flex items-center justify-center gap-2 rounded-full border border-border bg-card px-4 py-2.5 text-xs font-bold text-muted-foreground"
-              >
-                <Copy className="h-4 w-4" /> Copier le message
-              </button>
-            </div>
-          </div>
-        )}
-
-        {membersQuery.isLoading ? (
-          <div className="space-y-3 p-5 sm:p-6">
-            {[1, 2, 3].map((item) => (
-              <div
-                className="h-16 animate-pulse rounded-2xl bg-muted"
-                key={item}
-              />
-            ))}
-          </div>
-        ) : membersQuery.isError ? (
-          <div className="px-6 py-12 text-center text-sm text-muted-foreground">
-            Impossible de charger les membres. Reconnectez-vous puis réessayez.
-          </div>
-        ) : filteredMembers.length ? (
-          <div className="divide-y divide-border">
-            {filteredMembers.map((member) => (
-              <article
-                key={member.id}
-                className="grid gap-4 px-5 py-5 sm:grid-cols-[1fr_auto] sm:items-start sm:px-6"
-                data-testid={`row-member-admin-${member.id}`}
-              >
-                <div className="flex min-w-0 items-center gap-3">
-                  {member.avatarUrl ? (
-                    <img
-                      src={member.avatarUrl}
-                      alt={`Photo de ${member.name}`}
-                      className="h-11 w-11 shrink-0 rounded-2xl object-cover"
+              {membersQuery.isLoading ? (
+                <div className="space-y-3 p-5 sm:p-6">
+                  {[1, 2, 3].map((item) => (
+                    <div
+                      className="h-16 animate-pulse rounded-2xl bg-muted"
+                      key={item}
                     />
-                  ) : (
-                    <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-muted text-xs font-extrabold text-secondary">
-                      {member.initials}
-                    </span>
-                  )}
-                  <div className="min-w-0">
-                    <h3 className="truncate text-sm font-extrabold">
-                      {member.name}
-                    </h3>
-                    <p className="mt-1 flex flex-wrap items-center gap-x-2 text-[11px] text-muted-foreground">
-                      <span className="inline-flex items-center gap-1">
-                        <MapPin className="h-3 w-3" />
-                        {member.neighborhood}
-                      </span>
-                      {member.activities.length > 0 && (
-                        <span>• {member.activities.join(", ")}</span>
-                      )}
-                    </p>
-                    {(member.email || member.phone || member.contact) && (
-                      <p className="mt-1.5 flex flex-wrap gap-x-3 gap-y-1 text-[10px] font-semibold text-muted-foreground">
-                        {member.email && (
-                          <span className="inline-flex items-center gap-1">
-                            <Mail className="h-3 w-3" /> {member.email}
-                          </span>
-                        )}
-                        {(member.phone || member.contact) && (
-                          <span className="inline-flex items-center gap-1">
-                            <Phone className="h-3 w-3" />
-                            {member.phone ?? member.contact}
-                          </span>
-                        )}
-                      </p>
-                    )}
-                    {(member.gender ||
-                      member.maritalStatus ||
-                      member.educationLevel) && (
-                      <p className="mt-1.5 flex flex-wrap gap-x-3 gap-y-1 text-[10px] font-semibold text-muted-foreground">
-                        {member.gender && <span>{member.gender}</span>}
-                        {member.maritalStatus && (
-                          <span>• {member.maritalStatus}</span>
-                        )}
-                        {member.educationLevel && (
-                          <span>• {member.educationLevel}</span>
-                        )}
-                      </p>
-                    )}
-                  </div>
+                  ))}
                 </div>
-
-                <div className="flex flex-wrap gap-2">
-                  <AdminProfileEditor profile={member} />
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setManualEmail("");
-                          setManualPhone("");
-                        }}
-                        disabled={generatingCodeId === member.id}
-                        className="inline-flex items-center justify-center gap-2 rounded-full border border-secondary/30 px-4 py-2.5 text-xs font-bold text-secondary hover:bg-secondary hover:text-secondary-foreground disabled:opacity-50"
-                        data-testid={`button-member-code-${member.id}`}
-                      >
-                        <KeyRound className="h-4 w-4" />
-                        {generatingCodeId === member.id
-                          ? "Création…"
-                          : "Code membre"}
-                      </button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>
-                          Créer un code pour {member.name} ?
-                        </AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Un nouveau code personnel sera créé. L’ancien code et
-                          l’ancien mot de passe cesseront immédiatement de
-                          fonctionner. Le membre devra refaire sa première
-                          connexion et choisir un nouveau mot de passe.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <div className="grid gap-3 sm:grid-cols-2">
-                        <label className="space-y-2 text-xs font-bold">
-                          Email de connexion
-                          <input
-                            type="email"
-                            value={manualEmail}
-                            onChange={(event) =>
-                              setManualEmail(event.target.value)
-                            }
-                            className="field"
-                            placeholder="membre@exemple.com"
+              ) : membersQuery.isError ? (
+                <div className="px-6 py-12 text-center text-sm text-muted-foreground">
+                  Impossible de charger les membres. Reconnectez-vous puis
+                  réessayez.
+                </div>
+              ) : filteredMembers.length ? (
+                <div className="divide-y divide-border">
+                  {filteredMembers.map((member) => (
+                    <article
+                      key={member.id}
+                      className="grid gap-4 px-5 py-5 sm:grid-cols-[1fr_auto] sm:items-start sm:px-6"
+                      data-testid={`row-member-admin-${member.id}`}
+                    >
+                      <div className="flex min-w-0 items-center gap-3">
+                        {member.avatarUrl ? (
+                          <img
+                            src={member.avatarUrl}
+                            alt={`Photo de ${member.name}`}
+                            className="h-11 w-11 shrink-0 rounded-2xl object-cover"
                           />
-                        </label>
-                        <label className="space-y-2 text-xs font-bold">
-                          Téléphone / WhatsApp
-                          <input
-                            type="tel"
-                            value={manualPhone}
-                            onChange={(event) =>
-                              setManualPhone(event.target.value)
-                            }
-                            className="field"
-                            placeholder="+224…"
-                          />
-                        </label>
-                        <p className="text-[10px] leading-4 text-muted-foreground sm:col-span-2">
-                          Indiquez au moins l’email ou le téléphone. Le membre
-                          utilisera cet identifiant après avoir créé son mot de
-                          passe.
-                        </p>
+                        ) : (
+                          <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-muted text-xs font-extrabold text-secondary">
+                            {member.initials}
+                          </span>
+                        )}
+                        <div className="min-w-0">
+                          <h3 className="truncate text-sm font-extrabold">
+                            {member.name}
+                          </h3>
+                          <p className="mt-1 flex flex-wrap items-center gap-x-2 text-[11px] text-muted-foreground">
+                            <span className="inline-flex items-center gap-1">
+                              <MapPin className="h-3 w-3" />
+                              {member.neighborhood}
+                            </span>
+                            {member.activities.length > 0 && (
+                              <span>• {member.activities.join(", ")}</span>
+                            )}
+                          </p>
+                          {(member.email || member.phone || member.contact) && (
+                            <p className="mt-1.5 flex flex-wrap gap-x-3 gap-y-1 text-[10px] font-semibold text-muted-foreground">
+                              {member.email && (
+                                <span className="inline-flex items-center gap-1">
+                                  <Mail className="h-3 w-3" /> {member.email}
+                                </span>
+                              )}
+                              {(member.phone || member.contact) && (
+                                <span className="inline-flex items-center gap-1">
+                                  <Phone className="h-3 w-3" />
+                                  {member.phone ?? member.contact}
+                                </span>
+                              )}
+                            </p>
+                          )}
+                          {(member.gender ||
+                            member.maritalStatus ||
+                            member.educationLevel) && (
+                            <p className="mt-1.5 flex flex-wrap gap-x-3 gap-y-1 text-[10px] font-semibold text-muted-foreground">
+                              {member.gender && <span>{member.gender}</span>}
+                              {member.maritalStatus && (
+                                <span>• {member.maritalStatus}</span>
+                              )}
+                              {member.educationLevel && (
+                                <span>• {member.educationLevel}</span>
+                              )}
+                            </p>
+                          )}
+                        </div>
                       </div>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Annuler</AlertDialogCancel>
-                        <AlertDialogAction
-                          disabled={!manualEmail.trim() && !manualPhone.trim()}
-                          onClick={() =>
-                            createMemberCode(member.id, member.name)
-                          }
-                          className="bg-secondary text-secondary-foreground hover:bg-secondary/90"
-                        >
-                          Créer le code
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
 
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <button
-                        type="button"
-                        disabled={deletingId === member.id}
-                        className="inline-flex items-center justify-center gap-2 rounded-full border border-destructive/30 px-4 py-2.5 text-xs font-bold text-destructive hover:bg-destructive hover:text-destructive-foreground disabled:opacity-50"
-                        data-testid={`button-delete-member-${member.id}`}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                        {deletingId === member.id
-                          ? "Suppression…"
-                          : "Supprimer"}
-                      </button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>
-                          Supprimer ce membre ?
-                        </AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Le profil de {member.name} disparaîtra immédiatement
-                          de l’annuaire. Ses réactions et ses votes seront
-                          également supprimés. Cette action est définitive.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Annuler</AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={() => removeMember(member.id)}
-                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                        >
-                          Supprimer définitivement
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                </div>
+                      <div className="flex flex-wrap gap-2">
+                        <AdminProfileEditor profile={member} />
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setManualEmail("");
+                                setManualPhone("");
+                              }}
+                              disabled={generatingCodeId === member.id}
+                              className="inline-flex items-center justify-center gap-2 rounded-full border border-secondary/30 px-4 py-2.5 text-xs font-bold text-secondary hover:bg-secondary hover:text-secondary-foreground disabled:opacity-50"
+                              data-testid={`button-member-code-${member.id}`}
+                            >
+                              <KeyRound className="h-4 w-4" />
+                              {generatingCodeId === member.id
+                                ? "Création…"
+                                : "Code membre"}
+                            </button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>
+                                Créer un code pour {member.name} ?
+                              </AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Un nouveau code personnel sera créé. L’ancien
+                                code et l’ancien mot de passe cesseront
+                                immédiatement de fonctionner. Le membre devra
+                                refaire sa première connexion et choisir un
+                                nouveau mot de passe.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <div className="grid gap-3 sm:grid-cols-2">
+                              <label className="space-y-2 text-xs font-bold">
+                                Email de connexion
+                                <input
+                                  type="email"
+                                  value={manualEmail}
+                                  onChange={(event) =>
+                                    setManualEmail(event.target.value)
+                                  }
+                                  className="field"
+                                  placeholder="membre@exemple.com"
+                                />
+                              </label>
+                              <label className="space-y-2 text-xs font-bold">
+                                Téléphone / WhatsApp
+                                <input
+                                  type="tel"
+                                  value={manualPhone}
+                                  onChange={(event) =>
+                                    setManualPhone(event.target.value)
+                                  }
+                                  className="field"
+                                  placeholder="+224…"
+                                />
+                              </label>
+                              <p className="text-[10px] leading-4 text-muted-foreground sm:col-span-2">
+                                Indiquez au moins l’email ou le téléphone. Le
+                                membre utilisera cet identifiant après avoir
+                                créé son mot de passe.
+                              </p>
+                            </div>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Annuler</AlertDialogCancel>
+                              <AlertDialogAction
+                                disabled={
+                                  !manualEmail.trim() && !manualPhone.trim()
+                                }
+                                onClick={() =>
+                                  createMemberCode(member.id, member.name)
+                                }
+                                className="bg-secondary text-secondary-foreground hover:bg-secondary/90"
+                              >
+                                Créer le code
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
 
-                <div className="rounded-2xl border border-border bg-background p-4 sm:col-span-2">
-                  <div className="flex flex-col justify-between gap-3 lg:flex-row lg:items-start">
-                    <div>
-                      <p className="text-xs font-extrabold">
-                        Informations privées du membre
-                      </p>
-                      <p className="mt-1 text-[10px] leading-5 text-muted-foreground">
-                        Le contact d’urgence, la filiation et les observations
-                        restent toujours réservés à l’administration.
-                      </p>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      <button
-                        type="button"
-                        disabled={
-                          !member.gender || visibilityUpdatingId === member.id
-                        }
-                        onClick={() =>
-                          changeProfileVisibility(member.id, {
-                            showGender: !member.showGender,
-                            showMaritalStatus: member.showMaritalStatus,
-                            showEducationLevel: member.showEducationLevel,
-                          })
-                        }
-                        className={`rounded-full border px-3 py-2 text-[10px] font-bold disabled:opacity-40 ${
-                          member.showGender
-                            ? "border-secondary bg-secondary text-secondary-foreground"
-                            : "border-border bg-card text-muted-foreground"
-                        }`}
-                      >
-                        Sexe : {member.showGender ? "visible" : "privé"}
-                      </button>
-                      <button
-                        type="button"
-                        disabled={
-                          !member.maritalStatus ||
-                          visibilityUpdatingId === member.id
-                        }
-                        onClick={() =>
-                          changeProfileVisibility(member.id, {
-                            showGender: member.showGender,
-                            showMaritalStatus: !member.showMaritalStatus,
-                            showEducationLevel: member.showEducationLevel,
-                          })
-                        }
-                        className={`rounded-full border px-3 py-2 text-[10px] font-bold disabled:opacity-40 ${
-                          member.showMaritalStatus
-                            ? "border-secondary bg-secondary text-secondary-foreground"
-                            : "border-border bg-card text-muted-foreground"
-                        }`}
-                      >
-                        Situation :{" "}
-                        {member.showMaritalStatus ? "visible" : "privée"}
-                      </button>
-                      <button
-                        type="button"
-                        disabled={
-                          !member.educationLevel ||
-                          visibilityUpdatingId === member.id
-                        }
-                        onClick={() =>
-                          changeProfileVisibility(member.id, {
-                            showGender: member.showGender,
-                            showMaritalStatus: member.showMaritalStatus,
-                            showEducationLevel: !member.showEducationLevel,
-                          })
-                        }
-                        className={`rounded-full border px-3 py-2 text-[10px] font-bold disabled:opacity-40 ${
-                          member.showEducationLevel
-                            ? "border-secondary bg-secondary text-secondary-foreground"
-                            : "border-border bg-card text-muted-foreground"
-                        }`}
-                      >
-                        Études :{" "}
-                        {member.showEducationLevel ? "visibles" : "privées"}
-                      </button>
-                    </div>
-                  </div>
-                  <dl className="mt-4 grid gap-x-6 gap-y-3 border-t border-border pt-4 text-xs sm:grid-cols-2 lg:grid-cols-4">
-                    <div>
-                      <dt className="font-bold text-muted-foreground">Père</dt>
-                      <dd className="mt-1">
-                        {member.fatherFirstNames || "Non renseigné"}
-                      </dd>
-                    </div>
-                    <div>
-                      <dt className="font-bold text-muted-foreground">Mère</dt>
-                      <dd className="mt-1">
-                        {member.motherFullName || "Non renseignée"}
-                      </dd>
-                    </div>
-                    <div>
-                      <dt className="font-bold text-muted-foreground">
-                        Contact d’urgence
-                      </dt>
-                      <dd className="mt-1">
-                        {member.emergencyContactName || "Non renseigné"}
-                      </dd>
-                    </div>
-                    <div>
-                      <dt className="font-bold text-muted-foreground">
-                        Téléphone d’urgence
-                      </dt>
-                      <dd className="mt-1">
-                        {member.emergencyContactPhone || "Non renseigné"}
-                      </dd>
-                    </div>
-                  </dl>
-                  <div className="mt-4 border-t border-border pt-4">
-                    <p className="text-[10px] font-bold uppercase tracking-[.12em] text-muted-foreground">
-                      Observations et recommandations
-                    </p>
-                    <p className="mt-2 text-xs leading-6 text-foreground/80">
-                      {member.observations || "Aucune observation renseignée."}
-                    </p>
-                  </div>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <button
+                              type="button"
+                              disabled={deletingId === member.id}
+                              className="inline-flex items-center justify-center gap-2 rounded-full border border-destructive/30 px-4 py-2.5 text-xs font-bold text-destructive hover:bg-destructive hover:text-destructive-foreground disabled:opacity-50"
+                              data-testid={`button-delete-member-${member.id}`}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                              {deletingId === member.id
+                                ? "Suppression…"
+                                : "Supprimer"}
+                            </button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>
+                                Supprimer ce membre ?
+                              </AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Le profil de {member.name} disparaîtra
+                                immédiatement de l’annuaire. Ses réactions et
+                                ses votes seront également supprimés. Cette
+                                action est définitive.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Annuler</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => removeMember(member.id)}
+                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              >
+                                Supprimer définitivement
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
+
+                      <div className="rounded-2xl border border-border bg-background p-4 sm:col-span-2">
+                        <div className="flex flex-col justify-between gap-3 lg:flex-row lg:items-start">
+                          <div>
+                            <p className="text-xs font-extrabold">
+                              Informations privées du membre
+                            </p>
+                            <p className="mt-1 text-[10px] leading-5 text-muted-foreground">
+                              Le contact d’urgence, la filiation et les
+                              observations restent toujours réservés à
+                              l’administration.
+                            </p>
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            <button
+                              type="button"
+                              disabled={
+                                !member.gender ||
+                                visibilityUpdatingId === member.id
+                              }
+                              onClick={() =>
+                                changeProfileVisibility(member.id, {
+                                  showGender: !member.showGender,
+                                  showMaritalStatus: member.showMaritalStatus,
+                                  showEducationLevel: member.showEducationLevel,
+                                })
+                              }
+                              className={`rounded-full border px-3 py-2 text-[10px] font-bold disabled:opacity-40 ${
+                                member.showGender
+                                  ? "border-secondary bg-secondary text-secondary-foreground"
+                                  : "border-border bg-card text-muted-foreground"
+                              }`}
+                            >
+                              Sexe : {member.showGender ? "visible" : "privé"}
+                            </button>
+                            <button
+                              type="button"
+                              disabled={
+                                !member.maritalStatus ||
+                                visibilityUpdatingId === member.id
+                              }
+                              onClick={() =>
+                                changeProfileVisibility(member.id, {
+                                  showGender: member.showGender,
+                                  showMaritalStatus: !member.showMaritalStatus,
+                                  showEducationLevel: member.showEducationLevel,
+                                })
+                              }
+                              className={`rounded-full border px-3 py-2 text-[10px] font-bold disabled:opacity-40 ${
+                                member.showMaritalStatus
+                                  ? "border-secondary bg-secondary text-secondary-foreground"
+                                  : "border-border bg-card text-muted-foreground"
+                              }`}
+                            >
+                              Situation :{" "}
+                              {member.showMaritalStatus ? "visible" : "privée"}
+                            </button>
+                            <button
+                              type="button"
+                              disabled={
+                                !member.educationLevel ||
+                                visibilityUpdatingId === member.id
+                              }
+                              onClick={() =>
+                                changeProfileVisibility(member.id, {
+                                  showGender: member.showGender,
+                                  showMaritalStatus: member.showMaritalStatus,
+                                  showEducationLevel:
+                                    !member.showEducationLevel,
+                                })
+                              }
+                              className={`rounded-full border px-3 py-2 text-[10px] font-bold disabled:opacity-40 ${
+                                member.showEducationLevel
+                                  ? "border-secondary bg-secondary text-secondary-foreground"
+                                  : "border-border bg-card text-muted-foreground"
+                              }`}
+                            >
+                              Études :{" "}
+                              {member.showEducationLevel
+                                ? "visibles"
+                                : "privées"}
+                            </button>
+                          </div>
+                        </div>
+                        <dl className="mt-4 grid gap-x-6 gap-y-3 border-t border-border pt-4 text-xs sm:grid-cols-2 lg:grid-cols-4">
+                          <div>
+                            <dt className="font-bold text-muted-foreground">
+                              Père
+                            </dt>
+                            <dd className="mt-1">
+                              {member.fatherFirstNames || "Non renseigné"}
+                            </dd>
+                          </div>
+                          <div>
+                            <dt className="font-bold text-muted-foreground">
+                              Mère
+                            </dt>
+                            <dd className="mt-1">
+                              {member.motherFullName || "Non renseignée"}
+                            </dd>
+                          </div>
+                          <div>
+                            <dt className="font-bold text-muted-foreground">
+                              Contact d’urgence
+                            </dt>
+                            <dd className="mt-1">
+                              {member.emergencyContactName || "Non renseigné"}
+                            </dd>
+                          </div>
+                          <div>
+                            <dt className="font-bold text-muted-foreground">
+                              Téléphone d’urgence
+                            </dt>
+                            <dd className="mt-1">
+                              {member.emergencyContactPhone || "Non renseigné"}
+                            </dd>
+                          </div>
+                        </dl>
+                        <div className="mt-4 border-t border-border pt-4">
+                          <p className="text-[10px] font-bold uppercase tracking-[.12em] text-muted-foreground">
+                            Observations et recommandations
+                          </p>
+                          <p className="mt-2 text-xs leading-6 text-foreground/80">
+                            {member.observations ||
+                              "Aucune observation renseignée."}
+                          </p>
+                        </div>
+                      </div>
+                    </article>
+                  ))}
                 </div>
-              </article>
-            ))}
-          </div>
-        ) : members.length ? (
-          <div className="px-6 py-12 text-center text-sm text-muted-foreground">
-            Aucun membre ne correspond à ces filtres.
-            <button
-              type="button"
-              onClick={resetMemberFilters}
-              className="mx-auto mt-4 flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2.5 text-xs font-bold text-primary"
-            >
-              <RotateCcw className="h-3.5 w-3.5" /> Afficher tous les membres
-            </button>
-          </div>
-        ) : (
-          <div className="px-6 py-12 text-center text-sm text-muted-foreground">
-            Aucun membre publié pour le moment.
-          </div>
-        )}
-      </section>
+              ) : members.length ? (
+                <div className="px-6 py-12 text-center text-sm text-muted-foreground">
+                  Aucun membre ne correspond à ces filtres.
+                  <button
+                    type="button"
+                    onClick={resetMemberFilters}
+                    className="mx-auto mt-4 flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2.5 text-xs font-bold text-primary"
+                  >
+                    <RotateCcw className="h-3.5 w-3.5" /> Afficher tous les
+                    membres
+                  </button>
+                </div>
+              ) : (
+                <div className="px-6 py-12 text-center text-sm text-muted-foreground">
+                  Aucun membre publié pour le moment.
+                </div>
+              )}
+            </section>
+          )}
+
+          {activeSection === "content" && (
+            <>
+              <AdminCommunity />
+              <AdminEvents />
+            </>
+          )}
+
+          {activeSection === "communications" && (
+            <>
+              <AdminChatModeration />
+              <AdminDirectMessages />
+            </>
+          )}
+
+          {activeSection === "finance" && (
+            <>
+              <AdminFinance />
+              <AdminRoles />
+            </>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
