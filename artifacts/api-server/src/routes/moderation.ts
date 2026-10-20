@@ -11,10 +11,12 @@ import {
   directMessageReadReceiptsTable,
   deletedProfilesTable,
   eventResponsesTable,
+  financeContributionsTable,
   pollVotesTable,
   membershipRequestsTable,
   passwordResetRequestsTable,
   profilesTable,
+  profileRolesTable,
 } from "@workspace/db/schema";
 import {
   CreatePasswordResetCodeParams,
@@ -612,6 +614,12 @@ router.delete("/moderation/profiles/:id", async (req, res) => {
     await tx
       .delete(eventResponsesTable)
       .where(eq(eventResponsesTable.profileId, profile.id));
+    await tx
+      .delete(financeContributionsTable)
+      .where(eq(financeContributionsTable.profileId, profile.id));
+    await tx
+      .delete(profileRolesTable)
+      .where(eq(profileRolesTable.profileId, profile.id));
     if (profile.loginEmail) {
       await tx
         .delete(membershipRequestsTable)

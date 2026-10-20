@@ -46,6 +46,11 @@ export const ListProfilesResponseItem = zod.object({
   "showGender": zod.boolean(),
   "showMaritalStatus": zod.boolean(),
   "showEducationLevel": zod.boolean(),
+  "roles": zod.array(zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "description": zod.string().nullish()
+})),
   "privacy": zod.enum(['community', 'private']),
   "status": zod.enum(['approved', 'pending'])
 })
@@ -85,6 +90,11 @@ export const GetProfileResponse = zod.object({
   "showGender": zod.boolean(),
   "showMaritalStatus": zod.boolean(),
   "showEducationLevel": zod.boolean(),
+  "roles": zod.array(zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "description": zod.string().nullish()
+})),
   "privacy": zod.enum(['community', 'private']),
   "status": zod.enum(['approved', 'pending'])
 })
@@ -782,6 +792,542 @@ export const VotePollResponse = zod.object({
 
 
 /**
+ * @summary Get the monthly finance dashboard for community members
+ */
+export const getFinanceDashboardQueryMonthRegExp = new RegExp('^\\d{4}-(0[1-9]|1[0-2])$');
+
+
+export const GetFinanceDashboardQueryParams = zod.object({
+  "month": zod.coerce.string().regex(getFinanceDashboardQueryMonthRegExp)
+})
+
+export const getFinanceDashboardResponseTargetAmountMin = 0;
+
+export const getFinanceDashboardResponseExpectedPerMemberMin = 0;
+
+export const getFinanceDashboardResponseTotalCollectedMin = 0;
+
+export const getFinanceDashboardResponseRemainingAmountMin = 0;
+
+export const getFinanceDashboardResponseContributorCountMin = 0;
+
+export const getFinanceDashboardResponseMemberCountMin = 0;
+
+export const getFinanceDashboardResponseMembersItemAmountMin = 0;
+
+
+
+export const GetFinanceDashboardResponse = zod.object({
+  "monthKey": zod.string(),
+  "targetAmount": zod.number().min(getFinanceDashboardResponseTargetAmountMin),
+  "expectedPerMember": zod.number().min(getFinanceDashboardResponseExpectedPerMemberMin),
+  "currency": zod.enum(['GNF']),
+  "totalCollected": zod.number().min(getFinanceDashboardResponseTotalCollectedMin),
+  "remainingAmount": zod.number().min(getFinanceDashboardResponseRemainingAmountMin),
+  "contributorCount": zod.number().min(getFinanceDashboardResponseContributorCountMin),
+  "memberCount": zod.number().min(getFinanceDashboardResponseMemberCountMin),
+  "canManage": zod.boolean(),
+  "updatedAt": zod.string().nullish(),
+  "managers": zod.array(zod.object({
+  "profileId": zod.string(),
+  "memberName": zod.string(),
+  "initials": zod.string(),
+  "avatarUrl": zod.string().nullish(),
+  "roleName": zod.string()
+})),
+  "members": zod.array(zod.object({
+  "profileId": zod.string(),
+  "memberName": zod.string(),
+  "initials": zod.string(),
+  "avatarUrl": zod.string().nullish(),
+  "neighborhood": zod.string(),
+  "amount": zod.number().min(getFinanceDashboardResponseMembersItemAmountMin),
+  "note": zod.string().nullish(),
+  "updatedAt": zod.string().nullish(),
+  "status": zod.enum(['paid', 'partial', 'pending'])
+}))
+})
+
+
+/**
+ * @summary Update a monthly finance target as an authorized member
+ */
+export const updateFinanceMonthPathMonthKeyRegExp = new RegExp('^\\d{4}-(0[1-9]|1[0-2])$');
+
+
+export const UpdateFinanceMonthParams = zod.object({
+  "monthKey": zod.coerce.string().regex(updateFinanceMonthPathMonthKeyRegExp)
+})
+
+export const updateFinanceMonthBodyTargetAmountMin = 0;
+export const updateFinanceMonthBodyTargetAmountMax = 2000000000;
+
+export const updateFinanceMonthBodyExpectedPerMemberMin = 0;
+export const updateFinanceMonthBodyExpectedPerMemberMax = 2000000000;
+
+
+
+export const UpdateFinanceMonthBody = zod.object({
+  "targetAmount": zod.number().min(updateFinanceMonthBodyTargetAmountMin).max(updateFinanceMonthBodyTargetAmountMax),
+  "expectedPerMember": zod.number().min(updateFinanceMonthBodyExpectedPerMemberMin).max(updateFinanceMonthBodyExpectedPerMemberMax)
+})
+
+export const updateFinanceMonthResponseTargetAmountMin = 0;
+
+export const updateFinanceMonthResponseExpectedPerMemberMin = 0;
+
+export const updateFinanceMonthResponseTotalCollectedMin = 0;
+
+export const updateFinanceMonthResponseRemainingAmountMin = 0;
+
+export const updateFinanceMonthResponseContributorCountMin = 0;
+
+export const updateFinanceMonthResponseMemberCountMin = 0;
+
+export const updateFinanceMonthResponseMembersItemAmountMin = 0;
+
+
+
+export const UpdateFinanceMonthResponse = zod.object({
+  "monthKey": zod.string(),
+  "targetAmount": zod.number().min(updateFinanceMonthResponseTargetAmountMin),
+  "expectedPerMember": zod.number().min(updateFinanceMonthResponseExpectedPerMemberMin),
+  "currency": zod.enum(['GNF']),
+  "totalCollected": zod.number().min(updateFinanceMonthResponseTotalCollectedMin),
+  "remainingAmount": zod.number().min(updateFinanceMonthResponseRemainingAmountMin),
+  "contributorCount": zod.number().min(updateFinanceMonthResponseContributorCountMin),
+  "memberCount": zod.number().min(updateFinanceMonthResponseMemberCountMin),
+  "canManage": zod.boolean(),
+  "updatedAt": zod.string().nullish(),
+  "managers": zod.array(zod.object({
+  "profileId": zod.string(),
+  "memberName": zod.string(),
+  "initials": zod.string(),
+  "avatarUrl": zod.string().nullish(),
+  "roleName": zod.string()
+})),
+  "members": zod.array(zod.object({
+  "profileId": zod.string(),
+  "memberName": zod.string(),
+  "initials": zod.string(),
+  "avatarUrl": zod.string().nullish(),
+  "neighborhood": zod.string(),
+  "amount": zod.number().min(updateFinanceMonthResponseMembersItemAmountMin),
+  "note": zod.string().nullish(),
+  "updatedAt": zod.string().nullish(),
+  "status": zod.enum(['paid', 'partial', 'pending'])
+}))
+})
+
+
+/**
+ * @summary Update one member contribution as an authorized member
+ */
+export const updateFinanceContributionPathMonthKeyRegExp = new RegExp('^\\d{4}-(0[1-9]|1[0-2])$');
+
+
+export const UpdateFinanceContributionParams = zod.object({
+  "monthKey": zod.coerce.string().regex(updateFinanceContributionPathMonthKeyRegExp),
+  "profileId": zod.coerce.string()
+})
+
+export const updateFinanceContributionBodyAmountMin = 0;
+export const updateFinanceContributionBodyAmountMax = 2000000000;
+
+export const updateFinanceContributionBodyNoteMax = 240;
+
+
+
+export const UpdateFinanceContributionBody = zod.object({
+  "amount": zod.number().min(updateFinanceContributionBodyAmountMin).max(updateFinanceContributionBodyAmountMax),
+  "note": zod.string().max(updateFinanceContributionBodyNoteMax).nullish()
+})
+
+export const updateFinanceContributionResponseTargetAmountMin = 0;
+
+export const updateFinanceContributionResponseExpectedPerMemberMin = 0;
+
+export const updateFinanceContributionResponseTotalCollectedMin = 0;
+
+export const updateFinanceContributionResponseRemainingAmountMin = 0;
+
+export const updateFinanceContributionResponseContributorCountMin = 0;
+
+export const updateFinanceContributionResponseMemberCountMin = 0;
+
+export const updateFinanceContributionResponseMembersItemAmountMin = 0;
+
+
+
+export const UpdateFinanceContributionResponse = zod.object({
+  "monthKey": zod.string(),
+  "targetAmount": zod.number().min(updateFinanceContributionResponseTargetAmountMin),
+  "expectedPerMember": zod.number().min(updateFinanceContributionResponseExpectedPerMemberMin),
+  "currency": zod.enum(['GNF']),
+  "totalCollected": zod.number().min(updateFinanceContributionResponseTotalCollectedMin),
+  "remainingAmount": zod.number().min(updateFinanceContributionResponseRemainingAmountMin),
+  "contributorCount": zod.number().min(updateFinanceContributionResponseContributorCountMin),
+  "memberCount": zod.number().min(updateFinanceContributionResponseMemberCountMin),
+  "canManage": zod.boolean(),
+  "updatedAt": zod.string().nullish(),
+  "managers": zod.array(zod.object({
+  "profileId": zod.string(),
+  "memberName": zod.string(),
+  "initials": zod.string(),
+  "avatarUrl": zod.string().nullish(),
+  "roleName": zod.string()
+})),
+  "members": zod.array(zod.object({
+  "profileId": zod.string(),
+  "memberName": zod.string(),
+  "initials": zod.string(),
+  "avatarUrl": zod.string().nullish(),
+  "neighborhood": zod.string(),
+  "amount": zod.number().min(updateFinanceContributionResponseMembersItemAmountMin),
+  "note": zod.string().nullish(),
+  "updatedAt": zod.string().nullish(),
+  "status": zod.enum(['paid', 'partial', 'pending'])
+}))
+})
+
+
+/**
+ * @summary List community roles and their member assignments
+ */
+export const ListRolesResponseItem = zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "description": zod.string().nullish(),
+  "permissions": zod.array(zod.enum(['finance.manage'])),
+  "createdAt": zod.string(),
+  "assignments": zod.array(zod.object({
+  "profileId": zod.string(),
+  "memberName": zod.string(),
+  "initials": zod.string(),
+  "avatarUrl": zod.string().nullish()
+}))
+})
+export const ListRolesResponse = zod.array(ListRolesResponseItem)
+
+
+/**
+ * @summary Create a public community role
+ */
+export const createRoleBodyNameMin = 2;
+export const createRoleBodyNameMax = 80;
+
+export const createRoleBodyDescriptionMax = 240;
+
+export const createRoleBodyPermissionsMax = 1;
+
+
+
+export const CreateRoleBody = zod.object({
+  "name": zod.string().min(createRoleBodyNameMin).max(createRoleBodyNameMax),
+  "description": zod.string().max(createRoleBodyDescriptionMax).nullish(),
+  "permissions": zod.array(zod.enum(['finance.manage'])).max(createRoleBodyPermissionsMax)
+})
+
+export const CreateRoleResponse = zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "description": zod.string().nullish(),
+  "permissions": zod.array(zod.enum(['finance.manage'])),
+  "createdAt": zod.string(),
+  "assignments": zod.array(zod.object({
+  "profileId": zod.string(),
+  "memberName": zod.string(),
+  "initials": zod.string(),
+  "avatarUrl": zod.string().nullish()
+}))
+})
+
+
+/**
+ * @summary Update a community role and its permissions
+ */
+export const UpdateRoleParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const updateRoleBodyNameMin = 2;
+export const updateRoleBodyNameMax = 80;
+
+export const updateRoleBodyDescriptionMax = 240;
+
+export const updateRoleBodyPermissionsMax = 1;
+
+
+
+export const UpdateRoleBody = zod.object({
+  "name": zod.string().min(updateRoleBodyNameMin).max(updateRoleBodyNameMax),
+  "description": zod.string().max(updateRoleBodyDescriptionMax).nullish(),
+  "permissions": zod.array(zod.enum(['finance.manage'])).max(updateRoleBodyPermissionsMax)
+})
+
+export const UpdateRoleResponse = zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "description": zod.string().nullish(),
+  "permissions": zod.array(zod.enum(['finance.manage'])),
+  "createdAt": zod.string(),
+  "assignments": zod.array(zod.object({
+  "profileId": zod.string(),
+  "memberName": zod.string(),
+  "initials": zod.string(),
+  "avatarUrl": zod.string().nullish()
+}))
+})
+
+
+/**
+ * @summary Delete a community role and all its assignments
+ */
+export const DeleteRoleParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const DeleteRoleResponse = zod.void()
+
+
+/**
+ * @summary Assign a role to a selected member
+ */
+export const AssignRoleParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const AssignRoleBody = zod.object({
+  "profileId": zod.string()
+})
+
+export const AssignRoleResponse = zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "description": zod.string().nullish(),
+  "permissions": zod.array(zod.enum(['finance.manage'])),
+  "createdAt": zod.string(),
+  "assignments": zod.array(zod.object({
+  "profileId": zod.string(),
+  "memberName": zod.string(),
+  "initials": zod.string(),
+  "avatarUrl": zod.string().nullish()
+}))
+})
+
+
+/**
+ * @summary Remove a role from a member
+ */
+export const RemoveRoleAssignmentParams = zod.object({
+  "id": zod.coerce.string(),
+  "profileId": zod.coerce.string()
+})
+
+export const RemoveRoleAssignmentResponse = zod.void()
+
+
+/**
+ * @summary Get the monthly finance dashboard as administrator
+ */
+export const getAdminFinanceDashboardQueryMonthRegExp = new RegExp('^\\d{4}-(0[1-9]|1[0-2])$');
+
+
+export const GetAdminFinanceDashboardQueryParams = zod.object({
+  "month": zod.coerce.string().regex(getAdminFinanceDashboardQueryMonthRegExp)
+})
+
+export const getAdminFinanceDashboardResponseTargetAmountMin = 0;
+
+export const getAdminFinanceDashboardResponseExpectedPerMemberMin = 0;
+
+export const getAdminFinanceDashboardResponseTotalCollectedMin = 0;
+
+export const getAdminFinanceDashboardResponseRemainingAmountMin = 0;
+
+export const getAdminFinanceDashboardResponseContributorCountMin = 0;
+
+export const getAdminFinanceDashboardResponseMemberCountMin = 0;
+
+export const getAdminFinanceDashboardResponseMembersItemAmountMin = 0;
+
+
+
+export const GetAdminFinanceDashboardResponse = zod.object({
+  "monthKey": zod.string(),
+  "targetAmount": zod.number().min(getAdminFinanceDashboardResponseTargetAmountMin),
+  "expectedPerMember": zod.number().min(getAdminFinanceDashboardResponseExpectedPerMemberMin),
+  "currency": zod.enum(['GNF']),
+  "totalCollected": zod.number().min(getAdminFinanceDashboardResponseTotalCollectedMin),
+  "remainingAmount": zod.number().min(getAdminFinanceDashboardResponseRemainingAmountMin),
+  "contributorCount": zod.number().min(getAdminFinanceDashboardResponseContributorCountMin),
+  "memberCount": zod.number().min(getAdminFinanceDashboardResponseMemberCountMin),
+  "canManage": zod.boolean(),
+  "updatedAt": zod.string().nullish(),
+  "managers": zod.array(zod.object({
+  "profileId": zod.string(),
+  "memberName": zod.string(),
+  "initials": zod.string(),
+  "avatarUrl": zod.string().nullish(),
+  "roleName": zod.string()
+})),
+  "members": zod.array(zod.object({
+  "profileId": zod.string(),
+  "memberName": zod.string(),
+  "initials": zod.string(),
+  "avatarUrl": zod.string().nullish(),
+  "neighborhood": zod.string(),
+  "amount": zod.number().min(getAdminFinanceDashboardResponseMembersItemAmountMin),
+  "note": zod.string().nullish(),
+  "updatedAt": zod.string().nullish(),
+  "status": zod.enum(['paid', 'partial', 'pending'])
+}))
+})
+
+
+/**
+ * @summary Update a monthly finance target as administrator
+ */
+export const updateAdminFinanceMonthPathMonthKeyRegExp = new RegExp('^\\d{4}-(0[1-9]|1[0-2])$');
+
+
+export const UpdateAdminFinanceMonthParams = zod.object({
+  "monthKey": zod.coerce.string().regex(updateAdminFinanceMonthPathMonthKeyRegExp)
+})
+
+export const updateAdminFinanceMonthBodyTargetAmountMin = 0;
+export const updateAdminFinanceMonthBodyTargetAmountMax = 2000000000;
+
+export const updateAdminFinanceMonthBodyExpectedPerMemberMin = 0;
+export const updateAdminFinanceMonthBodyExpectedPerMemberMax = 2000000000;
+
+
+
+export const UpdateAdminFinanceMonthBody = zod.object({
+  "targetAmount": zod.number().min(updateAdminFinanceMonthBodyTargetAmountMin).max(updateAdminFinanceMonthBodyTargetAmountMax),
+  "expectedPerMember": zod.number().min(updateAdminFinanceMonthBodyExpectedPerMemberMin).max(updateAdminFinanceMonthBodyExpectedPerMemberMax)
+})
+
+export const updateAdminFinanceMonthResponseTargetAmountMin = 0;
+
+export const updateAdminFinanceMonthResponseExpectedPerMemberMin = 0;
+
+export const updateAdminFinanceMonthResponseTotalCollectedMin = 0;
+
+export const updateAdminFinanceMonthResponseRemainingAmountMin = 0;
+
+export const updateAdminFinanceMonthResponseContributorCountMin = 0;
+
+export const updateAdminFinanceMonthResponseMemberCountMin = 0;
+
+export const updateAdminFinanceMonthResponseMembersItemAmountMin = 0;
+
+
+
+export const UpdateAdminFinanceMonthResponse = zod.object({
+  "monthKey": zod.string(),
+  "targetAmount": zod.number().min(updateAdminFinanceMonthResponseTargetAmountMin),
+  "expectedPerMember": zod.number().min(updateAdminFinanceMonthResponseExpectedPerMemberMin),
+  "currency": zod.enum(['GNF']),
+  "totalCollected": zod.number().min(updateAdminFinanceMonthResponseTotalCollectedMin),
+  "remainingAmount": zod.number().min(updateAdminFinanceMonthResponseRemainingAmountMin),
+  "contributorCount": zod.number().min(updateAdminFinanceMonthResponseContributorCountMin),
+  "memberCount": zod.number().min(updateAdminFinanceMonthResponseMemberCountMin),
+  "canManage": zod.boolean(),
+  "updatedAt": zod.string().nullish(),
+  "managers": zod.array(zod.object({
+  "profileId": zod.string(),
+  "memberName": zod.string(),
+  "initials": zod.string(),
+  "avatarUrl": zod.string().nullish(),
+  "roleName": zod.string()
+})),
+  "members": zod.array(zod.object({
+  "profileId": zod.string(),
+  "memberName": zod.string(),
+  "initials": zod.string(),
+  "avatarUrl": zod.string().nullish(),
+  "neighborhood": zod.string(),
+  "amount": zod.number().min(updateAdminFinanceMonthResponseMembersItemAmountMin),
+  "note": zod.string().nullish(),
+  "updatedAt": zod.string().nullish(),
+  "status": zod.enum(['paid', 'partial', 'pending'])
+}))
+})
+
+
+/**
+ * @summary Update one member contribution as administrator
+ */
+export const updateAdminFinanceContributionPathMonthKeyRegExp = new RegExp('^\\d{4}-(0[1-9]|1[0-2])$');
+
+
+export const UpdateAdminFinanceContributionParams = zod.object({
+  "monthKey": zod.coerce.string().regex(updateAdminFinanceContributionPathMonthKeyRegExp),
+  "profileId": zod.coerce.string()
+})
+
+export const updateAdminFinanceContributionBodyAmountMin = 0;
+export const updateAdminFinanceContributionBodyAmountMax = 2000000000;
+
+export const updateAdminFinanceContributionBodyNoteMax = 240;
+
+
+
+export const UpdateAdminFinanceContributionBody = zod.object({
+  "amount": zod.number().min(updateAdminFinanceContributionBodyAmountMin).max(updateAdminFinanceContributionBodyAmountMax),
+  "note": zod.string().max(updateAdminFinanceContributionBodyNoteMax).nullish()
+})
+
+export const updateAdminFinanceContributionResponseTargetAmountMin = 0;
+
+export const updateAdminFinanceContributionResponseExpectedPerMemberMin = 0;
+
+export const updateAdminFinanceContributionResponseTotalCollectedMin = 0;
+
+export const updateAdminFinanceContributionResponseRemainingAmountMin = 0;
+
+export const updateAdminFinanceContributionResponseContributorCountMin = 0;
+
+export const updateAdminFinanceContributionResponseMemberCountMin = 0;
+
+export const updateAdminFinanceContributionResponseMembersItemAmountMin = 0;
+
+
+
+export const UpdateAdminFinanceContributionResponse = zod.object({
+  "monthKey": zod.string(),
+  "targetAmount": zod.number().min(updateAdminFinanceContributionResponseTargetAmountMin),
+  "expectedPerMember": zod.number().min(updateAdminFinanceContributionResponseExpectedPerMemberMin),
+  "currency": zod.enum(['GNF']),
+  "totalCollected": zod.number().min(updateAdminFinanceContributionResponseTotalCollectedMin),
+  "remainingAmount": zod.number().min(updateAdminFinanceContributionResponseRemainingAmountMin),
+  "contributorCount": zod.number().min(updateAdminFinanceContributionResponseContributorCountMin),
+  "memberCount": zod.number().min(updateAdminFinanceContributionResponseMemberCountMin),
+  "canManage": zod.boolean(),
+  "updatedAt": zod.string().nullish(),
+  "managers": zod.array(zod.object({
+  "profileId": zod.string(),
+  "memberName": zod.string(),
+  "initials": zod.string(),
+  "avatarUrl": zod.string().nullish(),
+  "roleName": zod.string()
+})),
+  "members": zod.array(zod.object({
+  "profileId": zod.string(),
+  "memberName": zod.string(),
+  "initials": zod.string(),
+  "avatarUrl": zod.string().nullish(),
+  "neighborhood": zod.string(),
+  "amount": zod.number().min(updateAdminFinanceContributionResponseMembersItemAmountMin),
+  "note": zod.string().nullish(),
+  "updatedAt": zod.string().nullish(),
+  "status": zod.enum(['paid', 'partial', 'pending'])
+}))
+})
+
+
+/**
  * @summary List pending membership requests
  */
 export const listModerationRequestsResponseAvatarUrlMax = 220000;
@@ -1069,6 +1615,11 @@ export const UpdateModerationProfileResponse = zod.object({
   "showGender": zod.boolean(),
   "showMaritalStatus": zod.boolean(),
   "showEducationLevel": zod.boolean(),
+  "roles": zod.array(zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "description": zod.string().nullish()
+})),
   "privacy": zod.enum(['community', 'private']),
   "status": zod.enum(['approved', 'pending'])
 })
@@ -1123,6 +1674,11 @@ export const UpdateProfileVisibilityResponse = zod.object({
   "showGender": zod.boolean(),
   "showMaritalStatus": zod.boolean(),
   "showEducationLevel": zod.boolean(),
+  "roles": zod.array(zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "description": zod.string().nullish()
+})),
   "privacy": zod.enum(['community', 'private']),
   "status": zod.enum(['approved', 'pending'])
 })

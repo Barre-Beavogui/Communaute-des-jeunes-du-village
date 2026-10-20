@@ -36,7 +36,7 @@ const details = [
   {
     icon: Database,
     title: "Données utilisées",
-    text: "Identité, photo, coordonnées, résidence, parcours, présentation et informations nécessaires au fonctionnement du compte. Les messages et votes sont associés au profil du membre connecté.",
+    text: "Identité, photo, coordonnées, résidence, parcours, présentation et informations nécessaires au fonctionnement du compte. Les messages, votes et cotisations sont associés au profil du membre connecté. Le tableau mensuel des cotisations est visible par les membres authentifiés et modifiable uniquement par l’administration ou les responsables autorisés.",
   },
   {
     icon: Eye,

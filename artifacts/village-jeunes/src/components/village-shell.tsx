@@ -11,6 +11,7 @@ import {
   Newspaper,
   UserRound,
   UsersRound,
+  WalletCards,
 } from "lucide-react";
 import { type ReactNode, useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
@@ -32,6 +33,7 @@ const navItems = [
   { href: "/messages", label: "Messages", icon: MessagesSquare },
   { href: "/actualites", label: "Vie du village", icon: Newspaper },
   { href: "/evenements", label: "Événements", icon: CalendarDays },
+  { href: "/finances", label: "Finances", icon: WalletCards },
   { href: "/groupe", label: "Groupe", icon: MessageCircleMore },
   { href: "/zoboroma", label: "Zoboroma", icon: MapPinned },
 ];
@@ -281,6 +283,7 @@ export function VillageShell({ children }: { children: ReactNode }) {
                       ["/messages", "Messages privés"],
                       ["/actualites", "Actualités et sondages"],
                       ["/evenements", "Réunions et événements"],
+                      ["/finances", "Finances et cotisations"],
                       ["/groupe", "Groupe de communication"],
                       ["/zoboroma", "Le village"],
                       ["/connexion-membre", "Mon espace membre"],
@@ -335,6 +338,7 @@ export function VillageShell({ children }: { children: ReactNode }) {
                   {[
                     ["/actualites", "Vie du village", Newspaper],
                     ["/evenements", "Événements", CalendarDays],
+                    ["/finances", "Finances", WalletCards],
                     ["/zoboroma", "Zoboroma", MapPinned],
                     ["/connexion-membre", "Mon espace", UserRound],
                     ["/confidentialite", "Confidentialité", KeyRound],
@@ -400,6 +404,7 @@ export function VillageShell({ children }: { children: ReactNode }) {
                 mobileMenuOpen ||
                 location.startsWith("/actualites") ||
                 location.startsWith("/evenements") ||
+                location.startsWith("/finances") ||
                 location.startsWith("/zoboroma")
                   ? "text-primary"
                   : "text-muted-foreground"

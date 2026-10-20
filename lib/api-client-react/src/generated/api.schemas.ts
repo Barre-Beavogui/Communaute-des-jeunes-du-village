@@ -25,6 +25,13 @@ export const ProfileStatus = {
   pending: 'pending',
 } as const;
 
+export interface PublicRole {
+  id: string;
+  name: string;
+  /** @nullable */
+  description?: string | null;
+}
+
 export interface Profile {
   id: string;
   name: string;
@@ -65,8 +72,149 @@ export interface Profile {
   showGender: boolean;
   showMaritalStatus: boolean;
   showEducationLevel: boolean;
+  roles: PublicRole[];
   privacy: ProfilePrivacy;
   status: ProfileStatus;
+}
+
+export interface RoleAssignment {
+  profileId: string;
+  memberName: string;
+  initials: string;
+  /** @nullable */
+  avatarUrl?: string | null;
+}
+
+export type CommunityRolePermissionsItem = typeof CommunityRolePermissionsItem[keyof typeof CommunityRolePermissionsItem];
+
+
+export const CommunityRolePermissionsItem = {
+  financemanage: 'finance.manage',
+} as const;
+
+export interface CommunityRole {
+  id: string;
+  name: string;
+  /** @nullable */
+  description?: string | null;
+  permissions: CommunityRolePermissionsItem[];
+  createdAt: string;
+  assignments: RoleAssignment[];
+}
+
+export type CommunityRoleWritePermissionsItem = typeof CommunityRoleWritePermissionsItem[keyof typeof CommunityRoleWritePermissionsItem];
+
+
+export const CommunityRoleWritePermissionsItem = {
+  financemanage: 'finance.manage',
+} as const;
+
+export interface CommunityRoleWrite {
+  /**
+     * @minLength 2
+     * @maxLength 80
+     */
+  name: string;
+  /**
+     * @maxLength 240
+     * @nullable
+     */
+  description?: string | null;
+  /** @maxItems 1 */
+  permissions: CommunityRoleWritePermissionsItem[];
+}
+
+export interface RoleAssignmentCreate {
+  profileId: string;
+}
+
+export interface FinanceManager {
+  profileId: string;
+  memberName: string;
+  initials: string;
+  /** @nullable */
+  avatarUrl?: string | null;
+  roleName: string;
+}
+
+export type FinanceMemberContributionStatus = typeof FinanceMemberContributionStatus[keyof typeof FinanceMemberContributionStatus];
+
+
+export const FinanceMemberContributionStatus = {
+  paid: 'paid',
+  partial: 'partial',
+  pending: 'pending',
+} as const;
+
+export interface FinanceMemberContribution {
+  profileId: string;
+  memberName: string;
+  initials: string;
+  /** @nullable */
+  avatarUrl?: string | null;
+  neighborhood: string;
+  /** @minimum 0 */
+  amount: number;
+  /** @nullable */
+  note?: string | null;
+  /** @nullable */
+  updatedAt?: string | null;
+  status: FinanceMemberContributionStatus;
+}
+
+export type FinanceDashboardCurrency = typeof FinanceDashboardCurrency[keyof typeof FinanceDashboardCurrency];
+
+
+export const FinanceDashboardCurrency = {
+  GNF: 'GNF',
+} as const;
+
+export interface FinanceDashboard {
+  monthKey: string;
+  /** @minimum 0 */
+  targetAmount: number;
+  /** @minimum 0 */
+  expectedPerMember: number;
+  currency: FinanceDashboardCurrency;
+  /** @minimum 0 */
+  totalCollected: number;
+  /** @minimum 0 */
+  remainingAmount: number;
+  /** @minimum 0 */
+  contributorCount: number;
+  /** @minimum 0 */
+  memberCount: number;
+  canManage: boolean;
+  /** @nullable */
+  updatedAt?: string | null;
+  managers: FinanceManager[];
+  members: FinanceMemberContribution[];
+}
+
+export interface FinanceMonthWrite {
+  /**
+     * @minimum 0
+     * @maximum 2000000000
+     */
+  targetAmount: number;
+  /**
+     * @minimum 0
+     * @maximum 2000000000
+     */
+  expectedPerMember: number;
+}
+
+export interface FinanceContributionWrite {
+  /**
+     * @minimum 0
+     * @maximum 2000000000
+     */
+  amount: number;
+  /**
+     * @maxLength 240
+     * @nullable
+     */
+  note?: string | null;
 }
 
 export type MembersSummaryTopActivitiesItem = {
@@ -1158,4 +1306,18 @@ export interface PollStatusUpdate {
 export interface PollVote {
   optionId: string;
 }
+
+export type GetFinanceDashboardParams = {
+/**
+ * @pattern ^\d{4}-(0[1-9]|1[0-2])$
+ */
+month: string;
+};
+
+export type GetAdminFinanceDashboardParams = {
+/**
+ * @pattern ^\d{4}-(0[1-9]|1[0-2])$
+ */
+month: string;
+};
 

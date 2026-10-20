@@ -30,6 +30,8 @@ import {
   getListPasswordResetRequestsQueryKey,
   getListPollsQueryKey,
   getListProfilesQueryKey,
+  getListRolesQueryKey,
+  getGetAdminFinanceDashboardQueryKey,
   useAdminLogin,
   useCreatePasswordResetCode,
   useDeleteModerationProfile,
@@ -45,6 +47,8 @@ import { AdminDirectMessages } from "@/components/admin-direct-messages";
 import { AdminCommunity } from "@/components/admin-community";
 import { AdminEvents } from "@/components/admin-events";
 import { AdminProfileEditor } from "@/components/admin-profile-editor";
+import { AdminRoles } from "@/components/admin-roles";
+import { AdminFinance } from "@/components/admin-finance";
 import { buildMemberInvitation } from "@/lib/member-invitation";
 import {
   AlertDialog,
@@ -246,6 +250,10 @@ export default function AdminPage() {
       queryKey: getListModerationRequestsQueryKey(),
     });
     queryClient.removeQueries({ queryKey: getListProfilesQueryKey() });
+    queryClient.removeQueries({ queryKey: getListRolesQueryKey() });
+    queryClient.removeQueries({
+      queryKey: getGetAdminFinanceDashboardQueryKey(),
+    });
     queryClient.removeQueries({
       queryKey: getListModerationChatMessagesQueryKey(),
     });
@@ -718,6 +726,10 @@ export default function AdminPage() {
       </div>
 
       <AdminCommunity />
+
+      <AdminRoles />
+
+      <AdminFinance />
 
       <AdminEvents />
 

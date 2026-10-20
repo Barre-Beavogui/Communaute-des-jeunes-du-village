@@ -318,6 +318,58 @@ export async function syncZoboromaMembers() {
   `);
 
   await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS community_roles (
+      id text PRIMARY KEY,
+      name text NOT NULL,
+      description text,
+      permissions text[] NOT NULL DEFAULT ARRAY[]::text[],
+      created_at timestamp NOT NULL DEFAULT now()
+    )
+  `);
+
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS profile_roles (
+      profile_id text NOT NULL,
+      role_id text NOT NULL,
+      assigned_at timestamp NOT NULL DEFAULT now(),
+      PRIMARY KEY (profile_id, role_id)
+    )
+  `);
+
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS finance_months (
+      month_key text PRIMARY KEY,
+      target_amount integer NOT NULL DEFAULT 0,
+      expected_per_member integer NOT NULL DEFAULT 0,
+      currency text NOT NULL DEFAULT 'GNF',
+      updated_by text,
+      updated_at timestamp NOT NULL DEFAULT now()
+    )
+  `);
+
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS finance_contributions (
+      month_key text NOT NULL,
+      profile_id text NOT NULL,
+      amount integer NOT NULL DEFAULT 0,
+      note text,
+      updated_by text,
+      updated_at timestamp NOT NULL DEFAULT now(),
+      PRIMARY KEY (month_key, profile_id)
+    )
+  `);
+
+  await db.execute(sql`
+    CREATE INDEX IF NOT EXISTS profile_roles_role_index
+    ON profile_roles (role_id)
+  `);
+
+  await db.execute(sql`
+    CREATE INDEX IF NOT EXISTS finance_contributions_month_index
+    ON finance_contributions (month_key)
+  `);
+
+  await db.execute(sql`
     CREATE INDEX IF NOT EXISTS chat_message_reports_status_index
     ON chat_message_reports (status, created_at DESC)
   `);

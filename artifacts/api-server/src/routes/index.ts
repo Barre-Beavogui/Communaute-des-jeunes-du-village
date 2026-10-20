@@ -11,6 +11,8 @@ import chatRouter from "./chat.js";
 import eventsRouter from "./events.js";
 import eventModerationRouter from "./event-moderation.js";
 import directMessagesRouter from "./direct-messages.js";
+import financeRouter from "./finance.js";
+import roleModerationRouter from "./role-moderation.js";
 
 const router: IRouter = Router();
 
@@ -20,11 +22,13 @@ router.use(membershipRouter);
 router.use(memberRouter);
 router.use(chatRouter);
 router.use(directMessagesRouter);
+router.use(financeRouter);
 router.use(eventsRouter);
 router.use(profilesRouter);
 router.use(communityRouter);
 router.use(moderationRouter);
 router.use(communityModerationRouter);
 router.use(eventModerationRouter);
+router.use(roleModerationRouter);
 
 export default router;

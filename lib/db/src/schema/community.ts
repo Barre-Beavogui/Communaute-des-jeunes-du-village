@@ -91,6 +91,46 @@ export const eventResponsesTable = pgTable(
   (table) => [primaryKey({ columns: [table.eventId, table.profileId] })],
 );
 
+export const communityRolesTable = pgTable("community_roles", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description"),
+  permissions: text("permissions").array().notNull().default([]),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const profileRolesTable = pgTable(
+  "profile_roles",
+  {
+    profileId: text("profile_id").notNull(),
+    roleId: text("role_id").notNull(),
+    assignedAt: timestamp("assigned_at").notNull().defaultNow(),
+  },
+  (table) => [primaryKey({ columns: [table.profileId, table.roleId] })],
+);
+
+export const financeMonthsTable = pgTable("finance_months", {
+  monthKey: text("month_key").primaryKey(),
+  targetAmount: integer("target_amount").notNull().default(0),
+  expectedPerMember: integer("expected_per_member").notNull().default(0),
+  currency: text("currency").notNull().default("GNF"),
+  updatedBy: text("updated_by"),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const financeContributionsTable = pgTable(
+  "finance_contributions",
+  {
+    monthKey: text("month_key").notNull(),
+    profileId: text("profile_id").notNull(),
+    amount: integer("amount").notNull().default(0),
+    note: text("note"),
+    updatedBy: text("updated_by"),
+    updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  },
+  (table) => [primaryKey({ columns: [table.monthKey, table.profileId] })],
+);
+
 export type Announcement = typeof announcementsTable.$inferSelect;
 export type AnnouncementLike = typeof announcementLikesTable.$inferSelect;
 export type AnnouncementDislike = typeof announcementDislikesTable.$inferSelect;
@@ -100,3 +140,7 @@ export type PollVote = typeof pollVotesTable.$inferSelect;
 export type ChatPresence = typeof chatPresenceTable.$inferSelect;
 export type CommunityEvent = typeof eventsTable.$inferSelect;
 export type EventResponse = typeof eventResponsesTable.$inferSelect;
+export type CommunityRole = typeof communityRolesTable.$inferSelect;
+export type ProfileRole = typeof profileRolesTable.$inferSelect;
+export type FinanceMonth = typeof financeMonthsTable.$inferSelect;
+export type FinanceContribution = typeof financeContributionsTable.$inferSelect;

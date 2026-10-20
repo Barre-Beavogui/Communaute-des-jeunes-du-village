@@ -7,6 +7,7 @@
  */
 import type { ProfilePrivacy } from './profilePrivacy';
 import type { ProfileStatus } from './profileStatus';
+import type { PublicRole } from './publicRole';
 
 export interface Profile {
   id: string;
@@ -48,6 +49,7 @@ export interface Profile {
   showGender: boolean;
   showMaritalStatus: boolean;
   showEducationLevel: boolean;
+  roles: PublicRole[];
   privacy: ProfilePrivacy;
   status: ProfileStatus;
 }

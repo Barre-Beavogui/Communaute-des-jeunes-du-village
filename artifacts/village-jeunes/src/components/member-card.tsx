@@ -1,4 +1,11 @@
-import { ArrowUpRight, FolderKanban, Mail, MapPin, Phone } from "lucide-react";
+import {
+  ArrowUpRight,
+  BadgeCheck,
+  FolderKanban,
+  Mail,
+  MapPin,
+  Phone,
+} from "lucide-react";
 import type { Profile } from "@workspace/api-client-react";
 import { Link } from "wouter";
 import { Avatar } from "@/components/village-shell";
@@ -53,6 +60,19 @@ export function MemberCard({
           <MapPin className="h-3 w-3" />
           {profile.neighborhood}
         </p>
+        {profile.roles.length > 0 && (
+          <div className="mt-3 flex flex-wrap gap-1.5">
+            {profile.roles.map((role) => (
+              <span
+                key={role.id}
+                className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-1 text-[10px] font-extrabold text-primary"
+              >
+                <BadgeCheck className="h-3 w-3" />
+                {role.name}
+              </span>
+            ))}
+          </div>
+        )}
         <p className="mt-4 line-clamp-2 text-sm leading-6 text-muted-foreground">
           {profile.bio}
         </p>

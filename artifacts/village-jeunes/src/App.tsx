@@ -12,6 +12,7 @@ const queryClient = new QueryClient();
 const AdminPage = lazy(() => import("@/pages/admin"));
 const ChatPage = lazy(() => import("@/pages/chat"));
 const EventsPage = lazy(() => import("@/pages/events"));
+const FinancePage = lazy(() => import("@/pages/finance"));
 const DirectMessagesPage = lazy(() => import("@/pages/direct-messages"));
 const GeneralAssemblyReportPage = lazy(
   () => import("@/pages/general-assembly-report"),
@@ -83,6 +84,11 @@ function Router() {
           <Route path="/evenements">
             <MemberOnly>
               <EventsPage />
+            </MemberOnly>
+          </Route>
+          <Route path="/finances">
+            <MemberOnly>
+              <FinancePage />
             </MemberOnly>
           </Route>
           <Route path="/connexion-membre" component={MemberLoginPage} />

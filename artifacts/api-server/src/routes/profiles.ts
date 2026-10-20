@@ -11,12 +11,14 @@ import {
 import { requireCommunityAccess } from "../lib/community-access.js";
 import { isValidAdminToken } from "../lib/admin-auth.js";
 import { authorizationToken } from "../lib/member-auth.js";
+import { loadProfileRoleMap } from "../lib/role-data.js";
 
 const router: IRouter = Router();
 
 export function toProfile(
   row: typeof profilesTable.$inferSelect,
   includePrivateDetails = false,
+  roles: Array<{ id: string; name: string; description: string | null }> = [],
 ) {
   const phone = row.loginPhone ?? row.contact;
   return {
@@ -53,6 +55,7 @@ export function toProfile(
     showGender: row.showGender,
     showMaritalStatus: row.showMaritalStatus,
     showEducationLevel: row.showEducationLevel,
+    roles,
     privacy: row.privacy as "community" | "private",
     status: row.status as "approved" | "pending",
   };
@@ -65,9 +68,12 @@ router.get("/profiles", requireCommunityAccess, async (req, res) => {
     .select()
     .from(profilesTable)
     .where(eq(profilesTable.status, "approved"));
+  const roleMap = await loadProfileRoleMap(rows.map((row) => row.id));
   res.json(
     ListProfilesResponse.parse(
-      rows.map((row) => toProfile(row, includePrivateDetails)),
+      rows.map((row) =>
+        toProfile(row, includePrivateDetails, roleMap.get(row.id) ?? []),
+      ),
     ),
   );
 });
@@ -84,7 +90,12 @@ router.get("/profiles/:id", requireCommunityAccess, async (req, res) => {
     res.status(404).json({ error: "Profil introuvable" });
     return;
   }
-  res.json(GetProfileResponse.parse(toProfile(row, includePrivateDetails)));
+  const roleMap = await loadProfileRoleMap([row.id]);
+  res.json(
+    GetProfileResponse.parse(
+      toProfile(row, includePrivateDetails, roleMap.get(row.id) ?? []),
+    ),
+  );
 });
 
 router.get("/members/summary", requireCommunityAccess, async (_req, res) => {

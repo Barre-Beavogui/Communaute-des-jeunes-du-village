@@ -1,5 +1,6 @@
 import {
   ArrowLeft,
+  BadgeCheck,
   Mail,
   MapPin,
   MessageCircle,
@@ -184,10 +185,48 @@ export default function MemberPage() {
                   <MapPin className="h-4 w-4 text-primary" />
                   {profile.neighborhood}
                 </p>
+                {profile.roles.length > 0 && (
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {profile.roles.map((role) => (
+                      <span
+                        key={role.id}
+                        className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-2 text-xs font-extrabold text-primary"
+                      >
+                        <BadgeCheck className="h-4 w-4" />
+                        {role.name}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
             <div className="mt-10 grid gap-10 md:grid-cols-[1fr_250px]">
               <div className="space-y-9">
+                {profile.roles.length > 0 && (
+                  <div>
+                    <p className="font-mono text-[10px] font-bold uppercase tracking-[.17em] text-primary">
+                      Responsabilités dans la communauté
+                    </p>
+                    <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                      {profile.roles.map((role) => (
+                        <div
+                          key={role.id}
+                          className="rounded-2xl border border-primary/15 bg-primary/5 p-4"
+                        >
+                          <p className="flex items-center gap-2 text-sm font-extrabold text-primary">
+                            <BadgeCheck className="h-4 w-4" />
+                            {role.name}
+                          </p>
+                          {role.description && (
+                            <p className="mt-2 text-xs leading-5 text-muted-foreground">
+                              {role.description}
+                            </p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 <div>
                   <p className="font-mono text-[10px] font-bold uppercase tracking-[.17em] text-primary">
                     Présentation

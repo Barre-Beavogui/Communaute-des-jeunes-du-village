@@ -37,11 +37,18 @@ import type {
   ChatUnreadCount,
   CommunityEvent,
   CommunityEventWrite,
+  CommunityRole,
+  CommunityRoleWrite,
   DirectMessage,
   DirectMessageConversation,
   DirectMessageCreate,
   DirectMessageUnreadCount,
   EventResponseCreate,
+  FinanceContributionWrite,
+  FinanceDashboard,
+  FinanceMonthWrite,
+  GetAdminFinanceDashboardParams,
+  GetFinanceDashboardParams,
   HealthStatus,
   MemberActivation,
   MemberCode,
@@ -67,6 +74,7 @@ import type {
   PollVote,
   Profile,
   ProfileVisibilityUpdate,
+  RoleAssignmentCreate,
   SuccessReceipt
 } from './api.schemas';
 
@@ -2385,6 +2393,902 @@ export const useVotePoll = <TError = ErrorType<void>,
         TContext
       > => {
       return useMutation(getVotePollMutationOptions(options));
+    }
+
+export const getGetFinanceDashboardUrl = (params: GetFinanceDashboardParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/finance/dashboard?${stringifiedParams}` : `/api/finance/dashboard`
+}
+
+/**
+ * @summary Get the monthly finance dashboard for community members
+ */
+export const getFinanceDashboard = async (params: GetFinanceDashboardParams, options?: Parameters<typeof customFetch>[1]): Promise<FinanceDashboard> => {
+
+  return customFetch<FinanceDashboard>(getGetFinanceDashboardUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetFinanceDashboardQueryKey = (params?: GetFinanceDashboardParams,) => {
+    return [
+    `/api/finance/dashboard`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getGetFinanceDashboardQueryOptions = <TData = Awaited<ReturnType<typeof getFinanceDashboard>>, TError = ErrorType<void>>(params: GetFinanceDashboardParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getFinanceDashboard>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetFinanceDashboardQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getFinanceDashboard>>> = ({ signal }) => getFinanceDashboard(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getFinanceDashboard>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetFinanceDashboardQueryResult = NonNullable<Awaited<ReturnType<typeof getFinanceDashboard>>>
+export type GetFinanceDashboardQueryError = ErrorType<void>
+
+
+/**
+ * @summary Get the monthly finance dashboard for community members
+ */
+
+export function useGetFinanceDashboard<TData = Awaited<ReturnType<typeof getFinanceDashboard>>, TError = ErrorType<void>>(
+ params: GetFinanceDashboardParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getFinanceDashboard>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetFinanceDashboardQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getUpdateFinanceMonthUrl = (monthKey: string,) => {
+
+
+
+
+  return `/api/finance/months/${monthKey}`
+}
+
+/**
+ * @summary Update a monthly finance target as an authorized member
+ */
+export const updateFinanceMonth = async (monthKey: string,
+    financeMonthWrite: FinanceMonthWrite, options?: Parameters<typeof customFetch>[1]): Promise<FinanceDashboard> => {
+
+  return customFetch<FinanceDashboard>(getUpdateFinanceMonthUrl(monthKey),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(financeMonthWrite)
+  }
+);}
+
+
+
+
+
+export const getUpdateFinanceMonthMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateFinanceMonth>>, TError,{monthKey: string;data: BodyType<FinanceMonthWrite>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateFinanceMonth>>, TError,{monthKey: string;data: BodyType<FinanceMonthWrite>}, TContext> => {
+
+const mutationKey = ['updateFinanceMonth'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateFinanceMonth>>, {monthKey: string;data: BodyType<FinanceMonthWrite>}> = (props) => {
+          const {monthKey,data} = props ?? {};
+
+          return  updateFinanceMonth(monthKey,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateFinanceMonthMutationResult = NonNullable<Awaited<ReturnType<typeof updateFinanceMonth>>>
+    export type UpdateFinanceMonthMutationBody = BodyType<FinanceMonthWrite>
+    export type UpdateFinanceMonthMutationError = ErrorType<void>
+
+    /**
+ * @summary Update a monthly finance target as an authorized member
+ */
+export const useUpdateFinanceMonth = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateFinanceMonth>>, TError,{monthKey: string;data: BodyType<FinanceMonthWrite>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateFinanceMonth>>,
+        TError,
+        {monthKey: string;data: BodyType<FinanceMonthWrite>},
+        TContext
+      > => {
+      return useMutation(getUpdateFinanceMonthMutationOptions(options));
+    }
+
+export const getUpdateFinanceContributionUrl = (monthKey: string,
+    profileId: string,) => {
+
+
+
+
+  return `/api/finance/months/${monthKey}/contributions/${profileId}`
+}
+
+/**
+ * @summary Update one member contribution as an authorized member
+ */
+export const updateFinanceContribution = async (monthKey: string,
+    profileId: string,
+    financeContributionWrite: FinanceContributionWrite, options?: Parameters<typeof customFetch>[1]): Promise<FinanceDashboard> => {
+
+  return customFetch<FinanceDashboard>(getUpdateFinanceContributionUrl(monthKey,profileId),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(financeContributionWrite)
+  }
+);}
+
+
+
+
+
+export const getUpdateFinanceContributionMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateFinanceContribution>>, TError,{monthKey: string;profileId: string;data: BodyType<FinanceContributionWrite>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateFinanceContribution>>, TError,{monthKey: string;profileId: string;data: BodyType<FinanceContributionWrite>}, TContext> => {
+
+const mutationKey = ['updateFinanceContribution'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateFinanceContribution>>, {monthKey: string;profileId: string;data: BodyType<FinanceContributionWrite>}> = (props) => {
+          const {monthKey,profileId,data} = props ?? {};
+
+          return  updateFinanceContribution(monthKey,profileId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateFinanceContributionMutationResult = NonNullable<Awaited<ReturnType<typeof updateFinanceContribution>>>
+    export type UpdateFinanceContributionMutationBody = BodyType<FinanceContributionWrite>
+    export type UpdateFinanceContributionMutationError = ErrorType<void>
+
+    /**
+ * @summary Update one member contribution as an authorized member
+ */
+export const useUpdateFinanceContribution = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateFinanceContribution>>, TError,{monthKey: string;profileId: string;data: BodyType<FinanceContributionWrite>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateFinanceContribution>>,
+        TError,
+        {monthKey: string;profileId: string;data: BodyType<FinanceContributionWrite>},
+        TContext
+      > => {
+      return useMutation(getUpdateFinanceContributionMutationOptions(options));
+    }
+
+export const getListRolesUrl = () => {
+
+
+
+
+  return `/api/moderation/roles`
+}
+
+/**
+ * @summary List community roles and their member assignments
+ */
+export const listRoles = async ( options?: Parameters<typeof customFetch>[1]): Promise<CommunityRole[]> => {
+
+  return customFetch<CommunityRole[]>(getListRolesUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListRolesQueryKey = () => {
+    return [
+    `/api/moderation/roles`
+    ] as const;
+    }
+
+
+export const getListRolesQueryOptions = <TData = Awaited<ReturnType<typeof listRoles>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listRoles>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListRolesQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listRoles>>> = ({ signal }) => listRoles({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listRoles>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListRolesQueryResult = NonNullable<Awaited<ReturnType<typeof listRoles>>>
+export type ListRolesQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List community roles and their member assignments
+ */
+
+export function useListRoles<TData = Awaited<ReturnType<typeof listRoles>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listRoles>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListRolesQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getCreateRoleUrl = () => {
+
+
+
+
+  return `/api/moderation/roles`
+}
+
+/**
+ * @summary Create a public community role
+ */
+export const createRole = async (communityRoleWrite: CommunityRoleWrite, options?: Parameters<typeof customFetch>[1]): Promise<CommunityRole> => {
+
+  return customFetch<CommunityRole>(getCreateRoleUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(communityRoleWrite)
+  }
+);}
+
+
+
+
+
+export const getCreateRoleMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createRole>>, TError,{data: BodyType<CommunityRoleWrite>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createRole>>, TError,{data: BodyType<CommunityRoleWrite>}, TContext> => {
+
+const mutationKey = ['createRole'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createRole>>, {data: BodyType<CommunityRoleWrite>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createRole(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateRoleMutationResult = NonNullable<Awaited<ReturnType<typeof createRole>>>
+    export type CreateRoleMutationBody = BodyType<CommunityRoleWrite>
+    export type CreateRoleMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Create a public community role
+ */
+export const useCreateRole = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createRole>>, TError,{data: BodyType<CommunityRoleWrite>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createRole>>,
+        TError,
+        {data: BodyType<CommunityRoleWrite>},
+        TContext
+      > => {
+      return useMutation(getCreateRoleMutationOptions(options));
+    }
+
+export const getUpdateRoleUrl = (id: string,) => {
+
+
+
+
+  return `/api/moderation/roles/${id}`
+}
+
+/**
+ * @summary Update a community role and its permissions
+ */
+export const updateRole = async (id: string,
+    communityRoleWrite: CommunityRoleWrite, options?: Parameters<typeof customFetch>[1]): Promise<CommunityRole> => {
+
+  return customFetch<CommunityRole>(getUpdateRoleUrl(id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(communityRoleWrite)
+  }
+);}
+
+
+
+
+
+export const getUpdateRoleMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateRole>>, TError,{id: string;data: BodyType<CommunityRoleWrite>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateRole>>, TError,{id: string;data: BodyType<CommunityRoleWrite>}, TContext> => {
+
+const mutationKey = ['updateRole'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateRole>>, {id: string;data: BodyType<CommunityRoleWrite>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updateRole(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateRoleMutationResult = NonNullable<Awaited<ReturnType<typeof updateRole>>>
+    export type UpdateRoleMutationBody = BodyType<CommunityRoleWrite>
+    export type UpdateRoleMutationError = ErrorType<void>
+
+    /**
+ * @summary Update a community role and its permissions
+ */
+export const useUpdateRole = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateRole>>, TError,{id: string;data: BodyType<CommunityRoleWrite>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateRole>>,
+        TError,
+        {id: string;data: BodyType<CommunityRoleWrite>},
+        TContext
+      > => {
+      return useMutation(getUpdateRoleMutationOptions(options));
+    }
+
+export const getDeleteRoleUrl = (id: string,) => {
+
+
+
+
+  return `/api/moderation/roles/${id}`
+}
+
+/**
+ * @summary Delete a community role and all its assignments
+ */
+export const deleteRole = async (id: string, options?: Parameters<typeof customFetch>[1]): Promise<void> => {
+
+  return customFetch<void>(getDeleteRoleUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getDeleteRoleMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteRole>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteRole>>, TError,{id: string}, TContext> => {
+
+const mutationKey = ['deleteRole'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteRole>>, {id: string}> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteRole(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteRoleMutationResult = NonNullable<Awaited<ReturnType<typeof deleteRole>>>
+
+    export type DeleteRoleMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Delete a community role and all its assignments
+ */
+export const useDeleteRole = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteRole>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteRole>>,
+        TError,
+        {id: string},
+        TContext
+      > => {
+      return useMutation(getDeleteRoleMutationOptions(options));
+    }
+
+export const getAssignRoleUrl = (id: string,) => {
+
+
+
+
+  return `/api/moderation/roles/${id}/assignments`
+}
+
+/**
+ * @summary Assign a role to a selected member
+ */
+export const assignRole = async (id: string,
+    roleAssignmentCreate: RoleAssignmentCreate, options?: Parameters<typeof customFetch>[1]): Promise<CommunityRole> => {
+
+  return customFetch<CommunityRole>(getAssignRoleUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(roleAssignmentCreate)
+  }
+);}
+
+
+
+
+
+export const getAssignRoleMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof assignRole>>, TError,{id: string;data: BodyType<RoleAssignmentCreate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof assignRole>>, TError,{id: string;data: BodyType<RoleAssignmentCreate>}, TContext> => {
+
+const mutationKey = ['assignRole'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof assignRole>>, {id: string;data: BodyType<RoleAssignmentCreate>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  assignRole(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AssignRoleMutationResult = NonNullable<Awaited<ReturnType<typeof assignRole>>>
+    export type AssignRoleMutationBody = BodyType<RoleAssignmentCreate>
+    export type AssignRoleMutationError = ErrorType<void>
+
+    /**
+ * @summary Assign a role to a selected member
+ */
+export const useAssignRole = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof assignRole>>, TError,{id: string;data: BodyType<RoleAssignmentCreate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof assignRole>>,
+        TError,
+        {id: string;data: BodyType<RoleAssignmentCreate>},
+        TContext
+      > => {
+      return useMutation(getAssignRoleMutationOptions(options));
+    }
+
+export const getRemoveRoleAssignmentUrl = (id: string,
+    profileId: string,) => {
+
+
+
+
+  return `/api/moderation/roles/${id}/assignments/${profileId}`
+}
+
+/**
+ * @summary Remove a role from a member
+ */
+export const removeRoleAssignment = async (id: string,
+    profileId: string, options?: Parameters<typeof customFetch>[1]): Promise<void> => {
+
+  return customFetch<void>(getRemoveRoleAssignmentUrl(id,profileId),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getRemoveRoleAssignmentMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof removeRoleAssignment>>, TError,{id: string;profileId: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof removeRoleAssignment>>, TError,{id: string;profileId: string}, TContext> => {
+
+const mutationKey = ['removeRoleAssignment'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof removeRoleAssignment>>, {id: string;profileId: string}> = (props) => {
+          const {id,profileId} = props ?? {};
+
+          return  removeRoleAssignment(id,profileId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RemoveRoleAssignmentMutationResult = NonNullable<Awaited<ReturnType<typeof removeRoleAssignment>>>
+
+    export type RemoveRoleAssignmentMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Remove a role from a member
+ */
+export const useRemoveRoleAssignment = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof removeRoleAssignment>>, TError,{id: string;profileId: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof removeRoleAssignment>>,
+        TError,
+        {id: string;profileId: string},
+        TContext
+      > => {
+      return useMutation(getRemoveRoleAssignmentMutationOptions(options));
+    }
+
+export const getGetAdminFinanceDashboardUrl = (params: GetAdminFinanceDashboardParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/moderation/finance/dashboard?${stringifiedParams}` : `/api/moderation/finance/dashboard`
+}
+
+/**
+ * @summary Get the monthly finance dashboard as administrator
+ */
+export const getAdminFinanceDashboard = async (params: GetAdminFinanceDashboardParams, options?: Parameters<typeof customFetch>[1]): Promise<FinanceDashboard> => {
+
+  return customFetch<FinanceDashboard>(getGetAdminFinanceDashboardUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetAdminFinanceDashboardQueryKey = (params?: GetAdminFinanceDashboardParams,) => {
+    return [
+    `/api/moderation/finance/dashboard`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getGetAdminFinanceDashboardQueryOptions = <TData = Awaited<ReturnType<typeof getAdminFinanceDashboard>>, TError = ErrorType<unknown>>(params: GetAdminFinanceDashboardParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAdminFinanceDashboard>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAdminFinanceDashboardQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminFinanceDashboard>>> = ({ signal }) => getAdminFinanceDashboard(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminFinanceDashboard>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetAdminFinanceDashboardQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminFinanceDashboard>>>
+export type GetAdminFinanceDashboardQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Get the monthly finance dashboard as administrator
+ */
+
+export function useGetAdminFinanceDashboard<TData = Awaited<ReturnType<typeof getAdminFinanceDashboard>>, TError = ErrorType<unknown>>(
+ params: GetAdminFinanceDashboardParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAdminFinanceDashboard>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetAdminFinanceDashboardQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getUpdateAdminFinanceMonthUrl = (monthKey: string,) => {
+
+
+
+
+  return `/api/moderation/finance/months/${monthKey}`
+}
+
+/**
+ * @summary Update a monthly finance target as administrator
+ */
+export const updateAdminFinanceMonth = async (monthKey: string,
+    financeMonthWrite: FinanceMonthWrite, options?: Parameters<typeof customFetch>[1]): Promise<FinanceDashboard> => {
+
+  return customFetch<FinanceDashboard>(getUpdateAdminFinanceMonthUrl(monthKey),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(financeMonthWrite)
+  }
+);}
+
+
+
+
+
+export const getUpdateAdminFinanceMonthMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateAdminFinanceMonth>>, TError,{monthKey: string;data: BodyType<FinanceMonthWrite>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateAdminFinanceMonth>>, TError,{monthKey: string;data: BodyType<FinanceMonthWrite>}, TContext> => {
+
+const mutationKey = ['updateAdminFinanceMonth'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateAdminFinanceMonth>>, {monthKey: string;data: BodyType<FinanceMonthWrite>}> = (props) => {
+          const {monthKey,data} = props ?? {};
+
+          return  updateAdminFinanceMonth(monthKey,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateAdminFinanceMonthMutationResult = NonNullable<Awaited<ReturnType<typeof updateAdminFinanceMonth>>>
+    export type UpdateAdminFinanceMonthMutationBody = BodyType<FinanceMonthWrite>
+    export type UpdateAdminFinanceMonthMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Update a monthly finance target as administrator
+ */
+export const useUpdateAdminFinanceMonth = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateAdminFinanceMonth>>, TError,{monthKey: string;data: BodyType<FinanceMonthWrite>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateAdminFinanceMonth>>,
+        TError,
+        {monthKey: string;data: BodyType<FinanceMonthWrite>},
+        TContext
+      > => {
+      return useMutation(getUpdateAdminFinanceMonthMutationOptions(options));
+    }
+
+export const getUpdateAdminFinanceContributionUrl = (monthKey: string,
+    profileId: string,) => {
+
+
+
+
+  return `/api/moderation/finance/months/${monthKey}/contributions/${profileId}`
+}
+
+/**
+ * @summary Update one member contribution as administrator
+ */
+export const updateAdminFinanceContribution = async (monthKey: string,
+    profileId: string,
+    financeContributionWrite: FinanceContributionWrite, options?: Parameters<typeof customFetch>[1]): Promise<FinanceDashboard> => {
+
+  return customFetch<FinanceDashboard>(getUpdateAdminFinanceContributionUrl(monthKey,profileId),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(financeContributionWrite)
+  }
+);}
+
+
+
+
+
+export const getUpdateAdminFinanceContributionMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateAdminFinanceContribution>>, TError,{monthKey: string;profileId: string;data: BodyType<FinanceContributionWrite>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateAdminFinanceContribution>>, TError,{monthKey: string;profileId: string;data: BodyType<FinanceContributionWrite>}, TContext> => {
+
+const mutationKey = ['updateAdminFinanceContribution'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateAdminFinanceContribution>>, {monthKey: string;profileId: string;data: BodyType<FinanceContributionWrite>}> = (props) => {
+          const {monthKey,profileId,data} = props ?? {};
+
+          return  updateAdminFinanceContribution(monthKey,profileId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateAdminFinanceContributionMutationResult = NonNullable<Awaited<ReturnType<typeof updateAdminFinanceContribution>>>
+    export type UpdateAdminFinanceContributionMutationBody = BodyType<FinanceContributionWrite>
+    export type UpdateAdminFinanceContributionMutationError = ErrorType<void>
+
+    /**
+ * @summary Update one member contribution as administrator
+ */
+export const useUpdateAdminFinanceContribution = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateAdminFinanceContribution>>, TError,{monthKey: string;profileId: string;data: BodyType<FinanceContributionWrite>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateAdminFinanceContribution>>,
+        TError,
+        {monthKey: string;profileId: string;data: BodyType<FinanceContributionWrite>},
+        TContext
+      > => {
+      return useMutation(getUpdateAdminFinanceContributionMutationOptions(options));
     }
 
 export const getListModerationRequestsUrl = () => {

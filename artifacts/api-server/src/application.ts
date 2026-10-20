@@ -107,7 +107,11 @@ app.use(
           /^\/announcements\/[^/]+\/dislike$/.test(req.path) ||
           /^\/polls\/[^/]+\/vote$/.test(req.path) ||
           /^\/events\/[^/]+\/respond$/.test(req.path))) ||
-      (req.method === "PATCH" && req.path === "/member/profile");
+      (req.method === "PATCH" &&
+        (req.path === "/member/profile" ||
+          /^\/finance\/months\/[^/]+$/.test(req.path))) ||
+      (req.method === "PUT" &&
+        /^\/finance\/months\/[^/]+\/contributions\/[^/]+$/.test(req.path));
     const isChatWrite =
       req.method === "POST" &&
       (["/chat/messages", "/chat/presence", "/chat/read"].includes(req.path) ||
